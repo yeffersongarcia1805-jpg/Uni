@@ -1,0 +1,2840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uni — UCSM Ingeniería Civil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
+:root {
+  /* Navy palette */
+  --n0: #08121e; --n1: #0c1829; --n2: #111f34; --n3: #172840; --n4: #1e3350;
+  /* UCSM Red */
+  --red: #c01828; --red-dim: rgba(192,24,40,.1); --red-b: rgba(192,24,40,.22);
+  /* Gold accent */
+  --gold: #c8a060; --gold-2: #a8803a; --gold-dim: rgba(200,160,96,.1); --gold-b: rgba(200,160,96,.22);
+  /* Semantic colors */
+  --blue: #4fa8ff; --blue-dim: rgba(79,168,255,.1); --blue-b: rgba(79,168,255,.2);
+  --green: #46c87e; --green-dim: rgba(70,200,126,.1); --green-b: rgba(70,200,126,.2);
+  --amber: #f0a840; --amber-dim: rgba(240,168,64,.1);
+  --danger: #ff5555; --danger-dim: rgba(255,85,85,.1);
+  --purple: #9d86f0;
+  /* Text */
+  --t1: #ede6d8; --t2: rgba(237,230,216,.6); --t3: rgba(237,230,216,.28); --t4: rgba(237,230,216,.1);
+  /* Surfaces */
+  --s0: rgba(255,255,255,.02); --s1: rgba(255,255,255,.04); --s2: rgba(255,255,255,.07);
+  /* Borders */
+  --b0: rgba(255,255,255,.05); --b1: rgba(255,255,255,.1); --b2: rgba(200,160,96,.2);
+  /* Radius */
+  --r: 14px; --rm: 10px; --rs: 7px; --rxs: 5px;
+  /* Sidebar width */
+  --sw: 224px;
+}
+
+/* ═══════════════════════════════════════════
+   LIGHT MODE
+═══════════════════════════════════════════ */
+[data-theme="light"] {
+  --n0: #f0f2f5; --n1: #ffffff; --n2: #f7f8fa; --n3: #eef0f4; --n4: #e4e7ed;
+  --t1: #1a2233; --t2: rgba(26,34,51,.65); --t3: rgba(26,34,51,.35); --t4: rgba(26,34,51,.08);
+  --s0: rgba(0,0,0,.02); --s1: rgba(0,0,0,.03); --s2: rgba(0,0,0,.06);
+  --b0: rgba(0,0,0,.07); --b1: rgba(0,0,0,.12); --b2: rgba(150,100,30,.25);
+  --gold: #9a6f20; --gold-2: #7a5210; --gold-dim: rgba(154,111,32,.1); --gold-b: rgba(154,111,32,.2);
+  --blue: #1a7fd4; --blue-dim: rgba(26,127,212,.1); --blue-b: rgba(26,127,212,.2);
+  --green: #1a9655; --green-dim: rgba(26,150,85,.1); --green-b: rgba(26,150,85,.2);
+  --amber: #c07010; --amber-dim: rgba(192,112,16,.1);
+  --danger: #d93030; --danger-dim: rgba(217,48,48,.08);
+  --red: #b01020; --red-dim: rgba(176,16,32,.08); --red-b: rgba(176,16,32,.18);
+  --purple: #6d50d0;
+}
+
+/* ─── Theme toggle button ─── */
+.theme-toggle {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rs);
+  padding: 9px 14px; transition: all .2s; user-select: none; width: 100%
+}
+.theme-toggle:hover { background: var(--s2) }
+.theme-toggle-ico { font-size: 16px; flex-shrink: 0 }
+.theme-toggle-lbl { font-size: 12.5px; color: var(--t1); flex: 1 }
+.theme-toggle-switch {
+  width: 36px; height: 20px; border-radius: 10px; background: var(--s2);
+  border: 1px solid var(--b1); position: relative; flex-shrink: 0; transition: background .2s
+}
+.theme-toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--t3);
+  transition: transform .2s, background .2s
+}
+[data-theme="light"] .theme-toggle-switch { background: var(--gold-dim); border-color: var(--gold-b) }
+[data-theme="light"] .theme-toggle-switch::after { transform: translateX(16px); background: var(--gold) }
+
+/* ─── Skeleton screens ─── */
+@keyframes sk-shine {
+  0%   { background-position: -600px 0 }
+  100% { background-position: 600px 0 }
+}
+.sk {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
+  background-size: 1200px 100%;
+  animation: sk-shine 1.5s ease infinite;
+}
+.sk-card { background: var(--n2); border: 1px solid var(--b0); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 10px }
+.sk-line { height: 11px; display: block }
+.sk-line.sm { height: 9px; width: 60% }
+.sk-line.lg { height: 20px; width: 45% }
+.sk-line.full { width: 100% }
+.sk-line.w70 { width: 70% }
+.sk-line.w50 { width: 50% }
+.sk-line.w40 { width: 40% }
+.sk-line.w30 { width: 30% }
+.sk-bar { height: 10px; display: block }
+.sk-circle { width: 36px; height: 36px; border-radius: 50%; display: block; flex-shrink: 0 }
+.sk-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px }
+.sk-stat { background: var(--n2); border: 1px solid var(--b0); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px }
+
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0 }
+html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
+  font-family: 'Syne', sans-serif; font-size: 13.5px; overflow-x: hidden }
+
+/* ═══════════════════════════════════════════
+   SHELL LAYOUT
+═══════════════════════════════════════════ */
+.shell { display: grid; grid-template-columns: var(--sw) 1fr; grid-template-rows: 52px 1fr; min-height: 100vh }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — MOBILE
+═══════════════════════════════════════════ */
+.ham-btn {
+  display: none; background: none; border: none; cursor: pointer;
+  width: 32px; height: 32px; align-items: center; justify-content: center;
+  color: var(--t2); flex-shrink: 0; border-radius: var(--rs); transition: background .15s
+}
+.ham-btn:hover { background: var(--s2) }
+.ham-btn svg { width: 18px; height: 18px }
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(8,18,30,.7);
+  z-index: 199; backdrop-filter: blur(2px)
+}
+.sidebar-overlay.show { display: block }
+
+@media (max-width: 768px) {
+  :root { --sw: 230px }
+  .shell { grid-template-columns: 1fr }
+  .sidebar {
+    position: fixed; top: 0; left: -var(--sw); left: calc(-1 * var(--sw));
+    width: var(--sw); height: 100vh; z-index: 200;
+    transform: translateX(calc(-1 * var(--sw)));
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    border-right: 1px solid var(--b1)
+  }
+  .sidebar.open { transform: translateX(0) }
+  .topbar { padding: 0 12px; gap: 8px }
+  .ham-btn { display: flex }
+  .t-chip { display: none }
+  .t-focus-btn span { display: none }
+  .t-focus-btn { padding: 5px 9px; gap: 0 }
+  .main { padding: 14px 12px; gap: 12px }
+  .stats { grid-template-columns: repeat(2,1fr); gap: 8px }
+  .g2, .g3 { grid-template-columns: 1fr }
+  .nota-grid { grid-template-columns: 1fr }
+  .sc-val { font-size: 20px }
+  .sched-grid { min-width: 460px }
+  .gcourse-hdr { flex-wrap: wrap; gap: 6px }
+  .ce-row { flex-wrap: wrap }
+  .t-user .t-uname { display: none }
+  .ph { flex-direction: column; gap: 4px; align-items: flex-start }
+  .ph-actions { width: 100%; justify-content: flex-end }
+  .pt { font-size: 18px }
+}
+@media (max-width: 420px) {
+  .stats { grid-template-columns: 1fr 1fr }
+  .sc-val { font-size: 18px }
+  .t-name { font-size: 13px }
+  .t-sub { display: none }
+  .main { padding: 10px 10px }
+}
+
+/* ═══════════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════════ */
+#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none }
+.toast {
+  background: var(--n3); border: 1px solid var(--b1); border-radius: var(--rm);
+  padding: 10px 16px; font-size: 12.5px; color: var(--t1); display: flex; align-items: center; gap: 9px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4); pointer-events: all;
+  animation: toast-in .25s ease; max-width: 280px
+}
+.toast.out { animation: toast-out .25s ease forwards }
+.toast-ico { font-size: 14px; flex-shrink: 0 }
+@keyframes toast-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toast-out { to{opacity:0;transform:translateY(8px)} }
+@media (max-width: 768px) {
+  #toast-container { bottom: 12px; right: 12px; left: 12px }
+  .toast { max-width: 100% }
+}
+.topbar {
+  grid-column: 1 / -1; position: sticky; top: 0; z-index: 100;
+  background: var(--n1); border-bottom: 1px solid var(--b0);
+  display: flex; align-items: center; padding: 0 18px; gap: 12px;
+  backdrop-filter: blur(12px);
+}
+.t-brand { display: flex; align-items: center; gap: 9px; flex-shrink: 0; text-decoration: none }
+.t-emblem {
+  width: 30px; height: 30px; border-radius: 8px; background: var(--red);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.t-emblem svg { width: 16px; height: 16px }
+.t-name { font-family: 'DM Serif Display', serif; font-size: 14.5px; color: var(--t1); letter-spacing: .04em }
+.t-sub { font-size: 9px; color: var(--t3); letter-spacing: .14em; text-transform: uppercase; display: block; margin-top: 1px }
+.t-sep { width: 1px; height: 26px; background: var(--b0); flex-shrink: 0 }
+.t-chip {
+  font-size: 11px; color: var(--t2); background: var(--s1); border: 1px solid var(--b0);
+  padding: 3px 11px; border-radius: 20px; letter-spacing: .03em; white-space: nowrap
+}
+.t-spacer { flex: 1 }
+.t-focus-btn {
+  display: flex; align-items: center; gap: 6px; background: var(--gold-dim);
+  border: 1px solid var(--gold-b); color: var(--gold); font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 500; padding: 5px 13px; border-radius: 20px; cursor: pointer; transition: all .2s
+}
+.t-focus-btn:hover { background: rgba(200,160,96,.18) }
+.t-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(70,200,126,.4)}50%{box-shadow:0 0 0 4px rgba(70,200,126,0)} }
+.t-user {
+  display: flex; align-items: center; gap: 8px; background: var(--s1);
+  border: 1px solid var(--b0); padding: 4px 11px 4px 6px; border-radius: 20px; cursor: pointer
+}
+.t-ava {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8.5px; font-weight: 700; color: #fff; flex-shrink: 0
+}
+.t-uname { font-size: 11px; color: var(--t2); letter-spacing: .02em }
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+.sidebar {
+  background: var(--n1); border-right: 1px solid var(--b0);
+  padding: 14px 0 10px; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+  position: sticky; top: 52px; height: calc(100vh - 52px)
+}
+.s-section { font-size: 9px; font-weight: 600; letter-spacing: .15em; color: var(--t3);
+  padding: 12px 18px 5px; text-transform: uppercase }
+.s-item {
+  display: flex; align-items: center; gap: 9px; padding: 8px 18px; cursor: pointer;
+  color: var(--t2); font-size: 12.5px; font-weight: 400; transition: all .15s;
+  border-left: 2px solid transparent; user-select: none; position: relative
+}
+.s-item:hover { background: var(--s1); color: var(--t1) }
+.s-item.active { background: var(--blue-dim); color: var(--t1); border-left-color: var(--blue); font-weight: 600 }
+.s-ico { width: 14px; height: 14px; opacity: .5; flex-shrink: 0 }
+.s-item.active .s-ico { opacity: 1 }
+.s-badge {
+  margin-left: auto; background: var(--red); color: #fff;
+  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; min-width: 16px; text-align: center
+}
+.s-badge.warn { background: var(--amber) }
+.s-spacer { flex: 1 }
+.s-progress {
+  margin: 8px 12px; background: var(--s1); border: 1px solid var(--b0);
+  border-radius: var(--rs); padding: 10px 12px
+}
+.s-plbl { font-size: 9px; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px }
+.s-ptrack { height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden; margin-bottom: 4px }
+.s-pfill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--green), #80f0b0); transition: width .6s }
+.s-pval { font-size: 10.5px; color: var(--green); font-weight: 500 }
+.s-foot { padding: 10px 18px; display: flex; align-items: center; gap: 7px;
+  border-top: 1px solid var(--b0); margin-top: 4px }
+.s-code { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--t3); letter-spacing: .06em }
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT AREA
+═══════════════════════════════════════════ */
+.main { overflow-y: auto; padding: 22px 26px; display: none; flex-direction: column; gap: 16px }
+.main.active { display: flex }
+@keyframes fadein { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.fade { animation: fadein .2s ease }
+
+/* ═══════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════ */
+.ph { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2px }
+.pt { font-family: 'DM Serif Display', serif; font-size: 21px; color: var(--t1); font-weight: 400 }
+.ps { font-size: 11px; color: var(--t3) }
+.ph-actions { display: flex; gap: 8px; align-items: center }
+
+/* ═══════════════════════════════════════════
+   STATS GRID
+═══════════════════════════════════════════ */
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px }
+.sc {
+  background: var(--n2); border: 1px solid var(--b0); border-radius: var(--r);
+  padding: 14px 16px; transition: border-color .2s; cursor: default
+}
+.sc:hover { border-color: var(--b2) }
+.sc-lbl { font-size: 9px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); margin-bottom: 8px }
+.sc-val { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 3px; letter-spacing: -.02em }
+.sc-sub { font-size: 10px; color: var(--t3) }
+.sc-sub.up { color: var(--green) } .sc-sub.dn { color: var(--danger) } .sc-sub.warn { color: var(--amber) }
+.c-gold{color:var(--gold)} .c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-red{color:var(--danger)}
+
+/* ═══════════════════════════════════════════
+   GRID LAYOUTS
+═══════════════════════════════════════════ */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.g3 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px }
+
+/* ═══════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════ */
+.card { background: var(--n2); border: 1px solid var(--b0); border-radius: var(--r); padding: 16px }
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px }
+.card-title { font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--t2) }
+.card-action { font-size: 10.5px; color: var(--blue); cursor: pointer; opacity: .7; transition: opacity .2s }
+.card-action:hover { opacity: 1 }
+.card-action.gold { color: var(--gold) }
+
+/* ═══════════════════════════════════════════
+   TASK ITEMS
+═══════════════════════════════════════════ */
+.task { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--b0) }
+.task:last-child { border-bottom: none }
+.task-chk {
+  width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b2); flex-shrink: 0; margin-top: 1px;
+  cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center
+}
+.task-chk.done { background: var(--green); border-color: var(--green) }
+.task-chk.done::after { content:''; width:4px; height:3px; border-left:1.5px solid #0c1829; border-bottom:1.5px solid #0c1829; transform:rotate(-45deg) translateY(-1px) }
+.task-body { flex: 1; min-width: 0 }
+.task-name { font-size: 12.5px; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px }
+.task-name.done { text-decoration: line-through; color: var(--t3) }
+.task-meta { display: flex; align-items: center; gap: 6px }
+.tag { font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: .03em; white-space: nowrap }
+.task-due { font-size: 9.5px; color: var(--t3); margin-left: auto; white-space: nowrap; flex-shrink: 0 }
+.task-due.urg { color: var(--danger); font-weight: 600 }
+.task-due.warn { color: var(--amber) }
+.prio-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px }
+.ph_ { background: var(--danger) } .pm_ { background: var(--amber) } .pl_ { background: var(--t3) }
+
+/* ═══════════════════════════════════════════
+   COURSES MINI
+═══════════════════════════════════════════ */
+.crs { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--b0); cursor: pointer }
+.crs:last-child { border-bottom: none }
+.crs:hover .crs-name { color: var(--t1) }
+.crs-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+.crs-info { flex: 1; min-width: 0 }
+.crs-name { font-size: 12.5px; color: var(--t1); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px }
+.crs-code { font-size: 9.5px; color: var(--t3); font-family: 'DM Mono', monospace; letter-spacing: .03em }
+.crs-grade { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; min-width: 28px; text-align: right }
+.gbar { width: 48px; height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden }
+.gbar-fill { height: 100%; border-radius: 2px }
+
+/* ═══════════════════════════════════════════
+   SCHEDULE GRID
+═══════════════════════════════════════════ */
+.sched-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch }
+.sched-grid {
+  display: grid; grid-template-columns: 54px repeat(5,1fr); min-width: 500px;
+  border: 1px solid var(--b0); border-radius: var(--rm); overflow: hidden
+}
+.sg-h { padding: 9px 5px; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  text-align: center; color: var(--t2); background: var(--n3); border-bottom: 1px solid var(--b0) }
+.sg-h:not(:first-child) { border-left: 1px solid var(--b0) }
+.sg-h.today { color: var(--gold); background: var(--gold-dim) }
+.sg-time { padding: 0 7px; font-size: 8.5px; font-family: 'DM Mono', monospace; color: var(--t3);
+  background: var(--n3); border-bottom: 1px solid var(--b0); border-right: 1px solid var(--b0);
+  display: flex; align-items: center; justify-content: flex-end; min-height: 50px; line-height: 1.3; text-align: right }
+.sg-cell { border-bottom: 1px solid var(--b0); border-left: 1px solid var(--b0);
+  padding: 3px; display: flex; align-items: center; justify-content: center; min-height: 50px }
+.sg-blk { width: 100%; border-radius: 6px; padding: 5px 6px; transition: transform .15s; cursor: default }
+.sg-blk:hover { transform: scale(1.03) }
+.sg-bname { font-size: 9.5px; font-weight: 700; line-height: 1.3 }
+.sg-baula { font-size: 8.5px; font-family: 'DM Mono', monospace; opacity: .65; margin-top: 1px }
+.sg-btipo { font-size: 7.5px; font-weight: 700; letter-spacing: .07em; padding: 2px 5px; border-radius: 3px; margin-top: 3px; display: inline-block }
+.sg-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--b0) }
+.sg-leg { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--t2) }
+.sg-leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+
+/* ═══════════════════════════════════════════
+   DEADLINES
+═══════════════════════════════════════════ */
+.dl { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--b0) }
+.dl:last-child { border-bottom: none }
+.dl-days { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; min-width: 30px; text-align: right; flex-shrink: 0 }
+.dl-body { flex: 1; min-width: 0 }
+.dl-name { font-size: 12.5px; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 1px }
+.dl-crs { font-size: 9.5px; color: var(--t3) }
+.dred{color:var(--danger)} .damb{color:var(--amber)} .dgn{color:var(--green)}
+
+/* ═══════════════════════════════════════════
+   EXAMS — editable list
+═══════════════════════════════════════════ */
+.exam-del {
+  background: var(--danger-dim); border: 1px solid rgba(255,85,85,.2);
+  color: var(--danger); font-size: 10px; padding: 3px 8px; border-radius: var(--rxs);
+  cursor: pointer; font-family: 'Syne',sans-serif; transition: all .2s; flex-shrink: 0
+}
+.exam-del:hover { background: rgba(255,85,85,.18) }
+
+/* ═══════════════════════════════════════════
+   ATTENDANCE — +/- controls
+═══════════════════════════════════════════ */
+.att-ctrls { display: flex; align-items: center; gap: 5px; flex-shrink: 0 }
+.att-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--b1);
+  background: var(--s1); color: var(--t1); font-size: 14px; line-height: 1;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all .15s; font-family: monospace
+}
+.att-btn:hover { background: var(--s2); border-color: var(--b2) }
+.att-btn.plus:hover { background: var(--green-dim); border-color: var(--green); color: var(--green) }
+.att-btn.minus:hover { background: var(--danger-dim); border-color: var(--danger); color: var(--danger) }
+.att-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--b0) }
+.att-row:last-child { border-bottom: none }
+.att-name { font-size: 12px; color: var(--t1); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.att-track { flex: 1; height: 4px; background: var(--s2); border-radius: 2px; overflow: hidden; min-width: 60px }
+.att-fill { height: 100%; border-radius: 2px; transition: width .3s }
+.att-val { font-size: 11px; font-family: 'DM Mono',monospace; min-width: 36px; text-align: right; flex-shrink: 0 }
+.att-risk {
+  margin-top: 10px; padding: 9px 13px; border-radius: var(--rs);
+  background: var(--danger-dim); border: 1px solid rgba(255,85,85,.25);
+  font-size: 11.5px; color: var(--danger); display: none
+}
+.att-risk.show { display: block }
+
+/* ═══════════════════════════════════════════
+   NOTE INPUT VALIDATION
+═══════════════════════════════════════════ */
+.nota-in.invalid { border-color: var(--danger) !important; background: rgba(255,85,85,.07) }
+
+/* ═══════════════════════════════════════════
+   HABITS — interactive check
+═══════════════════════════════════════════ */
+.habit-add-row {
+  display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--b0)
+}
+.habit-add-in {
+  flex: 1; background: var(--n4); border: 1px solid var(--b0); border-radius: var(--rxs);
+  color: var(--t1); font-family: 'Syne',sans-serif; font-size: 12px; padding: 6px 10px; outline: none
+}
+.habit-add-in:focus { border-color: var(--gold) }
+
+/* ═══════════════════════════════════════════
+   NOTIFICATION BELL
+═══════════════════════════════════════════ */
+.notif-btn {
+  position: relative; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--s1); border: 1px solid var(--b0); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0
+}
+.notif-btn:hover { background: var(--s2) }
+.notif-btn svg { width: 14px; height: 14px; color: var(--t2) }
+.notif-dot {
+  position: absolute; top: 4px; right: 4px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--red); border: 1.5px solid var(--n1);
+  display: none
+}
+.notif-dot.show { display: block }
+.notif-panel {
+  position: absolute; top: 44px; right: 0; width: 300px; background: var(--n2);
+  border: 1px solid var(--b1); border-radius: var(--r); box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  z-index: 500; display: none; overflow: hidden
+}
+.notif-panel.open { display: block }
+.notif-head { padding: 11px 15px; border-bottom: 1px solid var(--b0); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); display: flex; justify-content: space-between; align-items: center }
+.notif-clear { font-size: 9.5px; color: var(--blue); cursor: pointer; opacity: .7 }
+.notif-clear:hover { opacity: 1 }
+.notif-item { padding: 10px 15px; border-bottom: 1px solid var(--b0); display: flex; gap: 10px; align-items: flex-start }
+.notif-item:last-child { border-bottom: none }
+.notif-ico { font-size: 14px; flex-shrink: 0; margin-top: 1px }
+.notif-text { font-size: 11.5px; color: var(--t1); line-height: 1.4 }
+.notif-sub { font-size: 9.5px; color: var(--t3); margin-top: 2px }
+.notif-empty { padding: 18px; text-align: center; font-size: 11.5px; color: var(--t3) }
+@media (max-width: 420px) { .notif-panel { right: -60px; width: 260px } }
+
+/* ═══════════════════════════════════════════
+   RISK ALERT in DASHBOARD
+═══════════════════════════════════════════ */
+.risk-alert {
+  background: var(--danger-dim); border: 1px solid rgba(255,85,85,.3);
+  border-radius: var(--rs); padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  font-size: 11.5px; color: var(--danger)
+}
+.risk-alert-ico { font-size: 16px; flex-shrink: 0 }
+.exam {
+  background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rm);
+  padding: 12px 14px; margin-bottom: 7px; display: flex; align-items: center; gap: 12px;
+  cursor: default; transition: border-color .2s
+}
+.exam:hover { border-color: var(--b2) }
+.exam:last-child { margin-bottom: 0 }
+.exam-badge { width: 42px; height: 42px; border-radius: var(--rs); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0 }
+.exam-days { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; line-height: 1 }
+.exam-dtxt { font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin-top: 1px }
+.exam-info { flex: 1; min-width: 0 }
+.exam-name { font-size: 12.5px; font-weight: 500; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px }
+.exam-det { font-size: 9.5px; color: var(--t3) }
+
+/* ═══════════════════════════════════════════
+   GRADE CALCULATOR
+═══════════════════════════════════════════ */
+.gcourse {
+  background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rm);
+  margin-bottom: 9px; overflow: hidden; transition: border-color .2s
+}
+.gcourse:hover { border-color: var(--b1) }
+.gcourse-hdr { display: flex; align-items: center; gap: 9px; padding: 12px 15px; cursor: pointer; user-select: none }
+.garrow { font-size: 9px; color: var(--t3); margin-left: auto; transition: transform .2s }
+.gcourse-body { display: none; padding: 0 15px 13px }
+.gcourse-body.open { display: block }
+.nota-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px }
+.nota-sec { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid var(--b0) }
+.nota-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px }
+.nota-lbl { font-size: 11.5px; color: var(--t2); flex: 1 }
+.nota-in {
+  width: 50px; background: var(--n4); border: 1px solid var(--b0); border-radius: var(--rxs);
+  color: var(--t1); font-family: 'DM Mono', monospace; font-size: 12.5px; font-weight: 500;
+  padding: 4px 6px; text-align: center; outline: none; transition: border-color .2s
+}
+.nota-in:focus { border-color: var(--gold) }
+.nota-in:disabled { opacity: .3; cursor: not-allowed }
+.nota-avg { font-size: 10.5px; font-family: 'DM Mono', monospace; padding: 4px 0 0; margin-top: 2px; border-top: 1px solid var(--b0) }
+.result-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--gold-dim); border: 1px solid var(--gold-b); border-radius: var(--rxs);
+  padding: 9px 13px; margin-top: 8px
+}
+.res-lbl { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold) }
+.res-val { font-size: 19px; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--gold) }
+.res-status { font-size: 9.5px; padding: 3px 8px; border-radius: 4px; font-weight: 600 }
+.rs-ok{background:var(--green-dim);color:var(--green)} .rs-no{background:var(--danger-dim);color:var(--danger)} .rs-nd{background:var(--s1);color:var(--t3)}
+.nota-min {
+  font-size: 10.5px; color: var(--t2); background: var(--s1); border: 1px solid var(--b0);
+  border-radius: var(--rxs); padding: 7px 10px; margin-top: 7px; display: flex; align-items: center; justify-content: space-between
+}
+.nota-min-v { font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--amber); font-weight: 500 }
+
+/* ═══════════════════════════════════════════
+   COURSE EDITOR
+═══════════════════════════════════════════ */
+.ceditor { background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rm); padding: 13px 15px; margin-bottom: 9px }
+.ce-hdr { display: flex; align-items: center; gap: 9px; margin-bottom: 11px }
+.ce-name-in {
+  flex: 1; background: var(--n4); border: 1px solid var(--b0); border-radius: var(--rxs);
+  color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 500; padding: 5px 9px; outline: none; transition: border-color .2s
+}
+.ce-name-in:focus { border-color: var(--gold) }
+.ce-color { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.2); cursor: pointer; flex-shrink: 0 }
+.ce-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px }
+.ce-lbl { font-size: 10.5px; color: var(--t2); width: 95px; flex-shrink: 0 }
+.ce-in {
+  width: 56px; background: var(--n4); border: 1px solid var(--b0); border-radius: var(--rxs);
+  color: var(--t1); font-family: 'DM Mono', monospace; font-size: 12px; padding: 4px 7px; text-align: center; outline: none
+}
+.ce-in:focus { border-color: var(--gold) }
+.ce-del {
+  margin-left: auto; background: var(--danger-dim); border: 1px solid rgba(255,85,85,.2);
+  color: var(--danger); font-size: 10.5px; padding: 4px 9px; border-radius: var(--rxs); cursor: pointer;
+  font-family: 'Syne', sans-serif; transition: all .2s
+}
+.ce-del:hover { background: rgba(255,85,85,.18) }
+.add-btn {
+  width: 100%; background: var(--s1); border: 1px dashed var(--b2); color: var(--gold);
+  font-family: 'Syne', sans-serif; font-size: 12.5px; padding: 10px; border-radius: var(--rm);
+  cursor: pointer; transition: all .2s; letter-spacing: .03em
+}
+.add-btn:hover { background: var(--gold-dim); border-color: var(--gold) }
+
+/* ═══════════════════════════════════════════
+   RENDIMIENTO (Performance)
+═══════════════════════════════════════════ */
+.gpa-big { font-family: 'DM Serif Display', serif; font-size: 44px; color: var(--gold); line-height: 1 }
+.gpa-max { font-size: 13px; color: var(--t3); align-self: flex-end; margin-bottom: 7px; margin-left: 3px }
+.sem-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px }
+.sem-lbl { font-size: 10.5px; color: var(--t3); width: 50px; flex-shrink: 0; white-space: nowrap }
+.sem-track { flex: 1; height: 4px; background: var(--s2); border-radius: 2px; overflow: hidden }
+.sem-fill { height: 100%; border-radius: 2px }
+.sem-val { font-size: 10.5px; font-family: 'DM Mono', monospace; color: var(--t2); width: 30px; text-align: right; flex-shrink: 0 }
+.rank-banner {
+  background: var(--red-dim); border: 1px solid var(--red-b); border-radius: var(--rs);
+  padding: 11px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 12px
+}
+.rank-lbl { font-size: 9.5px; color: rgba(192,24,40,.85); letter-spacing: .08em; text-transform: uppercase }
+.rank-val { font-size: 17px; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--red) }
+
+/* ═══════════════════════════════════════════
+   HABITS
+═══════════════════════════════════════════ */
+.hrow { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--b0) }
+.hrow:last-child { border-bottom: none }
+.hname { font-size: 12.5px; color: var(--t1); flex: 1 }
+.hstreak { font-size: 10.5px; font-family: 'DM Mono', monospace; color: var(--gold); font-weight: 500; margin-right: 5px; min-width: 26px; text-align: right }
+.hcells { display: flex; gap: 3px }
+.hcell { width: 11px; height: 11px; border-radius: 2px; background: var(--s2); cursor: pointer; transition: background .15s }
+.hcell.done { background: var(--green) }
+.hcell.today { border: 1.5px solid var(--green) }
+.hcell:hover { opacity: .7 }
+
+/* ═══════════════════════════════════════════
+   STUDY CHART
+═══════════════════════════════════════════ */
+.schart { display: flex; align-items: flex-end; gap: 6px; height: 58px; margin-top: 7px }
+.sbar-w { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end }
+.sbar { width: 100%; border-radius: 3px 3px 0 0; min-height: 3px; transition: all .2s }
+.sbar:hover { opacity: .7 }
+.sdlbl { font-size: 8.5px; color: var(--t3); letter-spacing: .04em }
+
+/* ═══════════════════════════════════════════
+   TIMER
+═══════════════════════════════════════════ */
+.timer-disp { text-align: center; padding: 4px 0 12px }
+.timer-time { font-family: 'DM Mono', monospace; font-size: 44px; font-weight: 400; color: var(--t1); letter-spacing: -.02em; line-height: 1; margin-bottom: 3px }
+.timer-phase { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--t3) }
+.timer-ctrls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px }
+.tbtn {
+  background: var(--s1); border: 1px solid var(--b1); color: var(--t1);
+  font-family: 'Syne', sans-serif; font-size: 11.5px; font-weight: 500;
+  padding: 7px 15px; border-radius: 20px; cursor: pointer; transition: all .2s
+}
+.tbtn:hover { background: var(--s2); border-color: var(--b2) }
+.tbtn.primary { background: var(--gold); border-color: var(--gold); color: var(--n1) }
+.tbtn.primary:hover { background: var(--gold-2) }
+.tbtn.running { background: var(--danger-dim); border-color: var(--danger); color: var(--danger) }
+.sdots { display: flex; justify-content: center; gap: 6px; margin-top: 10px }
+.sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--s2) }
+.sdot.done { background: var(--gold) } .sdot.cur { background: var(--gold); box-shadow: 0 0 6px var(--gold) }
+.tsel {
+  width: 100%; background: var(--s1); border: 1px solid var(--b0); color: var(--t1);
+  font-family: 'Syne', sans-serif; font-size: 11.5px; padding: 6px 9px; border-radius: var(--rs); cursor: pointer; appearance: none; margin-bottom: 11px
+}
+.tsel option { background: var(--n2) }
+
+/* ═══════════════════════════════════════════
+   QUICK ADD
+═══════════════════════════════════════════ */
+.qa-row { display: flex; gap: 7px; align-items: center; margin-top: 10px }
+.qa-in {
+  flex: 1; background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs);
+  color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12.5px; padding: 7px 12px; outline: none; transition: border-color .2s
+}
+.qa-in::placeholder { color: var(--t3) }
+.qa-in:focus { border-color: var(--b2) }
+.qa-btn {
+  background: var(--gold); border: none; color: var(--n1); font-family: 'Syne', sans-serif;
+  font-size: 11.5px; font-weight: 700; padding: 7px 14px; border-radius: var(--rs); cursor: pointer; transition: background .2s; white-space: nowrap
+}
+.qa-btn:hover { background: var(--gold-2) }
+
+/* ═══════════════════════════════════════════
+   PDF IMPORT
+═══════════════════════════════════════════ */
+.pdf-zone {
+  border: 1.5px dashed var(--b2); border-radius: var(--r); padding: 30px 20px; text-align: center;
+  cursor: pointer; transition: all .2s; background: var(--s0)
+}
+.pdf-zone:hover,.pdf-zone.drag { border-color: var(--gold); background: var(--gold-dim) }
+.pdf-zone-icon { font-size: 26px; margin-bottom: 9px; opacity: .55 }
+.pdf-zone-title { font-size: 13.5px; font-weight: 500; color: var(--t2); margin-bottom: 4px }
+.pdf-zone-sub { font-size: 10.5px; color: var(--t3) }
+.pdf-progress { background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rs); padding: 13px 15px; margin-top: 11px; display: none }
+.pdf-pbar-t { height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden; margin-bottom: 7px }
+.pdf-pbar-f { height: 100%; background: var(--gold); border-radius: 2px; width: 0; transition: width .3s }
+.pdf-pstatus { font-size: 11.5px; color: var(--t2) }
+.pdf-result { background: var(--green-dim); border: 1px solid var(--green-b); border-radius: var(--rs); padding: 13px 15px; margin-top: 11px; display: none }
+.pdf-result-title { font-size: 12.5px; font-weight: 600; color: var(--green); margin-bottom: 7px }
+.pdf-result-item { font-size: 11.5px; color: var(--t2); margin-bottom: 3px; padding-left: 11px; position: relative }
+.pdf-result-item::before { content: '·'; position: absolute; left: 0; color: var(--green) }
+.pdf-error { background: var(--danger-dim); border: 1px solid rgba(255,85,85,.2); border-radius: var(--rs); padding: 13px 15px; margin-top: 11px; display: none; font-size: 11.5px; color: var(--danger) }
+.import-actions { display: flex; gap: 9px; margin-top: 13px }
+.imp-btn { flex: 1; background: var(--gold); border: none; color: var(--n1); font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 700; padding: 9px; border-radius: var(--rs); cursor: pointer; transition: background .2s }
+.imp-btn:hover { background: var(--gold-2) }
+.imp-btn.sec { background: var(--s1); border: 1px solid var(--b0); color: var(--t2) }
+.imp-btn.sec:hover { background: var(--s2) }
+
+/* ═══════════════════════════════════════════
+   FOCUS OVERLAY
+═══════════════════════════════════════════ */
+#fov { display: none; position: fixed; inset: 0; background: rgba(8,18,30,.97); z-index: 999; align-items: center; justify-content: center; flex-direction: column }
+#fov.show { display: flex }
+.fov-close {
+  position: absolute; top: 20px; right: 24px; background: none; border: 1px solid var(--b1);
+  color: var(--t3); font-size: 11.5px; padding: 5px 13px; border-radius: 20px; cursor: pointer;
+  font-family: 'Syne', sans-serif; transition: all .2s
+}
+.fov-close:hover { color: var(--t1); border-color: var(--b2) }
+.fov-brand { position: absolute; top: 20px; left: 24px; display: flex; align-items: center; gap: 7px }
+.fov-brand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red) }
+.fov-brand-txt { font-size: 9.5px; letter-spacing: .14em; color: var(--t3); text-transform: uppercase }
+.fov-label { font-size: 9.5px; letter-spacing: .2em; color: var(--t3); text-transform: uppercase; margin-bottom: 34px }
+.fov-course { font-size: 11.5px; color: var(--gold); letter-spacing: .07em; margin-bottom: 42px }
+.fov-time { font-family: 'DM Mono', monospace; font-size: 96px; color: var(--t1); font-weight: 400; letter-spacing: -.02em; line-height: 1; margin-bottom: 5px; text-align: center }
+.fov-phase { font-size: 9.5px; letter-spacing: .2em; color: var(--t3); text-transform: uppercase; text-align: center; margin-bottom: 40px }
+.fov-ctrls { display: flex; gap: 11px }
+.fbtn { background: none; border: 1px solid var(--b2); color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 500; padding: 11px 26px; border-radius: 30px; cursor: pointer; transition: all .2s; letter-spacing: .04em }
+.fbtn:hover { background: var(--s2) }
+.fbtn.gold { background: var(--gold); border-color: var(--gold); color: var(--n1) }
+.fbtn.gold:hover { background: var(--gold-2) }
+.fbtn.stop { background: var(--danger-dim); border-color: var(--danger); color: var(--danger) }
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(8,18,30,.88); z-index: 200; align-items: center; justify-content: center }
+.modal-bg.show { display: flex }
+.mbox { background: var(--n2); border: 1px solid var(--b2); border-radius: var(--r); padding: 22px; width: 410px; max-width: 94vw; max-height: 90vh; overflow-y: auto }
+.mt { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--t1); margin-bottom: 15px }
+.mf { margin-bottom: 11px }
+.ml { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); display: block; margin-bottom: 4px }
+.mi { width: 100%; background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs); color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12.5px; padding: 7px 10px; outline: none; transition: border-color .2s }
+.mi:focus { border-color: var(--b2) }
+.msel { width: 100%; background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs); color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12.5px; padding: 7px 10px; outline: none; appearance: none; cursor: pointer }
+.msel option { background: var(--n2) }
+.macts { display: flex; gap: 9px; justify-content: flex-end; margin-top: 16px }
+.mcancel { background: none; border: 1px solid var(--b0); color: var(--t2); font-family: 'Syne', sans-serif; font-size: 12.5px; padding: 7px 15px; border-radius: var(--rs); cursor: pointer }
+.msave { background: var(--gold); border: none; color: var(--n1); font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 700; padding: 7px 17px; border-radius: var(--rs); cursor: pointer }
+.msave:hover { background: var(--gold-2) }
+
+/* ═══════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--s2); border-radius: 2px }
+.infobox { font-size: 11.5px; color: var(--t2); background: var(--red-dim); border: 1px solid var(--red-b); border-radius: var(--rs); padding: 9px 13px; display: flex; align-items: center; gap: 9px }
+.infobox-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); flex-shrink: 0 }
+.divider { height: 1px; background: var(--b0); margin: 4px 0 }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  :root { --sw: 0px }
+  .sidebar { display: none }
+  .shell { grid-template-columns: 1fr }
+  .stats { grid-template-columns: repeat(2,1fr) }
+  .g2, .g3 { grid-template-columns: 1fr }
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD GREETING AREA
+═══════════════════════════════════════════ */
+.greeting-area {
+  background: linear-gradient(135deg, var(--n2) 0%, var(--n3) 100%);
+  border: 1px solid var(--b0); border-radius: var(--r); padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px
+}
+.greeting-text .g-hi { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--t1); margin-bottom: 3px }
+.greeting-text .g-date { font-size: 11px; color: var(--t3) }
+.greeting-right { text-align: right }
+.week-progress-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); margin-bottom: 6px }
+.week-progress-bar { width: 120px; height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden; margin-bottom: 4px }
+.week-progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--gold), var(--green)); transition: width .6s }
+.week-progress-val { font-size: 10px; color: var(--t2) }
+
+/* Alert banner */
+.alert-banner {
+  background: var(--danger-dim); border: 1px solid rgba(255,85,85,.22); border-radius: var(--rs);
+  padding: 9px 14px; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--t2)
+}
+.alert-banner-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--danger); flex-shrink: 0; animation: pulse 2s infinite }
+
+/* Attendance widget */
+.att-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--b0) }
+.att-row:last-child { border-bottom: none }
+.att-name { font-size: 12.5px; color: var(--t1); flex: 1 }
+.att-track { width: 80px; height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden }
+.att-fill { height: 100%; border-radius: 2px }
+.att-val { font-size: 10.5px; font-family: 'DM Mono', monospace; color: var(--t2); min-width: 32px; text-align: right }
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0c1829">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uni UCSM">
+</head>
+<body>
+
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="shell">
+
+<!-- ════════════════════════════════════
+     TOPBAR
+════════════════════════════════════ -->
+<header class="topbar">
+  <button class="ham-btn" onclick="toggleSidebar()" aria-label="Menú">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <div class="t-brand">
+    <div class="t-emblem">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3L4 8v2h16V8L12 3z" fill="white" opacity=".9"/>
+        <rect x="5" y="11" width="3" height="8" fill="white" opacity=".85"/>
+        <rect x="10.5" y="11" width="3" height="8" fill="white" opacity=".85"/>
+        <rect x="16" y="11" width="3" height="8" fill="white" opacity=".85"/>
+        <rect x="3" y="19" width="18" height="2" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <span style="font-family:'DM Serif Display',serif;font-size:14.5px;color:var(--t1);letter-spacing:.04em;display:block">Uni</span>
+      <span style="font-size:9px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase">UCSM · Ing. Civil</span>
+    </div>
+  </div>
+  <div class="t-sep"></div>
+  <span class="t-chip" id="cycle-chip">Semestre Par 2025 · E.P. 45</span>
+  <div class="t-spacer"></div>
+  <button class="t-focus-btn" onclick="launchFocus()"><div class="t-pulse"></div><span>Modo Enfoque</span></button>
+  <button class="notif-btn" onclick="toggleNotifPanel()" id="notif-btn" title="Alertas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <div class="notif-dot" id="notif-dot"></div>
+  </button>
+  <div class="t-user" onclick="showPage('ajustes')">
+    <div class="t-ava" id="ava-initials">YG</div>
+    <span class="t-uname" id="stu-name-label">Yefferson García</span>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="s-section">Principal</div>
+
+  <div class="s-item active" onclick="showPage('dashboard')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+    Dashboard
+  </div>
+  <div class="s-item" onclick="showPage('tareas')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h12M2 8h8M2 12h10"/><circle cx="13" cy="11" r="2.5"/><path d="M12 11l.8.8 1.5-1.5" stroke-linecap="round"/></svg>
+    Tareas
+    <span class="s-badge" id="sidebar-badge">5</span>
+  </div>
+  <div class="s-item" onclick="showPage('examenes')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 7l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Exámenes
+    <span class="s-badge warn" id="exam-badge">2</span>
+  </div>
+  <div class="s-item" onclick="showPage('horario')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M2 6h12M6 2v4M10 2v4"/></svg>
+    Horario
+  </div>
+
+  <div class="s-section">Académico</div>
+
+  <div class="s-item" onclick="showPage('cursos')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2L3 5v2l5 3 5-3V5L8 2z"/><path d="M3 9l5 3 5-3"/></svg>
+    Cursos & Notas
+  </div>
+  <div class="s-item" onclick="showPage('rendimiento')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><polyline points="2,12 6,7 10,9 14,4"/><path d="M11 4h3v3"/></svg>
+    Rendimiento
+  </div>
+  <div class="s-item" onclick="showPage('asistencia')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+    Asistencia
+  </div>
+
+  <div class="s-section">Productividad</div>
+
+  <div class="s-item" onclick="showPage('pomodoro')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="9" r="5"/><path d="M6 2h4M8 4v1"/><path d="M8 7v2.5l1.5 1.5" stroke-linecap="round"/></svg>
+    Pomodoro
+  </div>
+  <div class="s-item" onclick="showPage('habitos')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8a5 5 0 1 0 10 0 5 5 0 0 0-10 0"/><path d="M8 6v2l1.5 1" stroke-linecap="round"/></svg>
+    Hábitos
+  </div>
+
+  <div class="s-section">Sistema</div>
+
+  <div class="s-item" onclick="showPage('importar')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 13h8M8 10V3M5 6l3-3 3 3"/></svg>
+    Importar PDF
+  </div>
+  <div class="s-item" onclick="showPage('ajustes')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+    Ajustes
+  </div>
+
+  <div class="s-spacer"></div>
+
+  <div class="s-progress">
+    <div class="s-plbl">Progreso semestral</div>
+    <div class="s-ptrack"><div class="s-pfill" id="sem-progress-bar" style="width:68%"></div></div>
+    <div class="s-pval" id="sem-progress-val">68% — Semana 12/18</div>
+  </div>
+
+  <div class="s-foot">
+    <div class="t-ava" style="width:20px;height:20px;font-size:7.5px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0" id="s-ava">YG</div>
+    <span class="s-code" id="sid-code">COD 2022244651</span>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════
+     PAGE: DASHBOARD
+════════════════════════════════════ -->
+<main class="main active fade" id="page-dashboard">
+  <div class="greeting-area">
+    <div class="greeting-text">
+      <div class="g-hi" id="greeting">Buenos días</div>
+      <div class="g-date" id="dateDisp">—</div>
+    </div>
+    <div class="greeting-right">
+      <div class="week-progress-lbl">Progreso semanal</div>
+      <div class="week-progress-bar"><div class="week-progress-fill" style="width:72%"></div></div>
+      <div class="week-progress-val">72% completado</div>
+    </div>
+  </div>
+
+  <div id="dash-alert" style="display:none"></div>
+  <div id="dash-risk" style="display:none"></div>
+
+  <div class="stats">
+    <div class="sc">
+      <div class="sc-lbl">Promedio Ponderado</div>
+      <div class="sc-val c-gold" id="stat-pp">—</div>
+      <div class="sc-sub" id="stat-pp-sub">/20 — semestre actual</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">Tareas pendientes</div>
+      <div class="sc-val c-blue" id="stat-pending">5</div>
+      <div class="sc-sub warn" id="stat-task-urg">2 urgentes</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">Próximo examen</div>
+      <div class="sc-val c-red" id="stat-exam-days">—</div>
+      <div class="sc-sub" id="stat-exam-name">—</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">Créditos matriculados</div>
+      <div class="sc-val c-green" id="stat-cred">0</div>
+      <div class="sc-sub">cr · semestre actual</div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Tasks mini -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Tareas próximas</span>
+          <span class="card-action" onclick="showPage('tareas')">Ver todas →</span>
+        </div>
+        <div id="task-mini"></div>
+        <div class="qa-row">
+          <input type="text" class="qa-in" id="qa-input" placeholder="Nueva tarea rápida…" onkeydown="if(event.key==='Enter')quickAddTask()">
+          <button class="qa-btn" onclick="quickAddTask()">+ Añadir</button>
+        </div>
+      </div>
+      <!-- Deadlines -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Deadlines críticos</span>
+          <span class="card-action" onclick="showPage('tareas')">Gestionar →</span>
+        </div>
+        <div id="dl-mini"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Courses mini -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Cursos — semestre</span>
+          <span class="card-action gold" onclick="showPage('cursos')">Notas →</span>
+        </div>
+        <div id="crs-mini"></div>
+      </div>
+      <!-- Horario mini -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Horario de hoy</span>
+          <span class="card-action" onclick="showPage('horario')">Semana →</span>
+        </div>
+        <div id="sch-mini"></div>
+      </div>
+      <!-- Study chart -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Horas de estudio esta semana</span>
+        </div>
+        <div class="schart" id="schart"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: TAREAS
+════════════════════════════════════ -->
+<main class="main fade" id="page-tareas">
+  <div class="ph">
+    <div class="pt">Tareas & Entregas</div>
+    <span class="ps">Gestión de actividades académicas</span>
+  </div>
+  <div class="ph-actions" style="margin-bottom:4px">
+    <button class="tbtn" onclick="openAddModal()">+ Nueva tarea</button>
+  </div>
+  <div class="card">
+    <div id="task-full"></div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: EXÁMENES
+════════════════════════════════════ -->
+<main class="main fade" id="page-examenes">
+  <div class="ph">
+    <div class="pt">Exámenes</div>
+    <span class="ps">Calendario de evaluaciones</span>
+  </div>
+  <div class="ph-actions" style="margin-bottom:4px">
+    <button class="tbtn" onclick="openExamModal()">+ Nuevo examen</button>
+  </div>
+  <div class="card"><div id="exams-list"></div></div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: HORARIO
+════════════════════════════════════ -->
+<main class="main fade" id="page-horario">
+  <div class="ph"><div class="pt">Horario semanal</div><span class="ps">Ingeniería Civil · UCSM</span></div>
+  <div class="card"><div id="sch-full"></div></div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: CURSOS & NOTAS
+════════════════════════════════════ -->
+<main class="main fade" id="page-cursos">
+  <div class="ph"><div class="pt">Cursos & Calculadora de Notas</div><span class="ps">Sistema UCSM — Escala 0–20</span></div>
+  <div class="infobox">
+    <div class="infobox-dot"></div>
+    <span><strong style="color:var(--t1)">Fórmula UCSM:</strong> P.FINAL = promedio ponderado de teoría (N1+N2+N3) y práctica (N1+N2+N3) según créditos CR.T y CR.P. Aprobación ≥ 11.</span>
+  </div>
+  <div id="gcalc-container"></div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: RENDIMIENTO
+════════════════════════════════════ -->
+<main class="main fade" id="page-rendimiento">
+  <div class="ph"><div class="pt">Rendimiento académico</div><span class="ps">UCSM · E.P. 45 Ingeniería Civil</span></div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Promedio ponderado histórico</span></div>
+      <div style="display:flex;align-items:flex-end;margin-bottom:13px">
+        <div class="gpa-big" id="rend-pp">—</div><span class="gpa-max">/20</span>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:10.5px;color:var(--t3)">Meta: <span style="color:var(--green)">17.0</span></div>
+          <div style="font-size:9.5px;color:var(--t3)" id="rend-diff">—</div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="position:relative;width:100%;height:160px">
+          <canvas id="pp-chart" role="img" aria-label="Gráfico de evolución del promedio ponderado por semestre">Evolución del promedio ponderado semestral.</canvas>
+        </div>
+      </div>
+      <div class="rank-banner">
+        <div>
+          <div class="rank-lbl">Orden de mérito</div>
+          <div style="font-size:9.5px;color:rgba(192,24,40,.55);margin-top:2px" id="rank-ref">Semestre Par 2022 (ref.)</div>
+        </div>
+        <div class="rank-val" id="rank-val">124 / 238</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Notas por curso — semestre actual</span></div>
+      <div id="course-grades"></div>
+      <div style="margin-top:13px;padding-top:11px;border-top:1px solid var(--b0)">
+        <div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Créditos matriculados</div>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="flex:1;height:3px;background:var(--s2);border-radius:2px;overflow:hidden"><div id="cred-bar" style="height:100%;background:var(--gold);border-radius:2px;width:0;transition:width .6s"></div></div>
+          <span style="font-size:11.5px;font-family:'DM Mono',monospace;color:var(--gold)" id="cred-val">0 cr</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: ASISTENCIA
+════════════════════════════════════ -->
+<main class="main fade" id="page-asistencia">
+  <div class="ph"><div class="pt">Control de Asistencia</div><span class="ps">UCSM — Mínimo 70% de asistencia para aprobar</span></div>
+  <div class="infobox" style="margin-bottom:4px">
+    <div class="infobox-dot"></div>
+    <span>Reglamento UCSM: El estudiante que acumule más de <strong style="color:var(--t1)">30% de inasistencias</strong> en cualquier asignatura será inhabilitado.</span>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Asistencia por curso</span><span style="font-size:10px;color:var(--t3)">Usa +/− para registrar asistencia</span></div>
+    <div id="attendance-list"></div>
+    <div class="att-risk" id="att-risk-banner"></div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: POMODORO
+════════════════════════════════════ -->
+<main class="main fade" id="page-pomodoro">
+  <div class="ph"><div class="pt">Pomodoro & Sesiones</div><span class="ps">Técnica de estudio por intervalos</span></div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Temporizador</span></div>
+      <select class="tsel" id="tsel"></select>
+      <div class="timer-disp">
+        <div class="timer-time" id="td">25:00</div>
+        <div class="timer-phase" id="tp">Sesión de enfoque</div>
+      </div>
+      <div class="timer-ctrls">
+        <button class="tbtn" onclick="resetTimer()">Reset</button>
+        <button class="tbtn primary" id="tsbtn" onclick="toggleTimer()">Iniciar</button>
+        <button class="tbtn" onclick="skipPhase()">Skip</button>
+      </div>
+      <div class="sdots" id="sdots"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Horas de estudio — semana actual</span></div>
+      <div class="schart" id="schart2"></div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b0)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:10.5px;color:var(--t3)">Total esta semana</span>
+          <span style="font-size:13px;font-family:'DM Mono',monospace;color:var(--gold)" id="study-total">18.5h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:10.5px;color:var(--t3)">Meta semanal</span>
+          <span style="font-size:13px;font-family:'DM Mono',monospace;color:var(--t2)">25.0h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: HÁBITOS
+════════════════════════════════════ -->
+<main class="main fade" id="page-habitos">
+  <div class="ph"><div class="pt">Hábitos de estudio</div><span class="ps">Últimos 14 días · Toca el cuadro de hoy para marcar</span></div>
+  <div class="card">
+    <div id="habits-list"></div>
+    <div class="habit-add-row">
+      <input type="text" class="habit-add-in" id="habit-new-in" placeholder="Nuevo hábito…" onkeydown="if(event.key==='Enter')addHabit()">
+      <button class="qa-btn" onclick="addHabit()">+ Añadir</button>
+    </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: IMPORTAR PDF
+════════════════════════════════════ -->
+<main class="main fade" id="page-importar">
+  <div class="ph"><div class="pt">Importar Consolidado de Notas</div><span class="ps">Sube tu PDF oficial UCSM</span></div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Carga automática desde PDF oficial UCSM</span></div>
+    <div class="infobox" style="margin-bottom:14px">
+      <div class="infobox-dot"></div>
+      <span>Sube tu <strong style="color:var(--t1)">Consolidado de Notas</strong> descargado del sistema UCSM. La app leerá automáticamente tu nombre, código, cursos y notas.</span>
+    </div>
+    <div class="pdf-zone" id="pdf-zone"
+      onclick="document.getElementById('pdf-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <div class="pdf-zone-icon">📄</div>
+      <div class="pdf-zone-title">Arrastra tu PDF aquí o haz clic para seleccionar</div>
+      <div class="pdf-zone-sub">ConsolidadoNotas.pdf — descargado del portal UCSM</div>
+    </div>
+    <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDF(this.files[0])">
+    <div class="pdf-progress" id="pdf-progress">
+      <div class="pdf-pbar-t"><div class="pdf-pbar-f" id="pdf-prog-bar"></div></div>
+      <div class="pdf-pstatus" id="pdf-status">Leyendo PDF...</div>
+    </div>
+    <div class="pdf-result" id="pdf-result">
+      <div class="pdf-result-title">✓ PDF procesado correctamente</div>
+      <div id="pdf-result-items"></div>
+      <div class="import-actions">
+        <button class="imp-btn" onclick="applyImport()">Aplicar cambios</button>
+        <button class="imp-btn sec" onclick="cancelImport()">Cancelar</button>
+      </div>
+    </div>
+    <div class="pdf-error" id="pdf-error"></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Historial de importaciones</span></div>
+    <div id="import-history" style="font-size:11.5px;color:var(--t3)">Ninguna importación realizada aún.</div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: AJUSTES
+════════════════════════════════════ -->
+<main class="main fade" id="page-ajustes">
+  <div class="ph"><div class="pt">Ajustes & Configuración</div><span class="ps">Personaliza tu semestre</span></div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Apariencia</span></div>
+    <div class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn">
+      <span class="theme-toggle-ico" id="theme-ico">🌙</span>
+      <span class="theme-toggle-lbl" id="theme-lbl">Modo oscuro activo</span>
+      <div class="theme-toggle-switch" id="theme-switch"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Datos del estudiante</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="mf"><label class="ml">Nombres y apellidos</label><input type="text" class="mi" id="set-name" placeholder="Tu nombre completo"></div>
+      <div class="mf"><label class="ml">Código de alumno</label><input type="text" class="mi" id="set-code" placeholder="2022xxxxxx"></div>
+      <div class="mf"><label class="ml">Semestre activo</label><input type="text" class="mi" id="set-semester" placeholder="Semestre Par 2025"></div>
+      <div class="mf"><label class="ml">Ciclo / Semestre académico</label><input type="text" class="mi" id="set-cycle" placeholder="Semestre Par 2025 · E.P. 45"></div>
+    </div>
+    <button class="qa-btn" style="margin-top:4px" onclick="saveStudentData()">Guardar datos</button>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Editor de cursos — semestre actual</span>
+      <span class="card-action gold" onclick="showPage('importar')">Importar desde PDF →</span>
+    </div>
+    <div id="course-editor"></div>
+    <button class="add-btn" onclick="addNewCourse()">+ Añadir curso manualmente</button>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Semestres históricos</span></div>
+    <div id="sem-editor"></div>
+    <button class="add-btn" onclick="addSemester()">+ Añadir semestre</button>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Backup & Restaurar datos</span></div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="font-size:11.5px;color:var(--t2);line-height:1.6">Exporta todos tus datos (cursos, notas, tareas, exámenes, hábitos) a un archivo JSON. Impórtalo luego para restaurar todo sin perder nada.</div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="qa-btn" style="flex:1;min-width:140px" onclick="exportBackup()">⬇ Exportar JSON</button>
+        <button class="qa-btn" style="flex:1;min-width:140px;background:var(--s1);border:1px solid var(--b1);color:var(--t2)" onclick="document.getElementById('backup-file-in').click()">⬆ Importar JSON</button>
+      </div>
+      <input type="file" id="backup-file-in" accept=".json" style="display:none" onchange="importBackup(this)">
+      <div id="backup-status" style="display:none;font-size:11px;padding:7px 10px;border-radius:var(--rxs);background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Instalar app</span></div>
+    <div style="font-size:11.5px;color:var(--t2);line-height:1.6;margin-bottom:10px">Instala Uni en tu dispositivo para usarla sin internet, como una app nativa.</div>
+    <button class="qa-btn" id="pwa-install-btn" style="display:none" onclick="installPWA()">📲 Instalar Uni</button>
+    <div id="pwa-status" style="font-size:11px;color:var(--t3)">Abre esta página en Chrome o Safari y usa "Agregar a pantalla de inicio".</div>
+  </div>
+</main>
+
+<div id="toast-container"></div>
+
+</div><!-- end shell -->
+
+<!-- ════════════════════════════════════
+     FOCUS OVERLAY
+════════════════════════════════════ -->
+<div id="fov">
+  <div class="fov-brand"><div class="fov-brand-dot"></div><span class="fov-brand-txt">UCSM · Ingeniería Civil</span></div>
+  <button class="fov-close" onclick="closeFocus()">Salir del modo enfoque</button>
+  <div class="fov-label">Modo enfoque profundo</div>
+  <div class="fov-course" id="fov-sub">—</div>
+  <div class="fov-time" id="fov-td">25:00</div>
+  <div class="fov-phase" id="fov-ph">Sesión de enfoque</div>
+  <div class="fov-ctrls">
+    <button class="fbtn" onclick="resetTimer()">Reset</button>
+    <button class="fbtn gold" id="fov-sbtn" onclick="toggleTimer()">Iniciar</button>
+    <button class="fbtn" onclick="skipPhase()">Skip</button>
+  </div>
+</div>
+
+<!-- ADD EXAM MODAL -->
+<div class="modal-bg" id="emod">
+  <div class="mbox">
+    <div class="mt" id="emod-title">Nuevo examen</div>
+    <input type="hidden" id="e-id">
+    <div class="mf"><label class="ml">Curso</label><select class="msel" id="e-course"></select></div>
+    <div class="mf"><label class="ml">Tipo</label>
+      <select class="msel" id="e-tipo">
+        <option>Parcial</option><option>Final</option><option>Sustitutorio</option><option>Práctico</option><option>Oral</option>
+      </select>
+    </div>
+    <div class="mf"><label class="ml">Fecha</label><input type="date" class="mi" id="e-date"></div>
+    <div class="mf"><label class="ml">Aula / Lugar</label><input type="text" class="mi" id="e-room" placeholder="Ej: Aula 204 o Lab F-01"></div>
+    <div class="macts">
+      <button class="mcancel" onclick="closeExamModal()">Cancelar</button>
+      <button class="msave" onclick="saveExam()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div style="position:relative" id="notif-wrap">
+  <div class="notif-panel" id="notif-panel">
+    <div class="notif-head">Alertas <span class="notif-clear" onclick="clearNotifs()">Limpiar todo</span></div>
+    <div id="notif-body"><div class="notif-empty">Sin alertas activas</div></div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-bg" id="amod">
+  <div class="mbox">
+    <div class="mt">Nueva tarea</div>
+    <div class="mf"><label class="ml">Nombre de la tarea</label><input type="text" class="mi" id="m-name" placeholder="Describe la tarea..."></div>
+    <div class="mf"><label class="ml">Curso</label><select class="msel" id="m-course"></select></div>
+    <div class="mf"><label class="ml">Tipo</label>
+      <select class="msel" id="m-type">
+        <option>Tarea</option><option>Práctica</option><option>Laboratorio</option><option>Proyecto</option><option>Exposición</option><option>Informe</option>
+      </select>
+    </div>
+    <div class="mf"><label class="ml">Fecha límite</label><input type="date" class="mi" id="m-date"></div>
+    <div class="mf"><label class="ml">Prioridad</label>
+      <select class="msel" id="m-prio"><option value="high">Alta</option><option value="med" selected>Media</option><option value="low">Baja</option></select>
+    </div>
+    <div class="macts">
+      <button class="mcancel" onclick="closeAddModal()">Cancelar</button>
+      <button class="msave" onclick="saveTask()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+<script>
+// ── PDF.js worker ──
+if(typeof pdfjsLib !== 'undefined'){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// ══════════════════════════════════════════════
+// PERSISTENCIA — localStorage engine
+// ══════════════════════════════════════════════
+const STORAGE_KEY = 'uni_ucsm_v3';
+
+function saveAll(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE,
+      STUDY_H, HABITS, ts: Date.now()
+    }));
+  } catch(e){ console.warn('Error al guardar:', e); }
+}
+
+function loadAll(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(data.STUDENT)    STUDENT    = data.STUDENT;
+    if(data.COURSES)    COURSES    = data.COURSES;
+    if(data.TASKS)      TASKS      = data.TASKS;
+    if(data.EXAMS)      EXAMS      = data.EXAMS;
+    if(data.SEMESTERS)  SEMESTERS  = data.SEMESTERS;
+    if(data.ATTENDANCE) ATTENDANCE = data.ATTENDANCE;
+    if(data.STUDY_H)    STUDY_H    = data.STUDY_H;
+    if(data.HABITS)     HABITS     = data.HABITS;
+    return true;
+  } catch(e){ console.warn('Error al cargar:', e); return false; }
+}
+
+// ══════════════════════════════════════════════
+// TOAST SYSTEM — reemplaza alert()
+// ══════════════════════════════════════════════
+function showToast(msg, type='ok', duration=2800){
+  const ico = type === 'ok' ? '✓' : type === 'warn' ? '⚠' : type === 'err' ? '✕' : 'ℹ';
+  const colors = { ok:'var(--green)', warn:'var(--amber)', err:'var(--danger)', info:'var(--blue)' };
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.borderColor = colors[type] || 'var(--b1)';
+  t.innerHTML = `<span class="toast-ico" style="color:${colors[type]}">${ico}</span><span>${msg}</span>`;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('out');
+    setTimeout(() => t.remove(), 280);
+  }, duration);
+}
+
+// ══════════════════════════════════════════════
+// MOBILE SIDEBAR
+// ══════════════════════════════════════════════
+function toggleSidebar(){
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════
+let _notifsRead = false;
+
+function buildNotifs(){
+  const items = [];
+  // Tasks due in 2 days
+  TASKS.filter(t => !t.done && daysUntil(t.due) >= 0 && daysUntil(t.due) <= 2).forEach(t => {
+    const d = daysUntil(t.due);
+    items.push({ ico:'📋', text: t.name, sub: d === 0 ? 'Vence HOY' : 'Vence mañana', type:'urg' });
+  });
+  // Exams in 7 days
+  EXAMS.filter(e => daysUntil(e.date) >= 0 && daysUntil(e.date) <= 7).forEach(e => {
+    items.push({ ico:'📝', text: `${e.course} — ${e.name}`, sub: `en ${daysUntil(e.date)} día(s)`, type:'exam' });
+  });
+  // Attendance risk (>25% missing = within 5% of limit)
+  ATTENDANCE.forEach(a => {
+    const missed = a.total - a.attended;
+    const pct = Math.round((missed / a.total) * 100);
+    if(pct >= 25) items.push({ ico:'⚠️', text: `${a.name}`, sub: `${pct}% de inasistencias — riesgo de inhabilitación`, type:'risk' });
+  });
+  return items;
+}
+
+function toggleNotifPanel(){
+  const panel = document.getElementById('notif-panel');
+  const isOpen = panel.classList.toggle('open');
+  if(isOpen){
+    renderNotifPanel();
+    _notifsRead = true;
+    document.getElementById('notif-dot').classList.remove('show');
+  }
+  if(isOpen){
+    const close = e => { if(!document.getElementById('notif-btn').contains(e.target) && !panel.contains(e.target)){ panel.classList.remove('open'); document.removeEventListener('click', close); } };
+    setTimeout(() => document.addEventListener('click', close), 0);
+  }
+}
+
+function renderNotifPanel(){
+  const body = document.getElementById('notif-body');
+  const items = buildNotifs();
+  if(!items.length){ body.innerHTML = '<div class="notif-empty">✓ Sin alertas activas</div>'; return; }
+  body.innerHTML = items.map(n => `
+    <div class="notif-item">
+      <span class="notif-ico">${n.ico}</span>
+      <div><div class="notif-text">${n.text}</div><div class="notif-sub">${n.sub}</div></div>
+    </div>`).join('');
+}
+
+function clearNotifs(){
+  document.getElementById('notif-body').innerHTML = '<div class="notif-empty">✓ Sin alertas activas</div>';
+}
+
+function refreshNotifDot(){
+  const items = buildNotifs();
+  const dot = document.getElementById('notif-dot');
+  if(dot) dot.classList.toggle('show', items.length > 0 && !_notifsRead);
+}
+
+// ══════════════════════════════════════════════
+// EXAM CRUD
+// ══════════════════════════════════════════════
+function openExamModal(id){
+  const sel = document.getElementById('e-course');
+  if(sel) sel.innerHTML = COURSES.map(c => `<option>${c.name}</option>`).join('');
+  const idField = document.getElementById('e-id');
+  const titleEl = document.getElementById('emod-title');
+  if(id !== undefined){
+    const ex = EXAMS.find(e => e.id === id);
+    if(!ex) return;
+    titleEl.textContent = 'Editar examen';
+    idField.value = id;
+    document.getElementById('e-course').value = ex.course;
+    document.getElementById('e-tipo').value = ex.tipo;
+    document.getElementById('e-date').value = ex.date;
+    document.getElementById('e-room').value = ex.room || '';
+  } else {
+    titleEl.textContent = 'Nuevo examen';
+    idField.value = '';
+    document.getElementById('e-date').value = '';
+    document.getElementById('e-room').value = '';
+  }
+  document.getElementById('emod').classList.add('show');
+}
+function closeExamModal(){ document.getElementById('emod').classList.remove('show'); }
+
+function saveExam(){
+  const course = document.getElementById('e-course').value;
+  const tipo   = document.getElementById('e-tipo').value;
+  const date   = document.getElementById('e-date').value;
+  const room   = document.getElementById('e-room').value.trim();
+  const idVal  = document.getElementById('e-id').value;
+  if(!date){ showToast('Selecciona una fecha', 'warn'); return; }
+  const name = 'Examen ' + tipo;
+  if(idVal){
+    const ex = EXAMS.find(e => e.id === +idVal);
+    if(ex){ Object.assign(ex, { course, tipo, date, room, name }); }
+  } else {
+    EXAMS.push({ id: Date.now(), name, course, tipo, date, room });
+  }
+  saveAll(); closeExamModal(); renderExams(); refreshBadges();
+  showToast(idVal ? 'Examen actualizado' : 'Examen añadido', 'ok');
+}
+
+function deleteExam(id){
+  if(!confirm('¿Eliminar este examen?')) return;
+  const idx = EXAMS.findIndex(e => e.id === id);
+  if(idx !== -1) EXAMS.splice(idx, 1);
+  saveAll(); renderExams(); refreshBadges();
+  showToast('Examen eliminado', 'warn');
+}
+
+// ══════════════════════════════════════════════
+// ATTENDANCE +/- CONTROLS
+// ══════════════════════════════════════════════
+function attMark(idx, delta){
+  const a = ATTENDANCE[idx];
+  if(!a) return;
+  if(delta > 0){
+    a.total = (a.total || 0) + 1;
+    a.attended = (a.attended || 0) + 1;
+  } else {
+    // Mark absence: total+1, attended stays
+    a.total = (a.total || 0) + 1;
+  }
+  saveAll(); renderAttendance(); refreshNotifDot();
+}
+function attUndo(idx){
+  const a = ATTENDANCE[idx];
+  if(!a || a.total <= 0) return;
+  // Undo last session (removes a total slot and re-check attended)
+  if(a.attended >= a.total){ a.attended = Math.max(0, a.attended - 1); }
+  a.total = Math.max(0, a.total - 1);
+  if(a.attended > a.total) a.attended = a.total;
+  saveAll(); renderAttendance();
+}
+
+// ══════════════════════════════════════════════
+// HABITS INTERACTIVE
+// ══════════════════════════════════════════════
+function toggleHabit(hi, di){
+  HABITS[hi].days[di] = HABITS[hi].days[di] ? 0 : 1;
+  // Recalculate streak (consecutive days ending at most recent)
+  const d = HABITS[hi].days;
+  let streak = 0;
+  for(let i = d.length - 1; i >= 0; i--){ if(d[i]) streak++; else break; }
+  HABITS[hi].streak = streak;
+  saveAll(); renderHabits();
+}
+
+function addHabit(){
+  const inp = document.getElementById('habit-new-in');
+  const val = (inp.value || '').trim();
+  if(!val) return;
+  HABITS.push({ name: val, streak: 0, days: new Array(14).fill(0) });
+  inp.value = '';
+  saveAll(); renderHabits();
+  showToast('Hábito añadido', 'ok');
+}
+
+function deleteHabit(hi){
+  HABITS.splice(hi, 1);
+  saveAll(); renderHabits();
+}
+
+// ══════════════════════════════════════════════
+// DATA STORE — single source of truth
+// ══════════════════════════════════════════════
+let STUDENT = {
+  name: 'Yefferson García Cruz',
+  code: '2022244651',
+  semester: 'Semestre Par 2025',
+  cycleChip: 'Semestre Par 2025 · E.P. 45',
+  initials: 'YG'
+};
+
+const COURSE_COLORS = ['#4fa8ff','#46c87e','#c8a060','#9d86f0','#ff9b71','#f472b6','#34d399','#fbbf24'];
+
+let COURSES = [
+  {id:1, name:'Cálculo Integral',     code:'4502226', color:'#4fa8ff', crt:4, crt_t:3, crt_p:1, teoria:[14,19,17], practica:[8,14,9]},
+  {id:2, name:'Física II',            code:'4502229', color:'#46c87e', crt:4, crt_t:4, crt_p:0, teoria:[14,6,16],  practica:[]},
+  {id:3, name:'Mecánica de Suelos',   code:'4502301', color:'#c8a060', crt:4, crt_t:3, crt_p:1, teoria:[16,15,14], practica:[15,16,14]},
+  {id:4, name:'Topografía',           code:'4502310', color:'#9d86f0', crt:3, crt_t:2, crt_p:1, teoria:[13,15,16], practica:[17,16,18]},
+  {id:5, name:'Resistencia de Mat.',  code:'4502320', color:'#ff9b71', crt:4, crt_t:3, crt_p:1, teoria:[12,14,15], practica:[13,14,12]},
+];
+
+let TASKS = [
+  {id:1, name:'Informe Lab. Topografía N°3',        course:'Topografía',         type:'Laboratorio', due:'2025-06-20', prio:'high', done:false},
+  {id:2, name:'Tarea 5 — Integrales dobles',         course:'Cálculo Integral',   type:'Tarea',       due:'2025-06-22', prio:'high', done:false},
+  {id:3, name:'Práctica de Mecánica de Suelos N°4', course:'Mecánica de Suelos', type:'Práctica',    due:'2025-06-24', prio:'med',  done:false},
+  {id:4, name:'Proyecto de Resistencia — avance 2', course:'Resistencia de Mat.', type:'Proyecto',   due:'2025-06-28', prio:'med',  done:false},
+  {id:5, name:'Cuestionario Física — ondas',         course:'Física II',          type:'Tarea',       due:'2025-06-30', prio:'low',  done:true},
+  {id:6, name:'Resumen capítulo 7 — Física II',      course:'Física II',          type:'Tarea',       due:'2025-07-02', prio:'low',  done:false},
+];
+
+let EXAMS = [
+  {id:1, name:'Examen Parcial',  course:'Cálculo Integral',   date:'2025-06-23', room:'Aula 204', tipo:'Parcial'},
+  {id:2, name:'Examen Parcial',  course:'Física II',           date:'2025-06-27', room:'Lab F-01', tipo:'Parcial'},
+  {id:3, name:'Examen Final',    course:'Mecánica de Suelos',  date:'2025-07-10', room:'Aula 308', tipo:'Final'},
+  {id:4, name:'Examen Final',    course:'Topografía',          date:'2025-07-13', room:'Lab T-02', tipo:'Final'},
+  {id:5, name:'Examen Final',    course:'Resistencia de Mat.', date:'2025-07-17', room:'Aula 210', tipo:'Final'},
+];
+
+const SCHEDULE = {
+  LUN:[],
+  MAR:[
+    {name:'Ing. Sismorresistente', c:'#ff9b71', t:'11:00–13:00', aula:'CH-204', tipo:'P'},
+    {name:'Diseño Hidráulico',     c:'#4fa8ff', t:'17:00–18:30', aula:'CH-303', tipo:'T'},
+    {name:'Ing. Sismorresistente', c:'#ff9b71', t:'18:30–20:00', aula:'CH-204', tipo:'T'},
+  ],
+  MIÉ:[
+    {name:'Ing. de Tránsito',      c:'#46c87e', t:'19:00–21:00', aula:'CH-103', tipo:'T'},
+  ],
+  JUE:[
+    {name:'Diseño Hidráulico',     c:'#4fa8ff', t:'19:00–21:00', aula:'E-104',  tipo:'P'},
+  ],
+  VIE:[
+    {name:'Tutoría',               c:'#888fa0', t:'10:15–11:00', aula:'CH-101', tipo:'TUT'},
+    {name:'Ing. Sismorresistente', c:'#ff9b71', t:'17:00–19:00', aula:'CH-204', tipo:'T'},
+    {name:'Ing. de Tránsito',      c:'#46c87e', t:'19:00–21:00', aula:'CH-103', tipo:'T'},
+  ],
+  SÁB:[],
+};
+
+const HABITS = [
+  {name:'Repasar apuntes del día',      streak:12, days:[1,1,1,1,1,1,0,1,1,1,1,1,0,1]},
+  {name:'Sesión Pomodoro (mín. 2)',     streak:8,  days:[0,1,1,1,0,1,1,1,1,0,1,1,1,1]},
+  {name:'Resolver ejercicios de obras', streak:5,  days:[1,0,1,1,0,0,1,1,0,1,1,0,1,1]},
+  {name:'Dormir antes de medianoche',   streak:3,  days:[0,0,1,0,1,1,0,0,1,0,1,1,1,1]},
+  {name:'Lectura técnica 20 min',       streak:7,  days:[1,1,0,1,1,1,1,0,1,1,1,0,1,1]},
+];
+
+let SEMESTERS = [
+  {label:'2022-II',gpa:13.90},{label:'2023-I',gpa:13.02},
+  {label:'2023-II',gpa:14.20},{label:'2024-I',gpa:14.85},
+  {label:'2024-II',gpa:15.10},{label:'2025-I',gpa:15.40},
+];
+
+const STUDY_H = [
+  {d:'Lun',h:3.5},{d:'Mar',h:4.0},{d:'Mié',h:2.0},
+  {d:'Jue',h:4.5},{d:'Vie',h:2.5},{d:'Sáb',h:2.0},{d:'Dom',h:0},
+];
+
+// Attendance data — valores estables (no random)
+let ATTENDANCE = COURSES.map((c,i) => ({
+  courseId: c.id,
+  name: c.name,
+  color: c.color,
+  total: 18,
+  attended: [16, 15, 17, 14, 16][i % 5]
+}));
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+const pad = n => String(n).padStart(2,'0');
+const fmt = s => pad(Math.floor(s/60)) + ':' + pad(s % 60);
+
+function daysUntil(ds){
+  const n = new Date(); n.setHours(0,0,0,0);
+  const d = new Date(ds); d.setHours(0,0,0,0);
+  return Math.round((d - n) / 86400000);
+}
+
+function calcFinal(c){
+  const ts = c.teoria.filter(x => x !== null && x !== undefined && x !== '');
+  const ps = c.practica.filter(x => x !== null && x !== undefined && x !== '');
+  const avgT = ts.length ? ts.reduce((a,b) => a + Number(b), 0) / ts.length : null;
+  const avgP = ps.length ? ps.reduce((a,b) => a + Number(b), 0) / ps.length : null;
+  if(c.crt_p === 0 || !c.crt_p) return avgT;
+  const total = (c.crt_t||0) + (c.crt_p||0);
+  if(!total) return avgT;
+  if(avgT === null && avgP === null) return null;
+  if(avgT === null) return avgP;
+  if(avgP === null) return avgT;
+  return (avgT*(c.crt_t||0) + avgP*(c.crt_p||0)) / total;
+}
+
+function calcPP(){
+  let num = 0, den = 0;
+  COURSES.forEach(c => { const f = calcFinal(c); if(f !== null){ num += f*c.crt; den += c.crt; } });
+  return den > 0 ? (num/den) : null;
+}
+
+function gradeColor(v){
+  if(v === null) return 'var(--t3)';
+  if(v >= 17) return 'var(--green)';
+  if(v >= 14) return 'var(--blue)';
+  if(v >= 11) return 'var(--gold)';
+  return 'var(--danger)';
+}
+
+// ══════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════
+let timerRunning = false, timerSecs = 25*60, isBreak = false, timerInt = null;
+let pomodoroCount = 0;
+const FOCUS_S = 25*60, BREAK_S = 5*60, LONG_BREAK_S = 15*60;
+
+function syncTimer(){
+  const d = fmt(timerSecs);
+  const ph = isBreak ? (pomodoroCount % 4 === 0 && pomodoroCount > 0 ? 'Descanso largo' : 'Descanso corto') : 'Sesión de enfoque';
+  ['td','fov-td'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = d; });
+  ['tp','fov-ph'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = ph; });
+  renderPomodoroDots();
+}
+
+function renderPomodoroDots(){
+  const el = document.getElementById('sdots'); if(!el) return;
+  let html = '';
+  for(let i=0;i<4;i++) html += `<div class="sdot${i<pomodoroCount%4?' done':i===pomodoroCount%4?' cur':''}"></div>`;
+  el.innerHTML = html;
+}
+
+function tickTimer(){
+  timerSecs--;
+  if(timerSecs < 0){
+    if(!isBreak){
+      pomodoroCount++;
+      // Accumulate 0.42h (25 min) for today
+      const todayIdx = new Date().getDay(); // 0=sun
+      const chartIdx = todayIdx === 0 ? 6 : todayIdx - 1;
+      if(STUDY_H[chartIdx] !== undefined){
+        STUDY_H[chartIdx].h = +(STUDY_H[chartIdx].h + 25/60).toFixed(2);
+        saveAll();
+        const studyTotal = document.getElementById('study-total');
+        if(studyTotal) studyTotal.textContent = STUDY_H.reduce((a,b)=>a+b.h,0).toFixed(1) + 'h';
+      }
+      showToast('🍅 Pomodoro completado! +25 min registrados', 'ok', 3500);
+    }
+    isBreak = !isBreak;
+    timerSecs = isBreak ? (pomodoroCount % 4 === 0 ? LONG_BREAK_S : BREAK_S) : FOCUS_S;
+  }
+  syncTimer();
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInt); timerRunning = false;
+    ['tsbtn','fov-sbtn'].forEach(id => {
+      const b = document.getElementById(id); if(!b) return;
+      b.textContent = 'Continuar';
+      b.className = id === 'tsbtn' ? 'tbtn primary' : 'fbtn gold';
+    });
+  } else {
+    timerInt = setInterval(tickTimer, 1000); timerRunning = true;
+    const ts = document.getElementById('tsbtn'); if(ts){ ts.textContent = 'Pausar'; ts.className = 'tbtn running'; }
+    const fs = document.getElementById('fov-sbtn'); if(fs){ fs.textContent = 'Pausar'; fs.className = 'fbtn stop'; }
+  }
+}
+
+function resetTimer(){
+  clearInterval(timerInt); timerRunning = false; isBreak = false; timerSecs = FOCUS_S;
+  ['tsbtn','fov-sbtn'].forEach(id => {
+    const b = document.getElementById(id); if(!b) return;
+    b.textContent = 'Iniciar';
+    b.className = id === 'tsbtn' ? 'tbtn primary' : 'fbtn gold';
+  });
+  syncTimer();
+}
+
+function skipPhase(){ isBreak = !isBreak; timerSecs = isBreak ? BREAK_S : FOCUS_S; syncTimer(); }
+function launchFocus(){
+  const sel = document.getElementById('tsel');
+  const sub = document.getElementById('fov-sub');
+  if(sub) sub.textContent = (sel && sel.value) ? sel.value : '—';
+  document.getElementById('fov').classList.add('show');
+}
+function closeFocus(){ document.getElementById('fov').classList.remove('show'); }
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function showPage(id){
+  closeSidebar();
+  document.querySelectorAll('.main').forEach(el => el.classList.remove('active'));
+  const p = document.getElementById('page-' + id);
+  if(!p) return;
+  p.classList.add('active'); p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade');
+  document.querySelectorAll('.s-item').forEach(el => {
+    el.classList.remove('active');
+    const oc = el.getAttribute('onclick') || '';
+    if(oc.includes("'" + id + "'")) el.classList.add('active');
+  });
+  // Skeleton: mostrar placeholder brevemente antes de renderizar contenido real
+  showSkeleton(id, p);
+  if(window._skTimer) clearTimeout(window._skTimer);
+  window._skTimer = setTimeout(() => renderPage(id), 90);
+}
+
+function showSkeleton(id, el){
+  const skRow = (n, w) => '<div class="sk sk-line ' + (w||'full') + '" style="margin-bottom:7px"></div>'.repeat(n);
+  const skCard = inner => '<div class="sk-card" style="margin-bottom:10px">' + inner + '</div>';
+  const skeletons = {
+    dashboard:   '<div class="sk-grid" style="margin-bottom:14px">' + Array(4).fill('<div class="sk-stat"><div class="sk sk-line lg" style="margin-bottom:8px"></div><div class="sk sk-line sm"></div></div>').join('') + '</div>' + '<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">' + skCard(skRow(5)) + skCard(skRow(4)) + '</div>',
+    cursos:      Array(3).fill(skCard('<div style="display:flex;gap:9px;align-items:center"><div class="sk sk-circle"></div><div style="flex:1">' + skRow(2,'w70') + '</div></div>')).join(''),
+    rendimiento: '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' + skCard('<div class="sk sk-line lg" style="margin-bottom:14px"></div>' + skRow(5)) + skCard(skRow(5)) + '</div>',
+    tareas:      Array(5).fill(skCard('<div style="display:flex;gap:9px;align-items:center"><div class="sk sk-circle" style="width:15px;height:15px"></div><div style="flex:1">' + skRow(2,'w70') + '</div><div class="sk sk-line" style="width:30px"></div></div>')).join(''),
+    asistencia:  Array(3).fill(skCard('<div style="display:flex;align-items:center;gap:10px"><div class="sk sk-line w30"></div><div class="sk sk-bar" style="flex:1;height:10px"></div><div class="sk sk-line" style="width:40px"></div></div>')).join(''),
+  };
+  const sk = skeletons[id];
+  if(!sk) return;
+  // Ocultar contenido real temporalmente
+  Array.from(el.children).forEach(c => { if(!c.id || !c.id.startsWith('sk-wrap')) c.style.opacity = '0'; });
+  const skWrap = document.createElement('div');
+  skWrap.id = 'sk-wrap-' + id;
+  skWrap.style.cssText = 'display:flex;flex-direction:column;gap:0;pointer-events:none;animation:fadein .15s ease';
+  skWrap.innerHTML = sk;
+  el.appendChild(skWrap);
+  window._skCleanup = () => {
+    const w = document.getElementById('sk-wrap-' + id);
+    if(w) w.remove();
+    Array.from(el.children).forEach(c => { c.style.opacity = ''; });
+  };
+}
+
+// ══════════════════════════════════════════════
+// STUDENT DATA
+// ══════════════════════════════════════════════
+function applyStudentUI(){
+  const nameEl = document.getElementById('stu-name-label');
+  if(nameEl) nameEl.textContent = STUDENT.name.split(' ').slice(0,2).join(' ');
+  ['ava-initials','s-ava'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = STUDENT.initials; });
+  const code = document.getElementById('sid-code');
+  if(code) code.textContent = 'COD ' + STUDENT.code;
+  const chip = document.getElementById('cycle-chip');
+  if(chip) chip.textContent = STUDENT.cycleChip;
+  // Timer course select
+  const sel = document.getElementById('tsel');
+  if(sel) sel.innerHTML = COURSES.map(c => `<option>${c.name}</option>`).join('');
+  // Modal course select
+  const ms = document.getElementById('m-course');
+  if(ms) ms.innerHTML = COURSES.map(c => `<option>${c.name}</option>`).join('');
+}
+
+function saveStudentData(){
+  const name = document.getElementById('set-name').value.trim() || STUDENT.name;
+  const code = document.getElementById('set-code').value.trim() || STUDENT.code;
+  const sem  = document.getElementById('set-semester').value.trim() || STUDENT.semester;
+  const chip = document.getElementById('set-cycle').value.trim() || STUDENT.cycleChip;
+  const parts = name.trim().split(' ');
+  STUDENT = { name, code, semester:sem, cycleChip:chip, initials:(parts[0]?.[0]||'')+(parts[parts.length-1]?.[0]||'') };
+  applyStudentUI();
+  saveAll();
+  showToast('Datos del estudiante guardados');
+}
+
+function loadSettingsForm(){
+  const fields = {
+    'set-name': STUDENT.name, 'set-code': STUDENT.code,
+    'set-semester': STUDENT.semester, 'set-cycle': STUDENT.cycleChip
+  };
+  Object.entries(fields).forEach(([id,val]) => { const el = document.getElementById(id); if(el) el.value = val; });
+}
+
+// ══════════════════════════════════════════════
+// RENDER — TASKS
+// ══════════════════════════════════════════════
+function renderTasks(el, tasks){
+  el.innerHTML = '';
+  if(!tasks.length){ el.innerHTML = '<div style="font-size:11.5px;color:var(--t3);padding:10px 0">No hay tareas.</div>'; return; }
+  tasks.forEach(t => {
+    const days = daysUntil(t.due);
+    const txt = days < 0 ? 'Vencida' : days === 0 ? 'Hoy' : days === 1 ? 'Mañana' : days + 'd';
+    const dueCls = days < 0 || days <= 2 ? 'task-due urg' : days <= 5 ? 'task-due warn' : 'task-due';
+    const c = (COURSES.find(x => x.name === t.course) || {}).color || '#888';
+    const d = document.createElement('div'); d.className = 'task';
+    d.innerHTML = `<div class="prio-dot p${t.prio}_"></div>
+      <div class="task-chk ${t.done ? 'done' : ''}" onclick="toggleTask(${t.id})"></div>
+      <div class="task-body">
+        <div class="task-name ${t.done ? 'done' : ''}">${t.name}</div>
+        <div class="task-meta">
+          <span class="tag" style="background:${c}18;color:${c}">${t.course}</span>
+          <span class="tag" style="background:var(--s1);color:var(--t3)">${t.type}</span>
+        </div>
+      </div>
+      <span class="${dueCls}">${txt}</span>`;
+    el.appendChild(d);
+  });
+}
+
+function toggleTask(id){
+  const t = TASKS.find(x => x.id === id); if(t) t.done = !t.done;
+  saveAll();
+  refreshBadges();
+  const activePage = document.querySelector('.main.active');
+  if(activePage) renderPage(activePage.id.replace('page-',''));
+}
+
+function refreshBadges(){
+  const p = TASKS.filter(x => !x.done).length;
+  const urgent = TASKS.filter(x => !x.done && daysUntil(x.due) <= 2).length;
+  const pending = document.getElementById('stat-pending'); if(pending) pending.textContent = p;
+  const badge = document.getElementById('sidebar-badge'); if(badge) badge.textContent = p;
+  const urgEl = document.getElementById('stat-task-urg');
+  if(urgEl){ urgEl.textContent = urgent + ' urgente' + (urgent !== 1 ? 's' : ''); urgEl.className = 'sc-sub ' + (urgent > 0 ? 'warn' : 'up'); }
+  // Exam badge
+  const upcoming = EXAMS.filter(e => daysUntil(e.date) >= 0 && daysUntil(e.date) <= 14).length;
+  const ebadge = document.getElementById('exam-badge'); if(ebadge) ebadge.textContent = upcoming;
+  // Attendance risk on dashboard
+  const atRisk = ATTENDANCE.filter(a => a.total > 0 && Math.round((a.attended/a.total)*100) < 75);
+  const riskEl = document.getElementById('dash-risk');
+  if(riskEl){
+    if(atRisk.length){
+      riskEl.style.display = 'flex';
+      riskEl.innerHTML = `<div class="risk-alert"><span class="risk-alert-ico">⚠️</span><span><strong>Riesgo de inhabilitación:</strong> ${atRisk.map(a=>a.name).join(', ')} — asistencia por debajo del 75%</span></div>`;
+    } else { riskEl.style.display = 'none'; }
+  }
+  refreshNotifDot();
+}
+
+function quickAddTask(){
+  const inp = document.getElementById('qa-input');
+  const val = (inp.value || '').trim(); if(!val) return;
+  const today = new Date(); today.setDate(today.getDate() + 7);
+  TASKS.push({
+    id: Date.now(), name: val,
+    course: COURSES[0] ? COURSES[0].name : 'General',
+    type: 'Tarea',
+    due: today.toISOString().split('T')[0],
+    prio: 'med', done: false
+  });
+  inp.value = '';
+  saveAll();
+  refreshBadges();
+  renderPage('dashboard');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard(){
+  const top = TASKS.filter(t => !t.done).sort((a,b) => daysUntil(a.due) - daysUntil(b.due)).slice(0,5);
+  const done = TASKS.filter(t => t.done).slice(0,1);
+  const tm = document.getElementById('task-mini'); if(tm) renderTasks(tm, [...top, ...done]);
+  renderSchMini();
+  renderDeadlines();
+  renderCrsMini();
+  renderStudyChart('schart');
+  // PP stat
+  const pp = calcPP();
+  const ppEl = document.getElementById('stat-pp'); if(ppEl) ppEl.textContent = pp !== null ? pp.toFixed(2) : '—';
+  const ppSub = document.getElementById('stat-pp-sub');
+  if(ppSub && pp !== null){
+    const diff = 17.0 - pp;
+    ppSub.textContent = diff > 0 ? `${diff.toFixed(2)} para meta 17.0` : '✓ Meta alcanzada';
+    ppSub.className = 'sc-sub ' + (diff <= 0 ? 'up' : '');
+  }
+  // Exam stat
+  const upcoming = EXAMS.filter(e => daysUntil(e.date) >= 0).sort((a,b) => daysUntil(a.date) - daysUntil(b.date));
+  const examEl = document.getElementById('stat-exam-days');
+  const examName = document.getElementById('stat-exam-name');
+  if(upcoming.length && examEl && examName){
+    const d = daysUntil(upcoming[0].date);
+    examEl.textContent = d + 'd';
+    examName.textContent = upcoming[0].course;
+    examEl.className = 'sc-val ' + (d <= 5 ? 'c-red' : d <= 14 ? 'c-gold' : 'c-blue');
+  } else if(examEl){
+    examEl.textContent = '—'; if(examName) examName.textContent = 'Sin próximos exámenes';
+  }
+  // Credits
+  const totalCr = COURSES.reduce((a,c) => a + c.crt, 0);
+  const credEl = document.getElementById('stat-cred'); if(credEl) credEl.textContent = totalCr;
+  // Alert banner
+  const urgentTasks = TASKS.filter(t => !t.done && daysUntil(t.due) <= 2);
+  const alertBanner = document.getElementById('dash-alert');
+  if(alertBanner){
+    if(urgentTasks.length > 0){
+      alertBanner.style.display = 'flex';
+      alertBanner.innerHTML = `<div class="alert-banner"><div class="alert-banner-dot"></div><span><strong style="color:var(--t1)">${urgentTasks.length} entrega${urgentTasks.length>1?'s':''} urgente${urgentTasks.length>1?'s':''}</strong> en los próximos 2 días — ${urgentTasks.map(t=>t.name).join(', ')}</span></div>`;
+    } else {
+      alertBanner.style.display = 'none';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// RENDER — SCHEDULE MINI (today's classes)
+// ══════════════════════════════════════════════
+function renderSchMini(){
+  const el = document.getElementById('sch-mini'); if(!el) return;
+  const days = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  const today = days[new Date().getDay()];
+  const dayClasses = SCHEDULE[today] || [];
+  if(!dayClasses.length){
+    el.innerHTML = '<div style="font-size:11.5px;color:var(--t3);padding:8px 0">Sin clases hoy.</div>';
+    return;
+  }
+  el.innerHTML = dayClasses.map(b => `
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--b0)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${b.c};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:var(--t1);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.name}</div>
+        <div style="font-size:9.5px;color:var(--t3);font-family:'DM Mono',monospace">${b.t} · ${b.aula}</div>
+      </div>
+      <span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:${b.c}18;color:${b.c}">${b.tipo}</span>
+    </div>`).join('').replace(/border-bottom[^;]+;(?=[^<]*<\/div>\s*$)/,'');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — SCHEDULE FULL (grid)
+// ══════════════════════════════════════════════
+function renderSchFull(){
+  const el = document.getElementById('sch-full'); if(!el) return;
+  const dayKeys = ['LUN','MAR','MIÉ','JUE','VIE'];
+  const todayIdx = new Date().getDay() - 1;
+  const times = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+
+  let html = `<div class="sched-scroll"><div class="sched-grid">`;
+  html += `<div class="sg-h">Hora</div>`;
+  dayKeys.forEach((d,i) => html += `<div class="sg-h${i === todayIdx ? ' today' : ''}">${d}</div>`);
+
+  times.forEach(time => {
+    const hr = parseInt(time);
+    html += `<div class="sg-time">${time}</div>`;
+    dayKeys.forEach(day => {
+      const block = (SCHEDULE[day] || []).find(b => {
+        const start = parseInt(b.t.split('–')[0]);
+        return start === hr;
+      });
+      if(block){
+        html += `<div class="sg-cell">
+          <div class="sg-blk" style="background:${block.c}18;border-left:2.5px solid ${block.c}">
+            <div class="sg-bname" style="color:${block.c}">${block.name}</div>
+            <div class="sg-baula" style="color:${block.c}">${block.aula}</div>
+            <span class="sg-btipo" style="background:${block.c}22;color:${block.c}">${block.tipo}</span>
+          </div>
+        </div>`;
+      } else {
+        html += `<div class="sg-cell"></div>`;
+      }
+    });
+  });
+  html += `</div></div>`;
+
+  const seen = new Set(); let legend = `<div class="sg-legend">`;
+  Object.values(SCHEDULE).flat().forEach(b => {
+    if(!seen.has(b.name)){ seen.add(b.name); legend += `<div class="sg-leg"><div class="sg-leg-dot" style="background:${b.c}"></div>${b.name}</div>`; }
+  });
+  legend += `</div>`;
+  el.innerHTML = html + legend;
+}
+
+// ══════════════════════════════════════════════
+// RENDER — DEADLINES
+// ══════════════════════════════════════════════
+function renderDeadlines(){
+  const el = document.getElementById('dl-mini'); if(!el) return;
+  const s = TASKS.filter(t => !t.done).sort((a,b) => daysUntil(a.due) - daysUntil(b.due)).slice(0,5);
+  el.innerHTML = s.map(t => {
+    const d = daysUntil(t.due);
+    const cls = d <= 2 ? 'dl-days dred' : d <= 6 ? 'dl-days damb' : 'dl-days dgn';
+    const txt = d < 0 ? 'Vencida' : d === 0 ? 'Hoy' : d + 'd';
+    return `<div class="dl"><span class="${cls}">${txt}</span><div class="dl-body"><div class="dl-name">${t.name}</div><div class="dl-crs">${t.course}</div></div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — COURSES MINI
+// ══════════════════════════════════════════════
+function renderCrsMini(){
+  const el = document.getElementById('crs-mini'); if(!el) return;
+  el.innerHTML = COURSES.map(c => {
+    const f = calcFinal(c); const pct = f !== null ? Math.round((f/20)*100) : 0;
+    const gc = gradeColor(f);
+    return `<div class="crs" onclick="showPage('cursos')">
+      <div class="crs-dot" style="background:${c.color}"></div>
+      <div class="crs-info">
+        <div class="crs-name">${c.name}</div>
+        <div class="crs-code">${c.code||'—'} · ${c.crt} cr</div>
+      </div>
+      <div class="gbar"><div class="gbar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <span class="crs-grade" style="color:${gc}">${f !== null ? f.toFixed(1) : '—'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — STUDY CHART
+// ══════════════════════════════════════════════
+function renderStudyChart(elId){
+  const el = document.getElementById(elId); if(!el) return;
+  const max = Math.max(...STUDY_H.map(x => x.h), 1);
+  const today = new Date().getDay(); // 0=sun
+  el.innerHTML = STUDY_H.map((d,i) => {
+    const isToday = (i === today - 1) || (today === 0 && i === 6);
+    return `<div class="sbar-w">
+      <div class="sbar" style="height:${Math.round((d.h/max)*50)+3}px;background:${isToday?'var(--gold)':d.h===0?'var(--s2)':'var(--blue)'};opacity:${d.h===0?0.2:1}" title="${d.h}h"></div>
+      <span class="sdlbl">${d.d}</span>
+    </div>`;
+  }).join('');
+  // Update study total label
+  const total = STUDY_H.reduce((a,b)=>a+b.h,0).toFixed(1);
+  const studyTotal = document.getElementById('study-total');
+  if(studyTotal) studyTotal.textContent = total + 'h';
+}
+
+// ══════════════════════════════════════════════
+// RENDER — EXAMS
+// ══════════════════════════════════════════════
+function renderExams(){
+  const el = document.getElementById('exams-list'); if(!el) return;
+  if(!EXAMS.length){ el.innerHTML = '<div style="font-size:11.5px;color:var(--t3);padding:8px 0">Sin exámenes registrados. Usa "+ Nuevo examen" para añadir.</div>'; return; }
+  const sorted = [...EXAMS].sort((a,b) => new Date(a.date) - new Date(b.date));
+  el.innerHTML = sorted.map(e => {
+    const d = daysUntil(e.date);
+    const bg = d < 0 ? 'var(--s1)' : d <= 5 ? 'var(--danger-dim)' : d <= 14 ? 'var(--amber-dim)' : 'var(--green-dim)';
+    const nc = d < 0 ? 'exam-days' : d <= 5 ? 'exam-days dred' : d <= 14 ? 'exam-days damb' : 'exam-days dgn';
+    const co = (COURSES.find(x => x.name === e.course) || {}).color || '#888';
+    return `<div class="exam">
+      <div class="exam-badge" style="background:${bg}">
+        <span class="${nc}">${d < 0 ? '✓' : d}</span>
+        <span class="exam-dtxt" style="color:${d<0?'var(--t3)':d<=5?'var(--danger)':d<=14?'var(--amber)':'var(--green)'}">
+          ${d < 0 ? 'pasado' : 'días'}
+        </span>
+      </div>
+      <div class="exam-info">
+        <div class="exam-name">${e.course} — ${e.name}</div>
+        <div class="exam-det">${e.date} · ${e.room||'—'} · <span class="tag" style="background:${co}18;color:${co};font-size:9px;padding:1px 5px">${e.tipo}</span></div>
+      </div>
+      <button class="exam-del" onclick="openExamModal(${e.id})" title="Editar">✏</button>
+      <button class="exam-del" onclick="deleteExam(${e.id})" title="Eliminar">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — GRADE CALCULATOR
+// ══════════════════════════════════════════════
+function renderGCalc(){
+  const el = document.getElementById('gcalc-container'); if(!el) return;
+  el.innerHTML = COURSES.map((c,ci) => {
+    const hasP = (c.crt_p||0) > 0;
+    const mkTInputs = () => [0,1,2].map(i => `
+      <div class="nota-row"><span class="nota-lbl">N${i+1}</span>
+        <input type="number" class="nota-in" min="0" max="20" step="0.5"
+          value="${c.teoria[i] !== undefined && c.teoria[i] !== null ? c.teoria[i] : ''}"
+          oninput="recalc(${ci})" data-ci="${ci}" data-t="teoria" data-i="${i}">
+      </div>`).join('');
+    const mkPInputs = () => hasP ? [0,1,2].map(i => `
+      <div class="nota-row"><span class="nota-lbl">N${i+1}</span>
+        <input type="number" class="nota-in" min="0" max="20" step="0.5"
+          value="${c.practica[i] !== undefined && c.practica[i] !== null ? c.practica[i] : ''}"
+          oninput="recalc(${ci})" data-ci="${ci}" data-t="practica" data-i="${i}">
+      </div>`).join('') : '<div style="font-size:11px;color:var(--t3);padding:5px 0">Sin práctica</div>';
+    const f = calcFinal(c); const fStr = f !== null ? f.toFixed(2) : '—';
+    const apro = f !== null && f >= 11;
+    const stCls = f === null ? 'res-status rs-nd' : apro ? 'res-status rs-ok' : 'res-status rs-no';
+    return `<div class="gcourse" id="gc-${ci}">
+      <div class="gcourse-hdr" onclick="toggleCalc(${ci})">
+        <div class="crs-dot" style="background:${c.color}"></div>
+        <div class="crs-info"><div class="crs-name">${c.name}</div><div class="crs-code">${c.code||'—'} · ${c.crt}cr · T:${c.crt_t||0}${hasP?' P:'+c.crt_p:''}cr</div></div>
+        <span class="crs-grade" style="color:${c.color}" id="gc-final-${ci}">${fStr}</span>
+        <span class="garrow" id="gc-arr-${ci}">▼</span>
+      </div>
+      <div class="gcourse-body" id="gc-body-${ci}">
+        <div class="nota-grid">
+          <div><div class="nota-sec">Teoría (${c.crt_t||0} cr)</div>${mkTInputs()}
+            <div class="nota-avg">Promedio: <span id="gc-avgT-${ci}" style="color:var(--blue);font-weight:600">—</span></div>
+          </div>
+          <div><div class="nota-sec">Práctica (${c.crt_p||0} cr)</div>${mkPInputs()}
+            ${hasP ? `<div class="nota-avg">Promedio: <span id="gc-avgP-${ci}" style="color:var(--green);font-weight:600">—</span></div>` : ''}
+          </div>
+        </div>
+        <div class="result-bar">
+          <span class="res-lbl">Nota final proyectada</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="${stCls}" id="gc-status-${ci}">${f === null ? 'Pendiente' : apro ? 'Aprobado' : 'Desaprobado'}</span>
+            <span class="res-val" id="gc-val-${ci}">${fStr}</span>
+          </div>
+        </div>
+        <div class="nota-min" id="gc-min-${ci}">
+          <span id="gc-min-lbl-${ci}">Completa las notas para calcular mínimo</span>
+          <span class="nota-min-v" id="gc-min-v-${ci}">—</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  COURSES.forEach((_,ci) => recalc(ci));
+}
+
+function toggleCalc(ci){
+  const b = document.getElementById('gc-body-' + ci);
+  const a = document.getElementById('gc-arr-' + ci);
+  const o = b.classList.toggle('open');
+  if(a) a.textContent = o ? '▲' : '▼';
+}
+
+function recalc(ci){
+  const c = COURSES[ci];
+  const getVals = tipo => [0,1,2].map(i => {
+    const el = document.querySelector(`[data-ci="${ci}"][data-t="${tipo}"][data-i="${i}"]`);
+    return el && el.value !== '' ? parseFloat(el.value) : null;
+  });
+  const ts = getVals('teoria');
+  const ps = getVals('practica');
+  // FIX Bug 3: validacion estricta 0-20 con tooltip y bloqueo de calculo
+  let hasInvalid = false;
+  document.querySelectorAll(`[data-ci="${ci}"]`).forEach(inp => {
+    const v = parseFloat(inp.value);
+    const bad = inp.value !== '' && (isNaN(v) || v < 0 || v > 20);
+    if(bad){
+      inp.classList.add('invalid');
+      inp.title = 'La nota debe estar entre 0 y 20';
+      // Corregir silenciosamente si el usuario escribio fuera de rango
+      if(!isNaN(v)){
+        if(v > 20){ inp.value = 20; inp.style.color = 'var(--amber)'; }
+        if(v < 0)  { inp.value = 0;  inp.style.color = 'var(--amber)'; }
+      }
+      hasInvalid = true;
+    } else {
+      inp.classList.remove('invalid');
+      inp.title = '';
+      inp.style.color = '';
+    }
+  });
+  if(hasInvalid) return; // no calcular con datos invalidos
+  // Persist note values back to COURSES
+  c.teoria = ts;
+  c.practica = ps;
+  saveAll();
+  const tsF = ts.filter(x => x !== null);
+  const psF = ps.filter(x => x !== null);
+  const avgT = tsF.length ? tsF.reduce((a,b)=>a+b,0)/tsF.length : null;
+  const avgP = psF.length ? psF.reduce((a,b)=>a+b,0)/psF.length : null;
+  const tEl = document.getElementById('gc-avgT-' + ci); if(tEl) tEl.textContent = avgT !== null ? avgT.toFixed(2) : '—';
+  const pEl = document.getElementById('gc-avgP-' + ci); if(pEl) pEl.textContent = avgP !== null ? avgP.toFixed(2) : '—';
+  const hasP = (c.crt_p||0) > 0;
+  let final = null;
+  if(!hasP) final = avgT;
+  else if(avgT !== null && avgP !== null) final = (avgT*(c.crt_t||0) + avgP*(c.crt_p||0)) / ((c.crt_t||0) + (c.crt_p||0));
+  else if(avgT !== null) final = avgT;
+  const fEl = document.getElementById('gc-val-' + ci);
+  const sEl = document.getElementById('gc-status-' + ci);
+  const fHdr = document.getElementById('gc-final-' + ci);
+  const minV = document.getElementById('gc-min-v-' + ci);
+  const minLbl = document.getElementById('gc-min-lbl-' + ci);
+  if(final !== null){
+    const fv = Math.min(Math.max(final,0),20); const fStr = fv.toFixed(2);
+    if(fEl) fEl.textContent = fStr;
+    if(fHdr) fHdr.textContent = fStr;
+    const apro = fv >= 11;
+    if(sEl){ sEl.textContent = apro ? 'Aprobado' : 'Desaprobado'; sEl.className = 'res-status ' + (apro ? 'rs-ok' : 'rs-no'); }
+    if(fEl) fEl.style.color = apro ? 'var(--gold)' : 'var(--danger)';
+    if(fHdr) fHdr.style.color = c.color;
+    // Minimum grade needed
+    if(hasP && avgP !== null && tsF.length < 3 && (c.crt_t||0) > 0){
+      const needed = (11*((c.crt_t||0)+(c.crt_p||0)) - avgP*(c.crt_p||0)) / (c.crt_t||0);
+      if(minLbl) minLbl.textContent = 'Necesitas en teoría para aprobar:';
+      if(minV) minV.textContent = needed <= 20 ? (Math.max(needed,0).toFixed(2)) : 'Imposible';
+    } else if(!hasP && tsF.length < 3){
+      const remaining = 3 - tsF.length;
+      if(remaining > 0){
+        const sumSoFar = tsF.reduce((a,b)=>a+b,0);
+        const needed = (11*3 - sumSoFar) / remaining;
+        if(minLbl) minLbl.textContent = 'Mínimo en notas restantes:';
+        if(minV) minV.textContent = needed <= 20 ? (Math.max(needed,0).toFixed(2)) : 'Imposible';
+      }
+    }
+  } else {
+    if(fEl) fEl.textContent = '—';
+    if(sEl){ sEl.textContent = 'Pendiente'; sEl.className = 'res-status rs-nd'; }
+    if(fHdr) fHdr.textContent = '—';
+  }
+}
+
+// ══════════════════════════════════════════════
+// RENDER — RENDIMIENTO (Performance)
+// ══════════════════════════════════════════════
+let _ppChart = null;
+
+function renderRendimiento(){
+  const pp = calcPP();
+  const rend = document.getElementById('rend-pp'); if(rend) rend.textContent = pp !== null ? pp.toFixed(2) : '—';
+  const diff = document.getElementById('rend-diff');
+  if(diff && pp !== null){
+    const d = 17.0 - pp;
+    diff.textContent = d > 0 ? `Faltan ${d.toFixed(2)} para meta` : '✓ Meta 17.0 alcanzada';
+    diff.style.color = d <= 0 ? 'var(--green)' : 'var(--t3)';
+  }
+
+  // ── Gráfico de línea PP histórico con Chart.js ──────────────────────────
+  const chartCanvas = document.getElementById('pp-chart');
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridColor  = isLight ? 'rgba(0,0,0,0.07)'  : 'rgba(255,255,255,0.05)';
+  const tickColor  = isLight ? 'rgba(26,34,51,0.45)' : 'rgba(237,230,216,0.35)';
+  const goldHex    = isLight ? '#9a6f20' : '#c8a060';
+  const greenHex   = isLight ? '#1a9655' : '#46c87e';
+  const dangerHex  = isLight ? '#d93030' : '#ff5555';
+
+  if(chartCanvas && typeof Chart !== 'undefined' && SEMESTERS.length > 0){
+    const labels = SEMESTERS.map(s => s.label);
+    const gpas   = SEMESTERS.map(s => s.gpa);
+    const pointColors = gpas.map(g => g >= 15 ? greenHex : g >= 13 ? goldHex : dangerHex);
+
+    if(_ppChart){ _ppChart.destroy(); _ppChart = null; }
+
+    _ppChart = new Chart(chartCanvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Promedio Ponderado',
+          data: gpas,
+          borderColor: goldHex,
+          borderWidth: 2,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.35,
+          fill: true,
+          backgroundColor: isLight ? 'rgba(154,111,32,0.07)' : 'rgba(200,160,96,0.08)'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' PP: ' + ctx.parsed.y.toFixed(2)
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: tickColor, font: { size: 10 }, autoSkip: false, maxRotation: 30 },
+            grid: { color: gridColor }
+          },
+          y: {
+            min: 0, max: 20,
+            ticks: { color: tickColor, font: { size: 10 }, stepSize: 5 },
+            grid: { color: gridColor }
+          }
+        }
+      }
+    });
+  }
+  // Course grades
+  const cg = document.getElementById('course-grades'); if(!cg) return;
+  cg.innerHTML = COURSES.map(c => {
+    const f = calcFinal(c); const pct = f !== null ? Math.round((f/20)*100) : 0;
+    const gc = gradeColor(f);
+    return `<div class="crs">
+      <div class="crs-dot" style="background:${c.color}"></div>
+      <div class="crs-info"><div class="crs-name">${c.name}</div></div>
+      <div class="gbar"><div class="gbar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <span class="crs-grade" style="color:${gc}">${f !== null ? f.toFixed(1) : '—'}</span>
+    </div>`;
+  }).join('');
+  // Credits bar
+  const totalCr = COURSES.reduce((a,c) => a + c.crt, 0);
+  const credBar = document.getElementById('cred-bar'); if(credBar) credBar.style.width = Math.min((totalCr/24)*100,100) + '%';
+  const credVal = document.getElementById('cred-val'); if(credVal) credVal.textContent = totalCr + ' cr';
+  const statCr = document.getElementById('stat-cred'); if(statCr) statCr.textContent = totalCr;
+}
+
+// ══════════════════════════════════════════════
+// RENDER — HABITS
+// ══════════════════════════════════════════════
+function renderHabits(){
+  const el = document.getElementById('habits-list'); if(!el) return;
+  el.innerHTML = HABITS.map((h,hi) => `
+    <div class="hrow">
+      <span class="hname">${h.name}</span>
+      <span class="hstreak">🔥${h.streak}</span>
+      <div class="hcells">
+        ${h.days.map((d,di) => `<div class="hcell${d?' done':''}${di===h.days.length-1?' today':''}" onclick="toggleHabit(${hi},${di})" title="${di===h.days.length-1?'Hoy':'Día '+(di+1)}"></div>`).join('')}
+      </div>
+      <button onclick="deleteHabit(${hi})" style="background:none;border:none;color:var(--t3);font-size:13px;cursor:pointer;padding:0 2px;margin-left:4px;opacity:.5;transition:opacity .15s" title="Eliminar hábito">×</button>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// RENDER — ATTENDANCE
+// ══════════════════════════════════════════════
+function renderAttendance(){
+  const el = document.getElementById('attendance-list'); if(!el) return;
+  const riskBanner = document.getElementById('att-risk-banner');
+  const atRisk = [];
+  el.innerHTML = ATTENDANCE.map((a, idx) => {
+    const pct = a.total > 0 ? Math.round((a.attended / a.total) * 100) : 100;
+    const missed = a.total - a.attended;
+    const maxMiss = Math.floor(a.total * 0.3);
+    const remaining = Math.max(0, maxMiss - missed);
+    const color = pct >= 80 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--danger)';
+    if(pct < 75) atRisk.push(a.name);
+    return `<div class="att-row">
+      <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+      <span class="att-name">${a.name}</span>
+      <div class="att-track"><div class="att-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="att-val" style="color:${color}">${pct}%</span>
+      <span style="font-size:9.5px;color:var(--t3);min-width:68px;text-align:right">${a.attended}/${a.total} · ${remaining} faltas max</span>
+      <div class="att-ctrls">
+        <button class="att-btn plus" onclick="attMark(${idx},1)" title="Asistí">+</button>
+        <button class="att-btn minus" onclick="attMark(${idx},-1)" title="Falté">−</button>
+      </div>
+    </div>`;
+  }).join('');
+  if(riskBanner){
+    if(atRisk.length){
+      riskBanner.classList.add('show');
+      riskBanner.innerHTML = `⚠️ <strong>Riesgo de inhabilitación:</strong> ${atRisk.join(', ')} — asistencia por debajo del 75%`;
+    } else {
+      riskBanner.classList.remove('show');
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// COURSE EDITOR
+// ══════════════════════════════════════════════
+function renderCourseEditor(){
+  const el = document.getElementById('course-editor'); if(!el) return;
+  el.innerHTML = COURSES.map((c,ci) => `
+    <div class="ceditor">
+      <div class="ce-hdr">
+        <div class="ce-color" style="background:${c.color}" onclick="cycleCourseColor(${ci})"></div>
+        <input type="text" class="ce-name-in" value="${c.name}" oninput="COURSES[${ci}].name=this.value;saveAll()" placeholder="Nombre del curso">
+        <button class="ce-del" onclick="deleteCourse(${ci})">Eliminar</button>
+      </div>
+      <div class="ce-row">
+        <span class="ce-lbl">Código UCSM</span>
+        <input type="text" class="ce-in" style="width:80px" value="${c.code||''}" oninput="COURSES[${ci}].code=this.value;saveAll()">
+      </div>
+      <div class="ce-row">
+        <span class="ce-lbl">Créditos totales</span>
+        <input type="number" class="ce-in" value="${c.crt}" min="1" max="10" oninput="COURSES[${ci}].crt=+this.value;saveAll()">
+      </div>
+      <div class="ce-row">
+        <span class="ce-lbl">Créditos teoría</span>
+        <input type="number" class="ce-in" value="${c.crt_t}" min="0" max="10" oninput="COURSES[${ci}].crt_t=+this.value;saveAll()">
+      </div>
+      <div class="ce-row">
+        <span class="ce-lbl">Créditos práctica</span>
+        <input type="number" class="ce-in" value="${c.crt_p}" min="0" max="10" oninput="COURSES[${ci}].crt_p=+this.value;saveAll()">
+      </div>
+    </div>`).join('');
+}
+
+function cycleCourseColor(ci){
+  const idx = COURSE_COLORS.indexOf(COURSES[ci].color);
+  COURSES[ci].color = COURSE_COLORS[(idx + 1) % COURSE_COLORS.length];
+  renderCourseEditor();
+}
+
+function deleteCourse(ci){
+  if(confirm('¿Eliminar este curso?')){ COURSES.splice(ci,1); saveAll(); renderCourseEditor(); showToast('Curso eliminado', 'warn'); }
+}
+
+function addNewCourse(){
+  COURSES.push({
+    id: Date.now(), name: 'Nuevo curso', code: '', color: COURSE_COLORS[COURSES.length % COURSE_COLORS.length],
+    crt: 3, crt_t: 2, crt_p: 1, teoria: [], practica: []
+  });
+  saveAll();
+  renderCourseEditor();
+  showToast('Curso añadido', 'info');
+}
+
+// ══════════════════════════════════════════════
+// SEMESTER EDITOR
+// ══════════════════════════════════════════════
+function renderSemEditor(){
+  const el = document.getElementById('sem-editor'); if(!el) return;
+  el.innerHTML = SEMESTERS.map((s,i) => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <input type="text" class="ce-in" style="width:80px" value="${s.label}" oninput="SEMESTERS[${i}].label=this.value;saveAll()">
+      <span style="font-size:10.5px;color:var(--t3)">PP:</span>
+      <input type="number" class="ce-in" value="${s.gpa}" min="0" max="20" step="0.01" oninput="SEMESTERS[${i}].gpa=+this.value;saveAll()">
+      <button class="ce-del" onclick="SEMESTERS.splice(${i},1);saveAll();renderSemEditor()">×</button>
+    </div>`).join('');
+}
+
+function addSemester(){
+  SEMESTERS.push({label:'202x-x', gpa:0});
+  saveAll();
+  renderSemEditor();
+}
+
+// ══════════════════════════════════════════════
+// TASKS MODAL
+// ══════════════════════════════════════════════
+function openAddModal(){
+  const ms = document.getElementById('m-course');
+  if(ms) ms.innerHTML = COURSES.map(c => `<option>${c.name}</option>`).join('');
+  document.getElementById('amod').classList.add('show');
+}
+function closeAddModal(){ document.getElementById('amod').classList.remove('show'); }
+function saveTask(){
+  const name = document.getElementById('m-name').value.trim();
+  const course = document.getElementById('m-course').value;
+  const type = document.getElementById('m-type').value;
+  const due = document.getElementById('m-date').value;
+  const prio = document.getElementById('m-prio').value;
+  if(!name){ showToast('Ingresa un nombre para la tarea', 'warn'); return; }
+  TASKS.push({ id: Date.now(), name, course, type, due: due || new Date().toISOString().split('T')[0], prio, done: false });
+  document.getElementById('m-name').value = '';
+  closeAddModal();
+  saveAll();
+  refreshBadges();
+  renderPage('tareas');
+}
+
+// ══════════════════════════════════════════════
+// MASTER RENDER DISPATCHER
+// ══════════════════════════════════════════════
+function renderPage(id){
+  if(window._skCleanup){ window._skCleanup(); window._skCleanup = null; }
+  switch(id){
+    case 'dashboard':  renderDashboard(); break;
+    case 'tareas':     renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); })); break;
+    case 'examenes':   renderExams(); break;
+    case 'horario':    renderSchFull(); break;
+    case 'cursos':     renderGCalc(); break;
+    case 'rendimiento':renderRendimiento(); break;
+    case 'asistencia': renderAttendance(); refreshNotifDot(); break;
+    case 'pomodoro':   renderStudyChart('schart2'); syncTimer(); break;
+    case 'habitos':    renderHabits(); break;
+    case 'ajustes':    loadSettingsForm(); renderCourseEditor(); renderSemEditor(); break;
+  }
+}
+
+// ══════════════════════════════════════════════
+// PDF IMPORT — preserved from original
+// ══════════════════════════════════════════════
+let pendingImport = null;
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('pdf-zone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if(f && f.type === 'application/pdf') handlePDF(f);
+}
+
+async function handlePDF(file){
+  if(!file) return;
+  document.getElementById('pdf-progress').style.display = 'block';
+  document.getElementById('pdf-result').style.display = 'none';
+  document.getElementById('pdf-error').style.display = 'none';
+  const bar = document.getElementById('pdf-prog-bar');
+  const status = document.getElementById('pdf-status');
+  try {
+    bar.style.width = '20%'; status.textContent = 'Leyendo PDF...';
+    const ab = await file.arrayBuffer();
+    bar.style.width = '40%'; status.textContent = 'Procesando páginas...';
+    const pdf = await pdfjsLib.getDocument({data: ab}).promise;
+    let text = '';
+    for(let i = 1; i <= pdf.numPages; i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it => it.str).join(' ') + '\n';
+      bar.style.width = (40 + Math.round((i/pdf.numPages)*40)) + '%';
+    }
+    bar.style.width = '90%'; status.textContent = 'Analizando datos...';
+    const result = parseUCSMPDF(text);
+    bar.style.width = '100%';
+    if(result.error){ showPDFError(result.error); return; }
+    pendingImport = result;
+    showPDFResult(result);
+  } catch(err) {
+    showPDFError('Error al leer el PDF: ' + err.message);
+  }
+}
+
+function parseUCSMPDF(text){
+  const result = { student: {}, courses: [], ppSemestre: null, ppGeneral: null, sinNotas: false };
+
+  // ── Nombre del alumno ──────────────────────────────────────────────────────
+  // El PDF de la UCSM ubica el nombre después de "APELLIDOS Y NOMBRES"
+  // El texto puede ser: "APELLIDOS Y NOMBRES YEFFERSON MIGUEL GARCIA CRUZ"
+  const nameM = text.match(/APELLIDOS\s+Y\s+NOMBRES\s+([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+?)(?=\s{2,}|CAT\.|CODIGO|COD\b|$)/i);
+  if(nameM) result.student.name = nameM[1].trim();
+
+  // Fallback: buscar después de "Alumno:"
+  if(!result.student.name){
+    const nm2 = text.match(/Alumno\s*[:：]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+?)(?=\s{2,}|\n|Cód)/i);
+    if(nm2) result.student.name = nm2[1].trim();
+  }
+
+  // ── Código del alumno ─────────────────────────────────────────────────────
+  // Aparece como "CODIGO 2022244651" o "Código: 2022244651"
+  const codeM = text.match(/(?:CODIGO|Código|Cód\.?)\s*[:：]?\s*([0-9]{10})/i);
+  if(codeM) result.student.code = codeM[1];
+
+  // ── Semestre académico ────────────────────────────────────────────────────
+  // Aparece como "SEM. ACAD. Semestre Impar 2026" o en el título
+  const semM = text.match(/SEM\.\s*ACAD\.\s*([A-Za-záéíóúñ\s]+\d{4})/i)
+             || text.match(/Consolidado\s+de\s+Notas\s*[–\-]\s*([A-Za-záéíóúñ\s]+\d{4})/i)
+             || text.match(/(?:Semestre|Per[ií]odo)\s+(?:Acad[eé]mico)?\s*[:：]?\s*([A-Za-záéíóúñ\s0-9\-]+?)(?=\s{2,}|\n)/i);
+  if(semM) result.student.semester = semM[1].trim();
+
+  // ── Promedio Ponderado del Semestre ───────────────────────────────────────
+  const ppSemM = text.match(/PROMEDIO\s+PONDERADO\s+DEL\s+SEMESTRE\s+([0-9]{1,2}(?:[.,][0-9]+)?)/i);
+  if(ppSemM) result.ppSemestre = parseFloat(ppSemM[1].replace(',','.'));
+
+  // ── Promedio Ponderado General ────────────────────────────────────────────
+  const ppGenM = text.match(/PROMEDIO\s+PONDERADO\s+GENERAL\s+([0-9]{1,2}(?:[.,][0-9]+)?)/i);
+  if(ppGenM) result.ppGeneral = parseFloat(ppGenM[1].replace(',','.'));
+
+  // ── Cursos ────────────────────────────────────────────────────────────────
+  // El PDF de la UCSM tiene líneas con este patrón (texto extraído por pdf.js):
+  //   "4507257 B -- INGENIERÍA DE TRÁNSITO 2 2 0 1 NE NE NE ..."
+  //   "4509269 B 05 DISEÑO HIDRÁULICO 3 2 1 1 NE NE NE ..."
+  //
+  // pdf.js extrae el texto en el orden visual de izquierda a derecha y puede
+  // unir palabras con un espacio simple. Buscamos:
+  //   - Código de curso: 7 dígitos (puede terminar en letras: 4509TUT)
+  //   - Nombre del curso: texto en mayúsculas
+  //   - CR, CR.T, CR.P: tres números enteros seguidos
+  //
+  // Patrón flexible que acepta códigos numéricos o alfanuméricos de 7 chars:
+  const coursePattern = /\b([0-9]{4}[A-Z0-9]{3})\s+[A-Z]\s+(?:[0-9]{2}|--)\s+([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s\/\-&]+?)\s+(\d)\s+(\d)\s+(\d)\s+\d/g;
+  const parsedCourses = [];
+  let m;
+  while((m = coursePattern.exec(text)) !== null){
+    if(/TUTOR/i.test(m[2])) continue;
+    // Limpiar el nombre: quitar espacios múltiples y trailing spaces
+    const name = m[2].trim().replace(/\s{2,}/g,' ');
+    parsedCourses.push({
+      code: m[1],
+      name,
+      crt:   +m[3],
+      crt_t: +m[4],
+      crt_p: +m[5],
+      teoria: [], practica: [], pfinal: null
+    });
+  }
+
+  // Fallback más amplio si el anterior no capturó nada:
+  // Buscar sólo por código de 7 dígitos seguido de letras mayúsculas y números
+  if(!parsedCourses.length){
+    const fallbackPattern = /\b(\d{7})\b[^\n]*?([A-ZÁÉÍÓÚÑ]{3}[A-ZÁÉÍÓÚÑ\s\/\-&]+?)\s+(\d)\s+(\d)\s+(\d)/g;
+    while((m = fallbackPattern.exec(text)) !== null){
+      if(/TUTOR/i.test(m[2])) continue;
+      parsedCourses.push({
+        code: m[1], name: m[2].trim(), crt: +m[3], crt_t: +m[4], crt_p: +m[5],
+        teoria: [], practica: [], pfinal: null
+      });
+    }
+  }
+
+  if(!parsedCourses.length){
+    return { error: 'No se encontraron cursos. Verifica que sea un Consolidado de Notas UCSM oficial.' };
+  }
+
+  result.sinNotas = true; // En inicio de semestre todas las notas son NE
+  result.courses = parsedCourses;
+  return result;
+}
+
+function showPDFResult(r){
+  document.getElementById('pdf-progress').style.display = 'none';
+  const el = document.getElementById('pdf-result'); el.style.display = 'block';
+  const items = [];
+  if(r.student.name) items.push(`Estudiante: <strong>${r.student.name}</strong>`);
+  if(r.student.code) items.push(`Código: <strong>${r.student.code}</strong>`);
+  if(r.student.semester) items.push(`Semestre: <strong>${r.student.semester}</strong>`);
+  if(r.ppSemestre) items.push(`PP del semestre: <strong>${r.ppSemestre}</strong>`);
+  if(r.sinNotas) items.push(`<span style="color:var(--gold)">⚠ Sin notas aún (NE) — inicio de semestre</span>`);
+  items.push(`Cursos detectados: <strong>${r.courses.length}</strong>`);
+  r.courses.forEach(c => items.push(`· ${c.name} — ${c.crt} cr (T:${c.crt_t} P:${c.crt_p})${c.pfinal ? ' — Final: '+c.pfinal : ' — Sin notas'}`));
+  document.getElementById('pdf-result-items').innerHTML = items.map(i => `<div class="pdf-result-item">${i}</div>`).join('');
+}
+
+function showPDFError(msg){
+  document.getElementById('pdf-progress').style.display = 'none';
+  const el = document.getElementById('pdf-error'); el.style.display = 'block'; el.textContent = '⚠ ' + msg;
+}
+
+function applyImport(){
+  if(!pendingImport) return;
+  const r = pendingImport;
+
+  // 1. Datos del estudiante
+  if(r.student.name){
+    const parts = r.student.name.trim().split(' ');
+    STUDENT.name = r.student.name;
+    STUDENT.initials = (parts[0]?.[0]||'') + (parts[1]?.[0]||parts[parts.length-1]?.[0]||'');
+  }
+  if(r.student.code) STUDENT.code = r.student.code;
+
+  // FIX Bug 2: actualizar semestre Y el chip del topbar
+  if(r.student.semester){
+    STUDENT.semester = r.student.semester;
+    STUDENT.cycleChip = r.student.semester + ' · E.P. 45';
+  }
+
+  // FIX Bug 1: reemplazar COMPLETAMENTE los cursos (borra los demo)
+  if(r.courses.length > 0){
+    COURSES = r.courses.map((c,i) => ({
+      id: Date.now()+i,
+      name: c.name,
+      code: c.code,
+      color: COURSE_COLORS[i % COURSE_COLORS.length],
+      crt: c.crt||3, crt_t: c.crt_t||2, crt_p: c.crt_p||0,
+      teoria: [], practica: []
+    }));
+
+    // Limpiar tareas y examenes que referenciaban cursos demo
+    const courseNames = new Set(COURSES.map(c => c.name));
+    TASKS  = TASKS.filter(t  => courseNames.has(t.course));
+    EXAMS  = EXAMS.filter(e  => courseNames.has(e.course));
+
+    // Reconstruir asistencia con los nuevos cursos
+    ATTENDANCE = COURSES.map(c => ({
+      name: c.name, color: c.color,
+      total: 0, attended: 0
+    }));
+  }
+
+  // Historial de importaciones
+  const hist = document.getElementById('import-history');
+  const now = new Date();
+  const nC = r.courses.length;
+  hist.innerHTML = '<div style="font-size:11.5px;color:var(--t2);margin-bottom:4px">✓ ' + now.toLocaleDateString() + ' ' + now.toLocaleTimeString() + ' — ' + (r.student.semester||'semestre') + ' — ' + nC + ' curso' + (nC!==1?'s':'') + ' importado' + (nC!==1?'s':'') + '</div>' + hist.innerHTML;
+
+  pendingImport = null;
+  saveAll();
+
+  // Actualizar toda la UI
+  applyStudentUI();
+  refreshBadges();
+
+  document.getElementById('pdf-result').style.display = 'none';
+  document.getElementById('pdf-zone').innerHTML = '<div class="pdf-zone-icon">✅</div><div class="pdf-zone-title">Importación aplicada correctamente</div><div class="pdf-zone-sub">Haz clic para importar otro PDF</div>';
+
+  const msg = r.sinNotas
+    ? (nC + ' curso' + (nC!==1?'s':'') + ' importado' + (nC!==1?'s':'') + '. Ve a "Cursos & Notas" para ingresar notas.')
+    : 'Datos importados correctamente.';
+  showToast(msg, 'ok', 4000);
+}
+function cancelImport(){
+  pendingImport = null;
+  document.getElementById('pdf-result').style.display = 'none';
+  document.getElementById('pdf-progress').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function toggleTheme(){
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('theme-ico').textContent  = isLight ? '🌙' : '☀️';
+  document.getElementById('theme-lbl').textContent  = isLight ? 'Modo oscuro activo' : 'Modo claro activo';
+  localStorage.setItem('uni_theme', isLight ? 'dark' : 'light');
+  // Redraw chart with new colors
+  if(document.getElementById('page-rendimiento').classList.contains('active')) renderRendimiento();
+}
+
+function applyTheme(){
+  const saved = localStorage.getItem('uni_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const ico = document.getElementById('theme-ico');
+  const lbl = document.getElementById('theme-lbl');
+  if(ico) ico.textContent = saved === 'light' ? '☀️' : '🌙';
+  if(lbl) lbl.textContent = saved === 'light' ? 'Modo claro activo' : 'Modo oscuro activo';
+}
+
+(function init(){
+  applyTheme();
+  const loaded = loadAll();
+  const now = new Date();
+  const hr = now.getHours();
+  const greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const greeting = document.getElementById('greeting'); if(greeting) greeting.textContent = greet;
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dateDisp = document.getElementById('dateDisp');
+  if(dateDisp) dateDisp.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
+  applyStudentUI();
+  renderPage('dashboard');
+  refreshBadges();
+  syncTimer();
+  if(loaded){
+    setTimeout(() => showToast('Datos cargados desde tu sesión anterior', 'info', 2500), 600);
+  }
+})();
+// ══════════════════════════════════════════════
+// BACKUP & RESTAURAR
+// ══════════════════════════════════════════════
+function exportBackup(){
+  const data = {
+    _uni_version: 'v5',
+    _exported: new Date().toISOString(),
+    STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE, STUDY_H, HABITS
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url; a.download = 'uni-backup-' + date + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Backup exportado', 'ok');
+}
+
+function importBackup(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data._uni_version){ showToast('Archivo no válido', 'err'); return; }
+      if(data.STUDENT)    STUDENT    = data.STUDENT;
+      if(data.COURSES)    COURSES    = data.COURSES;
+      if(data.TASKS)      TASKS      = data.TASKS;
+      if(data.EXAMS)      EXAMS      = data.EXAMS;
+      if(data.SEMESTERS)  SEMESTERS  = data.SEMESTERS;
+      if(data.ATTENDANCE) ATTENDANCE = data.ATTENDANCE;
+      if(data.STUDY_H)    STUDY_H    = data.STUDY_H;
+      if(data.HABITS)     HABITS     = data.HABITS;
+      saveAll();
+      applyStudentUI(); refreshBadges();
+      const st = document.getElementById('backup-status');
+      if(st){ st.style.display='block'; st.textContent='✓ Backup restaurado correctamente — ' + (data._exported ? new Date(data._exported).toLocaleDateString() : ''); }
+      showToast('Datos restaurados', 'ok', 3500);
+      renderPage('ajustes');
+    } catch(err){ showToast('Error al leer el archivo JSON', 'err'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ══════════════════════════════════════════════
+// PWA — Manifest inline + Service Worker inline
+// ══════════════════════════════════════════════
+// ── SERVICE WORKER ──────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Uni/service-worker.js')
+      .then(() => console.log('Uni SW registrado'))
+      .catch(e => console.info('SW no disponible:', e.message));
+  });
+}
+
+// ── INSTALL PROMPT ───────────────────────────────────────────────────────────
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  const st  = document.getElementById('pwa-status');
+  if (btn) btn.style.display = 'block';
+  if (st)  st.textContent = 'Tu navegador soporta instalación nativa.';
+});
+function installPWA(){
+  if (!_deferredPrompt) { showToast('Usa "Agregar a pantalla de inicio" del navegador', 'info'); return; }
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(r => {
+    if (r.outcome === 'accepted') showToast('Uni instalada', 'ok');
+    _deferredPrompt = null;
+  });
+}
+
+</script>
+</body>
+</html>

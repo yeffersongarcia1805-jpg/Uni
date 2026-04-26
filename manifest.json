@@ -1,0 +1,27 @@
+{
+  "name": "Uni — UCSM Ingeniería Civil",
+  "short_name": "Uni",
+  "description": "Gestor académico — Ingeniería Civil UCSM",
+  "start_url": "/Uni/uni.html",
+  "scope": "/Uni/",
+  "display": "standalone",
+  "background_color": "#0c1829",
+  "theme_color": "#0c1829",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='24' fill='%230c1829'/%3E%3Cpath d='M96 22L30 66v20h132V66L96 22z' fill='%23c8a060'/%3E%3Crect x='42' y='94' width='28' height='62' fill='%23c8a060'/%3E%3Crect x='82' y='94' width='28' height='62' fill='%23c8a060'/%3E%3Crect x='122' y='94' width='28' height='62' fill='%23c8a060'/%3E%3Crect x='30' y='160' width='132' height='16' rx='4' fill='%23c8a060'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%230c1829'/%3E%3Cpath d='M256 60L80 180v50h352v-50L256 60z' fill='%23c8a060'/%3E%3Crect x='110' y='240' width='72' height='165' fill='%23c8a060'/%3E%3Crect x='220' y='240' width='72' height='165' fill='%23c8a060'/%3E%3Crect x='330' y='240' width='72' height='165' fill='%23c8a060'/%3E%3Crect x='80' y='412' width='352' height='44' rx='8' fill='%23c8a060'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"]
+}
