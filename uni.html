@@ -716,6 +716,125 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 .divider { height: 1px; background: var(--b0); margin: 4px 0 }
 
 /* ═══════════════════════════════════════════
+   MICROANIMACIONES — STAT CARDS
+═══════════════════════════════════════════ */
+.sc {
+  transition: border-color .2s, transform .18s, box-shadow .18s;
+}
+.sc:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+}
+@keyframes count-up { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+.sc-val { animation: count-up .4s cubic-bezier(.4,0,.2,1) both }
+
+/* ═══════════════════════════════════════════
+   MODO COMPACTO
+═══════════════════════════════════════════ */
+body.compact .sc { padding: 10px 12px }
+body.compact .sc-val { font-size: 19px }
+body.compact .card { padding: 12px }
+body.compact .task { padding: 5px 0 }
+body.compact .s-item { padding: 6px 18px }
+body.compact .main { gap: 10px; padding: 14px 18px }
+.compact-toggle {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rs);
+  padding: 9px 14px; transition: all .2s; user-select: none; width: 100%
+}
+.compact-toggle:hover { background: var(--s2) }
+.compact-switch {
+  width: 36px; height: 20px; border-radius: 10px; background: var(--s2);
+  border: 1px solid var(--b1); position: relative; flex-shrink: 0; transition: background .2s; margin-left: auto
+}
+.compact-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--t3);
+  transition: transform .2s, background .2s
+}
+body.compact .compact-switch { background: var(--blue-dim); border-color: var(--blue-b) }
+body.compact .compact-switch::after { transform: translateX(16px); background: var(--blue) }
+
+/* ═══════════════════════════════════════════
+   CALENDARIO VISUAL DE TAREAS
+═══════════════════════════════════════════ */
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px }
+.cal-title { font-family:'DM Serif Display',serif; font-size:16px; color:var(--t1) }
+.cal-nav { display:flex; gap:6px }
+.cal-nav button {
+  background:var(--s1); border:1px solid var(--b0); color:var(--t2);
+  width:28px; height:28px; border-radius:var(--rs); cursor:pointer;
+  font-size:13px; display:flex; align-items:center; justify-content:center; transition:background .15s
+}
+.cal-nav button:hover { background:var(--s2) }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px }
+.cal-dow { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); text-align:center; padding:4px 0 8px }
+.cal-day {
+  aspect-ratio:1; border-radius:var(--rs); display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-start; padding:4px 2px;
+  cursor:pointer; transition:background .15s; position:relative; min-height:36px
+}
+.cal-day:hover { background:var(--s2) }
+.cal-day.today { background:var(--blue-dim); border:1px solid var(--blue-b) }
+.cal-day.today .cal-dn { color:var(--blue); font-weight:700 }
+.cal-day.other-month .cal-dn { color:var(--t3); opacity:.4 }
+.cal-dn { font-size:11px; color:var(--t1); line-height:1 }
+.cal-dots { display:flex; gap:2px; flex-wrap:wrap; justify-content:center; margin-top:3px }
+.cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0 }
+.cal-dot.exam { width:5px; height:5px; border-radius:2px }
+.cal-legend { display:flex; gap:12px; margin-top:10px; flex-wrap:wrap }
+.cal-leg-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--t3) }
+.cal-leg-dot { width:8px; height:8px; border-radius:50% }
+.cal-leg-dot.sq { border-radius:2px }
+
+/* ═══════════════════════════════════════════
+   SIMULADOR — ¿Cuánto necesito?
+═══════════════════════════════════════════ */
+.sim-card {
+  background:var(--gold-dim); border:1px solid var(--gold-b);
+  border-radius:var(--rm); padding:14px 16px; margin-top:12px
+}
+.sim-title { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:10px }
+.sim-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap }
+.sim-lbl { font-size:11.5px; color:var(--t2); min-width:120px }
+.sim-in {
+  width:64px; background:var(--n3); border:1px solid var(--b1);
+  border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif;
+  font-size:12px; padding:5px 8px; outline:none; text-align:center
+}
+.sim-in:focus { border-color:var(--gold-b) }
+.sim-result {
+  font-size:13px; font-weight:700; color:var(--gold);
+  font-family:'DM Mono',monospace; min-width:40px
+}
+.sim-msg { font-size:11px; color:var(--t3); margin-top:2px }
+
+/* ═══════════════════════════════════════════
+   GRÁFICOS — Tooltips mejorados
+═══════════════════════════════════════════ */
+.chart-tooltip-custom {
+  background:var(--n3) !important; border:1px solid var(--b1) !important;
+  border-radius:8px !important; padding:8px 12px !important;
+  font-family:'Syne',sans-serif !important; font-size:11.5px !important;
+  color:var(--t1) !important; box-shadow:0 4px 16px rgba(0,0,0,.3) !important;
+}
+
+/* ═══════════════════════════════════════════
+   NOTIFICACIONES PUSH — UI
+═══════════════════════════════════════════ */
+.notif-perm-banner {
+  display:flex; align-items:center; gap:10px; background:var(--blue-dim);
+  border:1px solid var(--blue-b); border-radius:var(--rs); padding:10px 14px;
+  font-size:11.5px; color:var(--t2)
+}
+.notif-perm-btn {
+  margin-left:auto; background:var(--blue); border:none; color:#fff;
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:600;
+  padding:5px 13px; border-radius:20px; cursor:pointer; white-space:nowrap; flex-shrink:0
+}
+.notif-perm-btn:hover { opacity:.88 }
+
+/* ═══════════════════════════════════════════
    SPLASH SCREEN
 ═══════════════════════════════════════════ */
 #splash {
@@ -1086,9 +1205,35 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
   </div>
   <div class="ph-actions" style="margin-bottom:4px">
     <button class="tbtn" onclick="openAddModal()">+ Nueva tarea</button>
+    <button class="tbtn" id="cal-toggle-btn" onclick="toggleCalView()" style="background:var(--s1);border:1px solid var(--b0);color:var(--t2)">📅 Calendario</button>
   </div>
-  <div class="card">
-    <div id="task-full"></div>
+  <!-- Vista lista -->
+  <div id="task-list-view">
+    <div class="card">
+      <div id="task-full"></div>
+    </div>
+  </div>
+  <!-- Vista calendario -->
+  <div id="task-cal-view" style="display:none">
+    <div class="card">
+      <div class="cal-header">
+        <div class="cal-title" id="cal-month-title">—</div>
+        <div class="cal-nav">
+          <button onclick="calNav(-1)">‹</button>
+          <button onclick="calNav(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--danger)"></div>Tarea urgente</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--blue)"></div>Tarea normal</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot sq" style="background:var(--amber)"></div>Examen</div>
+      </div>
+    </div>
+    <div class="card" id="cal-day-detail" style="display:none">
+      <div class="card-head"><span class="card-title" id="cal-detail-title">—</span></div>
+      <div id="cal-detail-body"></div>
+    </div>
   </div>
 </main>
 
@@ -1122,6 +1267,24 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
   <div class="infobox">
     <div class="infobox-dot"></div>
     <span><strong style="color:var(--t1)">Fórmula UCSM:</strong> P.FINAL = promedio ponderado de teoría (N1+N2+N3) y práctica (N1+N2+N3) según créditos CR.T y CR.P. Aprobación ≥ 11.</span>
+  </div>
+  <!-- Simulador -->
+  <div class="sim-card">
+    <div class="sim-title">🎯 Simulador — ¿Cuánto necesito para aprobar?</div>
+    <div class="sim-row">
+      <span class="sim-lbl">Curso</span>
+      <select class="msel" id="sim-course" onchange="runSim()" style="flex:1;max-width:240px"></select>
+    </div>
+    <div class="sim-row">
+      <span class="sim-lbl">Meta que quiero</span>
+      <input type="number" class="sim-in" id="sim-target" min="11" max="20" value="14" oninput="runSim()">
+      <span style="font-size:11px;color:var(--t3)">/20</span>
+    </div>
+    <div class="sim-row">
+      <span class="sim-lbl">Notas faltantes</span>
+      <span class="sim-result" id="sim-result">—</span>
+    </div>
+    <div class="sim-msg" id="sim-msg"></div>
   </div>
   <div id="gcalc-container"></div>
 </main>
@@ -1288,6 +1451,24 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
       <span class="theme-toggle-lbl" id="theme-lbl">Modo oscuro activo</span>
       <div class="theme-toggle-switch" id="theme-switch"></div>
     </div>
+    <div style="height:8px"></div>
+    <div class="compact-toggle" onclick="toggleCompact()">
+      <span style="font-size:16px">⊞</span>
+      <span style="font-size:12.5px;color:var(--t1);flex:1" id="compact-lbl">Modo compacto</span>
+      <div class="compact-switch" id="compact-switch"></div>
+    </div>
+  </div>
+  <div class="card" id="notif-perm-card">
+    <div class="card-head"><span class="card-title">Notificaciones</span></div>
+    <div class="notif-perm-banner" id="notif-perm-banner">
+      <span>🔔</span>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--t1);font-weight:500">Activar notificaciones push</div>
+        <div style="font-size:10.5px;color:var(--t3);margin-top:2px">Recibe avisos de exámenes y tareas urgentes aunque la app esté cerrada</div>
+      </div>
+      <button class="notif-perm-btn" onclick="requestNotifPerm()">Activar</button>
+    </div>
+    <div id="notif-perm-granted" style="display:none;font-size:11.5px;color:var(--green);padding:4px 0">✓ Notificaciones activadas — recibirás avisos de exámenes y tareas urgentes</div>
   </div>
   <div class="card">
     <div class="card-head"><span class="card-title">Datos del estudiante</span></div>
@@ -2662,16 +2843,17 @@ function saveTask(){
 function renderPage(id){
   if(window._skCleanup){ window._skCleanup(); window._skCleanup = null; }
   switch(id){
-    case 'dashboard':  renderDashboard(); break;
-    case 'tareas':     renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); })); break;
-    case 'examenes':   renderExams(); break;
-    case 'horario':    renderSchFull(); break;
-    case 'cursos':     renderGCalc(); break;
-    case 'rendimiento':renderRendimiento(); break;
-    case 'asistencia': renderAttendance(); refreshNotifDot(); break;
-    case 'pomodoro':   renderStudyChart('schart2'); syncTimer(); break;
-    case 'habitos':    renderHabits(); break;
-    case 'ajustes':    loadSettingsForm(); renderCourseEditor(); renderSemEditor(); break;
+    case 'dashboard':   renderDashboard(); break;
+    case 'tareas':      renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); }));
+                        if(_calView) renderCalendar(); break;
+    case 'examenes':    renderExams(); break;
+    case 'horario':     renderSchFull(); break;
+    case 'cursos':      renderGCalc(); initSim(); break;
+    case 'rendimiento': renderRendimiento(); break;
+    case 'asistencia':  renderAttendance(); refreshNotifDot(); break;
+    case 'pomodoro':    renderStudyChart('schart2'); syncTimer(); break;
+    case 'habitos':     renderHabits(); break;
+    case 'ajustes':     loadSettingsForm(); renderCourseEditor(); renderSemEditor(); checkNotifStatus(); break;
   }
 }
 
@@ -2891,6 +3073,215 @@ function cancelImport(){
 }
 
 // ══════════════════════════════════════════════
+// CALENDARIO VISUAL DE TAREAS
+// ══════════════════════════════════════════════
+let _calDate = new Date();
+let _calView = false;
+
+function toggleCalView(){
+  _calView = !_calView;
+  document.getElementById('task-list-view').style.display = _calView ? 'none' : 'block';
+  document.getElementById('task-cal-view').style.display  = _calView ? 'block' : 'none';
+  const btn = document.getElementById('cal-toggle-btn');
+  if(btn){ btn.textContent = _calView ? '☰ Lista' : '📅 Calendario'; btn.style.color = _calView ? 'var(--blue)' : ''; }
+  if(_calView) renderCalendar();
+}
+
+function calNav(dir){
+  _calDate.setMonth(_calDate.getMonth() + dir);
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const y = _calDate.getFullYear(), m = _calDate.getMonth();
+  const title = document.getElementById('cal-month-title');
+  if(title) title.textContent = monthNames[m] + ' ' + y;
+  const grid = document.getElementById('cal-grid');
+  if(!grid) return;
+  const dows = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  const first = new Date(y, m, 1).getDay();
+  const last  = new Date(y, m+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const byDate = {};
+  TASKS.filter(t => !t.done).forEach(t => {
+    if(!byDate[t.due]) byDate[t.due] = [];
+    const co = (COURSES.find(c => c.name === t.course)||{}).color || 'var(--blue)';
+    byDate[t.due].push({ type:'task', color:co, name:t.name });
+  });
+  EXAMS.forEach(e => {
+    if(!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push({ type:'exam', color:'var(--amber)', name:e.course + ' — ' + e.name });
+  });
+  for(let i=0; i<first; i++){
+    const pd = new Date(y, m, 0 - first + i + 1);
+    html += `<div class="cal-day other-month"><span class="cal-dn">${pd.getDate()}</span></div>`;
+  }
+  for(let d=1; d<=last; d++){
+    const date = new Date(y, m, d); date.setHours(0,0,0,0);
+    const isToday = date.getTime() === today.getTime();
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const items = byDate[ds] || [];
+    const dots = items.slice(0,4).map(it =>
+      `<div class="cal-dot${it.type==='exam'?' exam':''}" style="background:${it.color}" title="${it.name}"></div>`
+    ).join('');
+    html += `<div class="cal-day${isToday?' today':''}" onclick="showCalDay('${ds}')">
+      <span class="cal-dn">${d}</span>
+      ${dots ? `<div class="cal-dots">${dots}</div>` : ''}
+    </div>`;
+  }
+  const total = first + last;
+  const rem = total % 7 ? 7 - (total % 7) : 0;
+  for(let i=1; i<=rem; i++) html += `<div class="cal-day other-month"><span class="cal-dn">${i}</span></div>`;
+  grid.innerHTML = html;
+}
+
+function showCalDay(ds){
+  const detail = document.getElementById('cal-day-detail');
+  const body   = document.getElementById('cal-detail-body');
+  const ttl    = document.getElementById('cal-detail-title');
+  if(!detail||!body||!ttl) return;
+  const [y,mo,d] = ds.split('-');
+  const monthNames = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  ttl.textContent = `${parseInt(d)} de ${monthNames[parseInt(mo)]} ${y}`;
+  const tasks = TASKS.filter(t => t.due === ds && !t.done);
+  const exams = EXAMS.filter(e => e.date === ds);
+  if(!tasks.length && !exams.length){
+    body.innerHTML = '<div style="font-size:11.5px;color:var(--t3);padding:6px 0">Sin eventos este día.</div>';
+  } else {
+    body.innerHTML = [
+      ...exams.map(e => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b0)">
+        <div style="width:8px;height:8px;border-radius:2px;background:var(--amber);flex-shrink:0"></div>
+        <div><div style="font-size:12px;color:var(--t1);font-weight:500">${e.course} — ${e.name}</div>
+        <div style="font-size:10px;color:var(--t3)">${e.room||'—'}</div></div></div>`),
+      ...tasks.map(t => { const co=(COURSES.find(x=>x.name===t.course)||{}).color||'#888';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b0)">
+          <div style="width:8px;height:8px;border-radius:50%;background:${co};flex-shrink:0"></div>
+          <div><div style="font-size:12px;color:var(--t1)">${t.name}</div>
+          <div style="font-size:10px;color:var(--t3)">${t.course}</div></div></div>`; })
+    ].join('');
+  }
+  detail.style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// SIMULADOR — ¿Cuánto necesito?
+// ══════════════════════════════════════════════
+function initSim(){
+  const sel = document.getElementById('sim-course');
+  if(!sel) return;
+  sel.innerHTML = COURSES.map((c,i) => `<option value="${i}">${c.name}</option>`).join('');
+  runSim();
+}
+
+function runSim(){
+  const sel = document.getElementById('sim-course');
+  const tgt = document.getElementById('sim-target');
+  const res = document.getElementById('sim-result');
+  const msg = document.getElementById('sim-msg');
+  if(!sel||!tgt||!res||!msg) return;
+  const ci = parseInt(sel.value);
+  const target = parseFloat(tgt.value) || 11;
+  const c = COURSES[ci];
+  if(!c){ res.textContent = '—'; return; }
+  const ts = c.teoria.filter(x => x !== null && x !== undefined && x !== '');
+  const ps = c.practica.filter(x => x !== null && x !== undefined && x !== '');
+  const hasP = (c.crt_p||0) > 0;
+  if(ts.length === 3 && (!hasP || ps.length === 3)){
+    const final = calcFinal(c);
+    res.textContent = final !== null ? final.toFixed(2) : '—';
+    res.style.color = final >= target ? 'var(--green)' : 'var(--danger)';
+    msg.textContent = final >= target
+      ? `✓ Ya alcanzas ${target}. Nota actual: ${final?.toFixed(2)}`
+      : `✕ Nota actual: ${final?.toFixed(2)}, por debajo de ${target}`;
+    return;
+  }
+  if(!hasP){
+    const missing = 3 - ts.length;
+    if(missing === 0){ res.textContent='—'; msg.textContent=''; return; }
+    const sumSoFar = ts.reduce((a,b)=>a+b,0);
+    const needed = (target * 3 - sumSoFar) / missing;
+    res.textContent = needed <= 20 ? Math.max(needed,0).toFixed(2) : 'Imposible';
+    res.style.color = needed <= 20 ? 'var(--gold)' : 'var(--danger)';
+    msg.textContent = needed > 20
+      ? `Imposible llegar a ${target} con las notas actuales`
+      : `Necesitas al menos ${Math.max(needed,0).toFixed(2)} en cada una de las ${missing} nota${missing>1?'s':''} restantes`;
+  } else {
+    const avgP = ps.length ? ps.reduce((a,b)=>a+b,0)/ps.length : null;
+    const missingT = 3 - ts.length;
+    const totalCr = (c.crt_t||0) + (c.crt_p||0);
+    if(avgP !== null && missingT > 0 && totalCr > 0){
+      const needed = (target * totalCr - avgP * (c.crt_p||0)) / (c.crt_t||0);
+      res.textContent = needed <= 20 ? Math.max(needed,0).toFixed(2) : 'Imposible';
+      res.style.color = needed <= 20 ? 'var(--gold)' : 'var(--danger)';
+      msg.textContent = needed > 20
+        ? 'Imposible alcanzar la meta con las notas actuales de práctica'
+        : `Promedio de teoría necesario en las ${missingT} nota${missingT>1?'s':''} restantes`;
+    } else {
+      res.textContent = '—';
+      msg.textContent = 'Ingresa al menos una nota de práctica para calcular';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// MODO COMPACTO
+// ══════════════════════════════════════════════
+function toggleCompact(){
+  const on = !document.body.classList.contains('compact');
+  document.body.classList.toggle('compact', on);
+  localStorage.setItem('uni_compact', on ? '1' : '0');
+  const lbl = document.getElementById('compact-lbl');
+  if(lbl) lbl.textContent = on ? 'Modo compacto activo' : 'Modo compacto';
+}
+function applyCompact(){
+  const on = localStorage.getItem('uni_compact') === '1';
+  document.body.classList.toggle('compact', on);
+  const lbl = document.getElementById('compact-lbl');
+  if(lbl) lbl.textContent = on ? 'Modo compacto activo' : 'Modo compacto';
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICACIONES PUSH
+// ══════════════════════════════════════════════
+function checkNotifStatus(){
+  if(!('Notification' in window)) return;
+  const banner  = document.getElementById('notif-perm-banner');
+  const granted = document.getElementById('notif-perm-granted');
+  if(Notification.permission === 'granted'){
+    if(banner)  banner.style.display  = 'none';
+    if(granted) granted.style.display = 'block';
+  }
+}
+function requestNotifPerm(){
+  if(!('Notification' in window)){ showToast('Tu navegador no soporta notificaciones', 'warn'); return; }
+  Notification.requestPermission().then(perm => {
+    if(perm === 'granted'){
+      showToast('Notificaciones activadas ✓', 'ok');
+      checkNotifStatus();
+      scheduleNotifs();
+    } else {
+      showToast('Permiso denegado por el navegador', 'warn');
+    }
+  });
+}
+function scheduleNotifs(){
+  if(Notification.permission !== 'granted') return;
+  TASKS.filter(t => !t.done && daysUntil(t.due) >= 0 && daysUntil(t.due) <= 1).forEach(t => {
+    const d = daysUntil(t.due);
+    new Notification('📋 Uni — Tarea pendiente', {
+      body: `${t.name} — vence ${d === 0 ? 'HOY' : 'mañana'}`
+    });
+  });
+  EXAMS.filter(e => daysUntil(e.date) >= 0 && daysUntil(e.date) <= 3).forEach(e => {
+    new Notification('📝 Uni — Examen próximo', {
+      body: `${e.course} — ${e.name} en ${daysUntil(e.date)} día(s)`
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 function toggleTheme(){
@@ -2915,6 +3306,7 @@ function applyTheme(){
 
 (function init(){
   applyTheme();
+  applyCompact();
   const loaded = loadAll();
   const now = new Date();
   const hr = now.getHours();
@@ -2929,7 +3321,7 @@ function applyTheme(){
   refreshBadges();
   refreshBnBadge();
   syncTimer();
-  // Dismiss splash after assets settle
+  checkNotifStatus();
   setTimeout(() => {
     const splash = document.getElementById('splash');
     if(splash) splash.classList.add('hidden');
