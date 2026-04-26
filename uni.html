@@ -835,6 +835,65 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
 .notif-perm-btn:hover { opacity:.88 }
 
 /* ═══════════════════════════════════════════
+   EXPORTAR PDF — botón en rendimiento
+═══════════════════════════════════════════ */
+.export-pdf-btn {
+  display:flex; align-items:center; gap:7px; background:var(--red-dim);
+  border:1px solid var(--red-b); color:var(--red); border-radius:var(--rs);
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:600;
+  padding:7px 14px; cursor:pointer; transition:all .18s; margin-top:12px; width:100%
+}
+.export-pdf-btn:hover { background:var(--red); color:#fff }
+
+/* ═══════════════════════════════════════════
+   IA — consejero académico
+═══════════════════════════════════════════ */
+.ia-card {
+  background: linear-gradient(135deg, rgba(79,168,255,.06) 0%, rgba(157,134,240,.06) 100%);
+  border:1px solid var(--blue-b); border-radius:var(--rm); padding:16px;
+}
+.ia-header { display:flex; align-items:center; gap:10px; margin-bottom:12px }
+.ia-icon { width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0 }
+.ia-title { font-size:13px; font-weight:600; color:var(--t1) }
+.ia-sub { font-size:10px; color:var(--t3); margin-top:1px }
+.ia-bubble {
+  background:var(--s1); border:1px solid var(--b0); border-radius:var(--rs);
+  padding:10px 13px; font-size:12px; color:var(--t2); line-height:1.6;
+  min-height:48px; margin-bottom:10px; white-space:pre-wrap
+}
+.ia-bubble.loading { color:var(--t3); font-style:italic }
+.ia-actions { display:flex; gap:8px; flex-wrap:wrap }
+.ia-chip {
+  background:var(--s1); border:1px solid var(--b0); border-radius:20px;
+  font-size:10.5px; color:var(--t2); padding:5px 12px; cursor:pointer;
+  transition:all .15s; font-family:'Syne',sans-serif
+}
+.ia-chip:hover { background:var(--blue-dim); border-color:var(--blue-b); color:var(--blue) }
+
+/* ═══════════════════════════════════════════
+   GOOGLE DRIVE BACKUP
+═══════════════════════════════════════════ */
+.gdrive-btn {
+  display:flex; align-items:center; gap:8px; background:var(--s1);
+  border:1px solid var(--b0); border-radius:var(--rs); padding:9px 14px;
+  font-family:'Syne',sans-serif; font-size:11.5px; color:var(--t2);
+  cursor:pointer; transition:all .18s; width:100%
+}
+.gdrive-btn:hover { background:var(--s2); color:var(--t1) }
+.gdrive-icon { font-size:16px }
+
+/* ═══════════════════════════════════════════
+   ARIA / ACCESIBILIDAD — focus visible
+═══════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: var(--rxs);
+}
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue); outline-offset:2px }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
+
+/* ═══════════════════════════════════════════
    SPLASH SCREEN
 ═══════════════════════════════════════════ */
 #splash {
@@ -1028,7 +1087,7 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
 <!-- ════════════════════════════════════
      SIDEBAR
 ════════════════════════════════════ -->
-<nav class="sidebar">
+<nav class="sidebar" role="navigation" aria-label="Navegación principal">
   <div class="s-section">Principal</div>
 
   <div class="s-item active" onclick="showPage('dashboard')">
@@ -1191,6 +1250,23 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
         </div>
         <div class="schart" id="schart"></div>
       </div>
+      <!-- IA Consejero -->
+      <div class="ia-card">
+        <div class="ia-header">
+          <div class="ia-icon" aria-hidden="true">✦</div>
+          <div>
+            <div class="ia-title">Consejero académico IA</div>
+            <div class="ia-sub">Análisis basado en tus notas y tareas</div>
+          </div>
+        </div>
+        <div class="ia-bubble" id="ia-bubble" aria-live="polite">Toca una pregunta para obtener un consejo personalizado.</div>
+        <div class="ia-actions" role="list">
+          <button class="ia-chip" role="listitem" onclick="askIA('rendimiento')">¿Cómo voy?</button>
+          <button class="ia-chip" role="listitem" onclick="askIA('riesgo')">¿Estoy en riesgo?</button>
+          <button class="ia-chip" role="listitem" onclick="askIA('semana')">Plan esta semana</button>
+          <button class="ia-chip" role="listitem" onclick="askIA('meta')">Alcanzar mi meta</button>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -1327,6 +1403,9 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
           <span style="font-size:11.5px;font-family:'DM Mono',monospace;color:var(--gold)" id="cred-val">0 cr</span>
         </div>
       </div>
+      <button class="export-pdf-btn" onclick="exportReportePDF()" aria-label="Exportar reporte de notas como PDF">
+        <span>📄</span> Exportar reporte de notas PDF
+      </button>
     </div>
   </div>
 </main>
@@ -1501,6 +1580,13 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
         <button class="qa-btn" style="flex:1;min-width:140px" onclick="exportBackup()">⬇ Exportar JSON</button>
         <button class="qa-btn" style="flex:1;min-width:140px;background:var(--s1);border:1px solid var(--b1);color:var(--t2)" onclick="document.getElementById('backup-file-in').click()">⬆ Importar JSON</button>
       </div>
+      <button class="gdrive-btn" onclick="exportToGDrive()" style="margin-top:6px">
+        <span class="gdrive-icon">🗂</span>
+        <div>
+          <div style="font-size:12px;color:var(--t1);font-weight:500">Guardar en Google Drive</div>
+          <div style="font-size:10px;color:var(--t3)">Descarga el JSON y ábrelo desde Drive para guardarlo</div>
+        </div>
+      </button>
       <input type="file" id="backup-file-in" accept=".json" style="display:none" onchange="importBackup(this)">
       <div id="backup-status" style="display:none;font-size:11px;padding:7px 10px;border-radius:var(--rxs);background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)"></div>
     </div>
@@ -1520,7 +1606,7 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
 <!-- ════════════════════════════════════
      BOTTOM NAV (mobile only)
 ════════════════════════════════════ -->
-<nav class="bottom-nav" id="bottom-nav">
+<nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Navegación inferior">
   <button class="bn-item active" onclick="showPage('dashboard'); bnActive(this)" data-page="dashboard">
     <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     <span class="bn-lbl">Inicio</span>
@@ -3282,6 +3368,213 @@ function scheduleNotifs(){
 }
 
 // ══════════════════════════════════════════════
+// INDEXEDDB — migración desde localStorage
+// (fallback automático a localStorage si falla)
+// ══════════════════════════════════════════════
+const IDB_NAME = 'uni-ucsm-db', IDB_VER = 1, IDB_STORE = 'data';
+let _idb = null;
+
+function openIDB(){
+  return new Promise((res, rej) => {
+    if(!window.indexedDB){ rej('no-idb'); return; }
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess = e => { _idb = e.target.result; res(_idb); };
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function idbSet(key, val){
+  return new Promise((res, rej) => {
+    if(!_idb){ localStorage.setItem(key, JSON.stringify(val)); res(); return; }
+    const tx = _idb.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(val, key);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+
+function idbGet(key){
+  return new Promise((res, rej) => {
+    if(!_idb){
+      try { res(JSON.parse(localStorage.getItem(key))); } catch{ res(null); }
+      return;
+    }
+    const tx  = _idb.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => res(req.result ?? null);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function saveAllIDB(){
+  try {
+    const payload = { STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE, STUDY_H, HABITS, ts: Date.now() };
+    await idbSet(STORAGE_KEY, payload);
+    // Mirror to localStorage as safety fallback
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch(e){ console.warn('IDB save error, using localStorage:', e); }
+}
+
+async function loadAllIDB(){
+  try {
+    let data = await idbGet(STORAGE_KEY);
+    // Migrate from localStorage if IDB is empty
+    if(!data){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) data = JSON.parse(raw);
+    }
+    if(!data) return false;
+    if(data.STUDENT)    STUDENT    = data.STUDENT;
+    if(data.COURSES)    COURSES    = data.COURSES;
+    if(data.TASKS)      TASKS      = data.TASKS;
+    if(data.EXAMS)      EXAMS      = data.EXAMS;
+    if(data.SEMESTERS)  SEMESTERS  = data.SEMESTERS;
+    if(data.ATTENDANCE) ATTENDANCE = data.ATTENDANCE;
+    if(data.STUDY_H)    STUDY_H    = data.STUDY_H;
+    if(data.HABITS)     HABITS     = data.HABITS;
+    return true;
+  } catch(e){ console.warn('IDB load error:', e); return false; }
+}
+
+// ══════════════════════════════════════════════
+// EXPORTAR REPORTE PDF
+// ══════════════════════════════════════════════
+function exportReportePDF(){
+  const pp = calcPP();
+  const fecha = new Date().toLocaleDateString('es-PE', { year:'numeric', month:'long', day:'numeric' });
+
+  const rows = COURSES.map(c => {
+    const f = calcFinal(c);
+    const ts = c.teoria.map((n,i) => `N${i+1}:${n ?? '—'}`).join(' ');
+    const ps = c.practica.length ? c.practica.map((n,i) => `N${i+1}:${n ?? '—'}`).join(' ') : 'Sin práctica';
+    const estado = f === null ? 'Pendiente' : f >= 11 ? 'Aprobado' : 'Desaprobado';
+    const color  = f === null ? '#888' : f >= 11 ? '#1a9655' : '#d93030';
+    return `<tr>
+      <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;font-size:12px">${c.name}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;font-size:11px;color:#555">${ts}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;font-size:11px;color:#555">${ps}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;text-align:center;font-size:13px;font-weight:700;color:${color}">${f !== null ? f.toFixed(2) : '—'}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;text-align:center;font-size:11px;color:${color}">${estado}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Reporte de Notas — ${STUDENT.name}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 32px; color: #1a2233; }
+    h1 { font-size: 20px; margin-bottom: 4px }
+    .sub { font-size: 12px; color: #666; margin-bottom: 24px }
+    table { width:100%; border-collapse:collapse }
+    th { background:#0c1829; color:#ede6d8; padding:9px 10px; text-align:left; font-size:11px; letter-spacing:.06em }
+    .pp { font-size:28px; font-weight:700; color:#c01828; margin:20px 0 4px }
+    .pp-lbl { font-size:11px; color:#888 }
+    .footer { margin-top:32px; font-size:10px; color:#aaa; border-top:1px solid #eee; padding-top:12px }
+  </style></head><body>
+  <h1>Reporte de Notas Académicas</h1>
+  <div class="sub">${STUDENT.name} · COD ${STUDENT.code} · ${STUDENT.semester}</div>
+  <div class="pp">${pp !== null ? pp.toFixed(2) : '—'}<span style="font-size:16px;color:#888">/20</span></div>
+  <div class="pp-lbl">Promedio ponderado semestral</div>
+  <br>
+  <table>
+    <thead><tr>
+      <th>Curso</th><th>Teoría</th><th>Práctica</th><th style="text-align:center">Final</th><th style="text-align:center">Estado</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">Generado por Uni · ${fecha} · UCSM Ingeniería Civil E.P. 45</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  if(!win){ showToast('Permite ventanas emergentes para exportar', 'warn'); return; }
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 400);
+  showToast('Reporte listo — usa Ctrl+P para guardar como PDF', 'info', 4000);
+}
+
+// ══════════════════════════════════════════════
+// IA CONSEJERO ACADÉMICO
+// ══════════════════════════════════════════════
+async function askIA(tipo){
+  const bubble = document.getElementById('ia-bubble');
+  if(!bubble) return;
+  bubble.textContent = '✦ Analizando tu rendimiento...';
+  bubble.classList.add('loading');
+
+  const pp     = calcPP();
+  const cursos = COURSES.map(c => {
+    const f = calcFinal(c);
+    return `${c.name}: ${f !== null ? f.toFixed(2) : 'sin notas'}`;
+  }).join(', ');
+  const pendientes = TASKS.filter(t => !t.done).length;
+  const urgentes   = TASKS.filter(t => !t.done && daysUntil(t.due) <= 2).length;
+  const proxExamen = EXAMS.filter(e => daysUntil(e.date) >= 0).sort((a,b) => daysUntil(a.date)-daysUntil(b.date))[0];
+  const horas = STUDY_H.reduce((a,b)=>a+b.h,0).toFixed(1);
+
+  const prompts = {
+    rendimiento: `Eres un consejero académico universitario. El estudiante ${STUDENT.name} estudia Ingeniería Civil en la UCSM (escala 0-20, aprobación ≥11). Sus notas actuales: ${cursos}. PP actual: ${pp?.toFixed(2) ?? 'no calculado'}. Da un análisis breve (3-4 oraciones) de su situación académica, resaltando fortalezas y cursos a mejorar. Sé directo y motivador.`,
+    riesgo: `Eres un consejero académico universitario. El estudiante tiene estas notas: ${cursos}. Tiene ${pendientes} tareas pendientes, ${urgentes} urgentes. ${proxExamen ? `Próximo examen: ${proxExamen.course} en ${daysUntil(proxExamen.date)} días.` : ''} Identifica los principales riesgos académicos y da 2-3 recomendaciones concretas para evitarlos. Sé específico con los cursos.`,
+    semana: `Eres un consejero académico universitario. El estudiante estudia Ingeniería Civil. Tiene ${pendientes} tareas pendientes (${urgentes} urgentes), estudió ${horas}h esta semana. ${proxExamen ? `Tiene examen de ${proxExamen.course} en ${daysUntil(proxExamen.date)} días.` : ''} Propón un plan de estudio concreto para esta semana en 3-4 puntos. Sé práctico.`,
+    meta: `Eres un consejero académico universitario. El estudiante tiene PP actual de ${pp?.toFixed(2) ?? 'no calculado'}/20 y meta de 17.0. Sus notas: ${cursos}. Explica qué necesita hacer específicamente para alcanzar 17.0, mencionando en qué cursos debe enfocarse. Sé directo y realista en 3-4 oraciones.`
+  };
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role:'user', content: prompts[tipo] }]
+      })
+    });
+    const data = await res.json();
+    const text = data?.content?.[0]?.text || 'No se pudo obtener una respuesta.';
+    bubble.textContent = text;
+    bubble.classList.remove('loading');
+  } catch(e){
+    bubble.textContent = _iaOffline(tipo, pp, cursos, urgentes, proxExamen);
+    bubble.classList.remove('loading');
+  }
+}
+
+// Fallback sin conexión — análisis local
+function _iaOffline(tipo, pp, cursos, urgentes, proxExamen){
+  const ppN = pp ?? 0;
+  if(tipo === 'rendimiento'){
+    if(ppN >= 16)   return `Excelente rendimiento con PP ${ppN.toFixed(2)}. Estás por encima de la media. Mantén el ritmo y apunta a consolidar tus cursos más débiles.`;
+    if(ppN >= 13)   return `Rendimiento sólido con PP ${ppN.toFixed(2)}. Estás aprobando, pero hay margen de mejora. Enfócate en los cursos con nota más baja.`;
+    if(ppN >= 11)   return `PP ${ppN.toFixed(2)} — aprobado pero ajustado. Necesitas mejorar en al menos 2 cursos para subir tu promedio significativamente.`;
+    return `PP ${ppN.toFixed(2)} — situación de riesgo. Prioriza los cursos con nota más baja y busca apoyo académico cuanto antes.`;
+  }
+  if(tipo === 'riesgo'){
+    const msgs = [];
+    if(urgentes > 0) msgs.push(`Tienes ${urgentes} tarea${urgentes>1?'s':''} urgente${urgentes>1?'s':''} — entrégalas antes de estudiar para exámenes.`);
+    if(proxExamen)   msgs.push(`Examen de ${proxExamen.course} en ${daysUntil(proxExamen.date)} días — empieza a repasar hoy.`);
+    if(ppN < 13)     msgs.push(`Tu promedio está por debajo de 13. Habla con tu docente de tutoría.`);
+    return msgs.length ? msgs.join(' ') : 'Sin riesgos críticos detectados. Mantén el ritmo actual.';
+  }
+  if(tipo === 'semana'){
+    const dias = ['Lun','Mar','Mié','Jue','Vie'];
+    return `Plan sugerido: ${dias[0]}-${dias[1]}: repasar apuntes de los últimos temas. ${dias[2]}: resolver ejercicios pendientes. ${dias[3]}-${dias[4]}: ${proxExamen ? `preparar examen de ${proxExamen.course}` : 'avanzar tareas pendientes'}. Usa el Pomodoro para sesiones de 25 min.`;
+  }
+  const diff = 17.0 - ppN;
+  if(diff <= 0) return `Ya alcanzaste tu meta de 17.0. Ahora enfócate en mantenerlo o subir a 18.`;
+  return `Para llegar a 17.0 necesitas subir ${diff.toFixed(2)} puntos. Enfócate en los cursos con menor nota y asegura tener N3 más alta que N1 y N2.`;
+}
+
+// ══════════════════════════════════════════════
+// GOOGLE DRIVE — exportar backup
+// ══════════════════════════════════════════════
+function exportToGDrive(){
+  // Descarga el JSON (Drive detecta archivos .json y permite guardarlos)
+  exportBackup();
+  setTimeout(() => {
+    showToast('Abre drive.google.com y sube el archivo descargado', 'info', 5000);
+  }, 800);
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 function toggleTheme(){
@@ -3307,28 +3600,33 @@ function applyTheme(){
 (function init(){
   applyTheme();
   applyCompact();
-  const loaded = loadAll();
-  const now = new Date();
-  const hr = now.getHours();
-  const greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
-  const greeting = document.getElementById('greeting'); if(greeting) greeting.textContent = greet;
-  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const dateDisp = document.getElementById('dateDisp');
-  if(dateDisp) dateDisp.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
-  applyStudentUI();
-  renderPage('dashboard');
-  refreshBadges();
-  refreshBnBadge();
-  syncTimer();
-  checkNotifStatus();
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if(splash) splash.classList.add('hidden');
-  }, 1400);
-  if(loaded){
-    setTimeout(() => showToast('Datos cargados desde tu sesión anterior', 'info', 2500), 1600);
-  }
+  // Abrir IndexedDB primero, luego cargar datos
+  openIDB().catch(() => null).then(async () => {
+    const loaded = await loadAllIDB();
+    // Reemplazar saveAll global con versión IDB
+    window.saveAll = saveAllIDB;
+    const now = new Date();
+    const hr = now.getHours();
+    const greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const greeting = document.getElementById('greeting'); if(greeting) greeting.textContent = greet;
+    const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const dateDisp = document.getElementById('dateDisp');
+    if(dateDisp) dateDisp.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
+    applyStudentUI();
+    renderPage('dashboard');
+    refreshBadges();
+    refreshBnBadge();
+    syncTimer();
+    checkNotifStatus();
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      if(splash) splash.classList.add('hidden');
+    }, 1400);
+    if(loaded){
+      setTimeout(() => showToast('Datos cargados', 'info', 2000), 1600);
+    }
+  });
 })();
 // ══════════════════════════════════════════════
 // BACKUP & RESTAURAR
