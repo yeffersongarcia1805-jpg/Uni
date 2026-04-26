@@ -8,6 +8,44 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot }
+                                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyDYG2HRRfIfUmLZMDdkbmSZECQHMC1mBgQ",
+  authDomain:        "habitos-personal-606b7.firebaseapp.com",
+  projectId:         "habitos-personal-606b7",
+  storageBucket:     "habitos-personal-606b7.firebasestorage.app",
+  messagingSenderId: "421244816691",
+  appId:             "1:421244816691:web:18b4cf11daf6064ed04246"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── Exponer al scope global para que el resto del JS los use ──────────────
+window._fbAuth     = auth;
+window._fbDb       = db;
+window._fbProvider = new GoogleAuthProvider();
+window._fbDoc      = (uid) => doc(db, 'uni_users', uid);
+window._fbSetDoc   = setDoc;
+window._fbGetDoc   = getDoc;
+window._fbSnap     = onSnapshot;
+window._fbSignIn   = () => signInWithPopup(auth, window._fbProvider);
+window._fbSignOut  = () => signOut(auth);
+
+// ── Auth state observer ───────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  window._fbUser = user || null;
+  if (typeof window.onFbAuthChange === 'function') window.onFbAuthChange(user);
+});
+</script>
 <style>
 /* ═══════════════════════════════════════════
    DESIGN TOKENS
@@ -894,6 +932,95 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
 
 /* ═══════════════════════════════════════════
+   FIREBASE AUTH — login card & user pill
+═══════════════════════════════════════════ */
+.auth-wall {
+  position:fixed; inset:0; z-index:8500;
+  background:var(--n0);
+  display:flex; align-items:center; justify-content:center;
+  opacity:1; transition:opacity .4s ease;
+}
+.auth-wall.hidden { opacity:0; pointer-events:none }
+.auth-box {
+  width:min(340px,90vw); background:var(--n1); border:1px solid var(--b1);
+  border-radius:var(--r); padding:32px 28px; text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+  animation:splash-pop .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+.auth-emblem {
+  width:56px; height:56px; border-radius:16px; background:var(--red);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+}
+.auth-emblem svg { width:32px; height:32px }
+.auth-title { font-family:'DM Serif Display',serif; font-size:22px; color:var(--t1); margin-bottom:6px }
+.auth-sub   { font-size:11.5px; color:var(--t3); margin-bottom:24px; line-height:1.5 }
+.auth-google-btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; padding:12px 20px; border-radius:var(--rs);
+  background:#fff; border:1px solid #ddd; color:#1a1a1a;
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .18s; margin-bottom:12px;
+}
+.auth-google-btn:hover { background:#f5f5f5; box-shadow:0 2px 8px rgba(0,0,0,.12) }
+.auth-google-btn svg { width:18px; height:18px; flex-shrink:0 }
+.auth-skip {
+  font-size:11px; color:var(--t3); cursor:pointer; text-decoration:underline;
+  background:none; border:none; font-family:'Syne',sans-serif;
+}
+.auth-skip:hover { color:var(--t2) }
+
+/* sync indicator */
+.sync-pill {
+  display:none; align-items:center; gap:5px; font-size:9.5px;
+  color:var(--t3); letter-spacing:.04em; padding:3px 8px;
+  border-radius:20px; border:1px solid var(--b0); background:var(--s1);
+  cursor:default; transition:all .2s;
+}
+.sync-pill.show { display:flex }
+.sync-pill.syncing { color:var(--blue); border-color:var(--blue-b) }
+.sync-pill.ok      { color:var(--green); border-color:var(--green-b) }
+.sync-dot { width:5px; height:5px; border-radius:50%; background:currentColor }
+.sync-dot.pulse { animation:sync-pulse 1.2s infinite }
+@keyframes sync-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* user avatar in topbar */
+.fb-avatar {
+  width:28px; height:28px; border-radius:50%; object-fit:cover;
+  border:2px solid var(--b1); cursor:pointer; flex-shrink:0;
+  transition:border-color .2s;
+}
+.fb-avatar:hover { border-color:var(--blue) }
+
+/* ═══════════════════════════════════════════
+   VISUAL POLISH D — animaciones de sección
+═══════════════════════════════════════════ */
+@keyframes section-in {
+  from { opacity:0; transform:translateY(14px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+.card { animation: section-in .28s cubic-bezier(.4,0,.2,1) both }
+.card:nth-child(1) { animation-delay:.02s }
+.card:nth-child(2) { animation-delay:.06s }
+.card:nth-child(3) { animation-delay:.10s }
+.card:nth-child(4) { animation-delay:.14s }
+.card:nth-child(5) { animation-delay:.18s }
+
+/* Radar gráfico placeholder — chart mejorado */
+.chart-wrap {
+  position:relative; width:100%;
+  background:var(--s0); border-radius:var(--rs); overflow:hidden;
+}
+
+/* stat cards — hover glow por color */
+.sc.c-red:hover   { box-shadow:0 6px 24px rgba(192,24,40,.18) }
+.sc.c-gold:hover  { box-shadow:0 6px 24px rgba(200,160,96,.18) }
+.sc.c-blue:hover  { box-shadow:0 6px 24px rgba(79,168,255,.18) }
+.sc.c-green:hover { box-shadow:0 6px 24px rgba(70,200,126,.18) }
+
+/* sidebar user section improved */
+.s-user-sync { display:flex; align-items:center; gap:6px; margin-top:6px }
+
+/* ═══════════════════════════════════════════
    SPLASH SCREEN
 ═══════════════════════════════════════════ */
 #splash {
@@ -1026,6 +1153,30 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 <!-- ════════════════════════════════════
      SPLASH SCREEN
 ════════════════════════════════════ -->
+<!-- ════════════════════════════════════
+     AUTH WALL — Google login
+════════════════════════════════════ -->
+<div id="auth-wall" class="auth-wall">
+  <div class="auth-box">
+    <div class="auth-emblem">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3L4 8v2h16V8L12 3z" fill="white" opacity=".95"/>
+        <rect x="5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="10.5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="16" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="3" y="19" width="18" height="2" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div class="auth-title">Uni</div>
+    <div class="auth-sub">UCSM · Ingeniería Civil<br>Inicia sesión para sincronizar tus datos en todos tus dispositivos</div>
+    <button class="auth-google-btn" onclick="fbSignIn()">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continuar con Google
+    </button>
+    <button class="auth-skip" onclick="fbSkip()">Usar sin cuenta (datos solo en este dispositivo)</button>
+  </div>
+</div>
+
 <div id="splash">
   <div class="splash-inner">
     <div class="splash-emblem">
@@ -1079,8 +1230,13 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
     <div class="notif-dot" id="notif-dot"></div>
   </button>
   <div class="t-user" onclick="showPage('ajustes')">
+    <img id="fb-avatar-img" class="fb-avatar" style="display:none" alt="foto de perfil">
     <div class="t-ava" id="ava-initials">YG</div>
     <span class="t-uname" id="stu-name-label">Yefferson García</span>
+  </div>
+  <div class="sync-pill" id="sync-pill">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-lbl-txt">Sincronizado</span>
   </div>
 </header>
 
@@ -1523,6 +1679,37 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 ════════════════════════════════════ -->
 <main class="main fade" id="page-ajustes">
   <div class="ph"><div class="pt">Ajustes & Configuración</div><span class="ps">Personaliza tu semestre</span></div>
+
+  <!-- CUENTA FIREBASE -->
+  <div class="card" id="fb-account-card">
+    <div class="card-head"><span class="card-title">Cuenta & Sincronización</span></div>
+    <!-- Sin sesión -->
+    <div id="fb-signed-out-ui">
+      <div style="font-size:11.5px;color:var(--t2);line-height:1.6;margin-bottom:12px">Inicia sesión con Google para sincronizar tus datos automáticamente entre todos tus dispositivos.</div>
+      <button class="auth-google-btn" style="margin-bottom:0" onclick="fbSignIn()">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Iniciar sesión con Google
+      </button>
+    </div>
+    <!-- Con sesión -->
+    <div id="fb-signed-in-ui" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <img id="fb-settings-avatar" class="fb-avatar" style="width:40px;height:40px;border-radius:50%" alt="avatar">
+        <div>
+          <div style="font-size:13px;color:var(--t1);font-weight:500" id="fb-settings-name">—</div>
+          <div style="font-size:11px;color:var(--t3)" id="fb-settings-email">—</div>
+        </div>
+        <div class="sync-pill show ok" style="margin-left:auto">
+          <div class="sync-dot"></div><span>Sincronizado</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="qa-btn" style="flex:1;min-width:120px" onclick="fbForceSave()">☁ Subir datos ahora</button>
+        <button class="qa-btn" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--b1);color:var(--t2)" onclick="fbForceLoad()">⬇ Bajar datos de nube</button>
+      </div>
+      <button class="qa-btn" style="margin-top:8px;width:100%;background:var(--red-dim);border:1px solid var(--red-b);color:var(--red)" onclick="fbSignOut()">Cerrar sesión</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-head"><span class="card-title">Apariencia</span></div>
     <div class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn">
@@ -2040,7 +2227,7 @@ const SCHEDULE = {
   SÁB:[],
 };
 
-const HABITS = [
+let HABITS = [
   {name:'Repasar apuntes del día',      streak:12, days:[1,1,1,1,1,1,0,1,1,1,1,1,0,1]},
   {name:'Sesión Pomodoro (mín. 2)',     streak:8,  days:[0,1,1,1,0,1,1,1,1,0,1,1,1,1]},
   {name:'Resolver ejercicios de obras', streak:5,  days:[1,0,1,1,0,0,1,1,0,1,1,0,1,1]},
@@ -2054,7 +2241,7 @@ let SEMESTERS = [
   {label:'2024-II',gpa:15.10},{label:'2025-I',gpa:15.40},
 ];
 
-const STUDY_H = [
+let STUDY_H = [
   {d:'Lun',h:3.5},{d:'Mar',h:4.0},{d:'Mié',h:2.0},
   {d:'Jue',h:4.5},{d:'Vie',h:2.5},{d:'Sáb',h:2.0},{d:'Dom',h:0},
 ];
@@ -3575,6 +3762,219 @@ function exportToGDrive(){
 }
 
 // ══════════════════════════════════════════════
+// FIREBASE AUTH & FIRESTORE SYNC
+// ══════════════════════════════════════════════
+let _fbSkipped   = false;
+let _fbUnsub     = null;  // Firestore realtime listener
+
+// Mostrar/ocultar auth wall al cargar
+window.onFbAuthChange = function(user){
+  const wall = document.getElementById('auth-wall');
+  if(!wall) return;
+
+  if(user){
+    // Tiene sesión — ocultar auth wall
+    wall.classList.add('hidden');
+    _updateFbUI(user);
+    _fbStartSync(user.uid);
+  } else if(_fbSkipped){
+    wall.classList.add('hidden');
+  } else {
+    // Sin sesión y no saltó — mostrar auth wall solo si no hay datos locales
+    const hasLocal = !!localStorage.getItem(STORAGE_KEY);
+    if(hasLocal){ wall.classList.add('hidden'); }
+    // si no hay datos locales, mostramos la wall
+  }
+};
+
+function _updateFbUI(user){
+  // Topbar avatar
+  const img = document.getElementById('fb-avatar-img');
+  const ini = document.getElementById('ava-initials');
+  if(img && user.photoURL){
+    img.src = user.photoURL; img.style.display = 'block';
+    if(ini) ini.style.display = 'none';
+  }
+  // Settings card
+  const outUI = document.getElementById('fb-signed-out-ui');
+  const inUI  = document.getElementById('fb-signed-in-ui');
+  if(outUI) outUI.style.display = 'none';
+  if(inUI)  inUI.style.display  = 'block';
+  const sAvatar = document.getElementById('fb-settings-avatar');
+  if(sAvatar && user.photoURL) sAvatar.src = user.photoURL;
+  const sName  = document.getElementById('fb-settings-name');
+  const sEmail = document.getElementById('fb-settings-email');
+  if(sName)  sName.textContent  = user.displayName || '—';
+  if(sEmail) sEmail.textContent = user.email || '—';
+  // Sync pill
+  _setSyncStatus('ok', 'Sincronizado');
+}
+
+function _fbStartSync(uid){
+  if(_fbUnsub) _fbUnsub();   // cancelar listener anterior
+  if(!window._fbSnap || !window._fbDb) return;
+  const ref = window._fbDoc(uid);
+  // Escuchar cambios en Firestore en tiempo real
+  _fbUnsub = window._fbSnap(ref, snap => {
+    if(snap.exists()){
+      const d = snap.data();
+      // Solo aplicar si los datos de Firestore son más recientes
+      const localTs  = _getLocalTs();
+      const remoteTs = d.ts || 0;
+      if(remoteTs > localTs + 5000){  // 5s de margen
+        _applyRemoteData(d);
+        _setSyncStatus('ok', 'Datos actualizados');
+        showToast('Datos sincronizados desde la nube ☁', 'info', 2500);
+      }
+    }
+  }, err => console.warn('Firestore listener error:', err));
+}
+
+function _getLocalTs(){
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.ts || 0; }
+  catch{ return 0; }
+}
+
+function _applyRemoteData(d){
+  if(d.STUDENT)    { Object.assign(STUDENT, d.STUDENT); applyStudentUI(); }
+  if(d.COURSES)    COURSES    = d.COURSES;
+  if(d.TASKS)      TASKS      = d.TASKS;
+  if(d.EXAMS)      EXAMS      = d.EXAMS;
+  if(d.SEMESTERS)  SEMESTERS  = d.SEMESTERS;
+  if(d.ATTENDANCE) ATTENDANCE = d.ATTENDANCE;
+  if(d.STUDY_H)    STUDY_H    = d.STUDY_H;
+  if(d.HABITS)     HABITS     = d.HABITS;
+  const activePage = document.querySelector('.main.active');
+  if(activePage) renderPage(activePage.id.replace('page-',''));
+  refreshBadges(); refreshBnBadge();
+}
+
+function _setSyncStatus(state, label){
+  const pill = document.getElementById('sync-pill');
+  const dot  = document.getElementById('sync-dot');
+  const lbl  = document.getElementById('sync-lbl-txt');
+  if(!pill) return;
+  pill.classList.remove('show','syncing','ok');
+  if(state === 'syncing'){
+    pill.classList.add('show','syncing');
+    if(dot) dot.classList.add('pulse');
+  } else if(state === 'ok'){
+    pill.classList.add('show','ok');
+    if(dot) dot.classList.remove('pulse');
+    // Ocultar después de 4s
+    setTimeout(() => pill.classList.remove('show'), 4000);
+  }
+  if(lbl) lbl.textContent = label;
+}
+
+// Sobrescribir saveAll para incluir Firestore
+const _origSaveAll = window.saveAll || saveAll;
+window.saveAll = async function(){
+  // Guardar local primero (rápido)
+  if(typeof saveAllIDB === 'function') await saveAllIDB();
+  else _origSaveAll();
+  // Luego subir a Firestore si hay sesión
+  if(window._fbUser && window._fbSetDoc && window._fbDoc){
+    _setSyncStatus('syncing', 'Sincronizando…');
+    try {
+      const payload = { STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE, STUDY_H, HABITS, ts: Date.now() };
+      await window._fbSetDoc(window._fbDoc(window._fbUser.uid), payload);
+      _setSyncStatus('ok', 'Guardado en nube');
+    } catch(e){
+      console.warn('Firestore write error:', e);
+      _setSyncStatus('ok', 'Solo local');
+    }
+  }
+};
+
+async function fbSignIn(){
+  try {
+    await window._fbSignIn();
+    // onFbAuthChange se dispara automáticamente
+  } catch(e){
+    if(e.code !== 'auth/popup-closed-by-user'){
+      showToast('Error al iniciar sesión: ' + e.message, 'err', 4000);
+    }
+  }
+}
+
+function fbSkip(){
+  _fbSkipped = true;
+  localStorage.setItem('uni_fb_skipped','1');
+  document.getElementById('auth-wall').classList.add('hidden');
+}
+
+async function fbSignOut(){
+  if(_fbUnsub){ _fbUnsub(); _fbUnsub = null; }
+  await window._fbSignOut();
+  // Resetear UI
+  const img = document.getElementById('fb-avatar-img');
+  const ini = document.getElementById('ava-initials');
+  if(img){ img.style.display = 'none'; }
+  if(ini){ ini.style.display = 'flex'; }
+  const outUI = document.getElementById('fb-signed-out-ui');
+  const inUI  = document.getElementById('fb-signed-in-ui');
+  if(outUI) outUI.style.display = 'block';
+  if(inUI)  inUI.style.display  = 'none';
+  _setSyncStatus('ok', '');
+  showToast('Sesión cerrada', 'info', 2000);
+}
+
+async function fbForceSave(){
+  if(!window._fbUser){ showToast('Inicia sesión primero', 'warn'); return; }
+  _setSyncStatus('syncing', 'Subiendo datos…');
+  try {
+    const payload = { STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE, STUDY_H, HABITS, ts: Date.now() };
+    await window._fbSetDoc(window._fbDoc(window._fbUser.uid), payload);
+    _setSyncStatus('ok', 'Datos subidos ✓');
+    showToast('Datos subidos a la nube ✓', 'ok');
+  } catch(e){ showToast('Error al subir: ' + e.message, 'err', 4000); }
+}
+
+async function fbForceLoad(){
+  if(!window._fbUser){ showToast('Inicia sesión primero', 'warn'); return; }
+  _setSyncStatus('syncing', 'Descargando…');
+  try {
+    const snap = await window._fbGetDoc(window._fbDoc(window._fbUser.uid));
+    if(snap.exists()){
+      _applyRemoteData(snap.data());
+      _setSyncStatus('ok', 'Datos restaurados ✓');
+      showToast('Datos descargados de la nube ✓', 'ok');
+    } else {
+      showToast('No hay datos en la nube todavía', 'info');
+      _setSyncStatus('ok', '');
+    }
+  } catch(e){ showToast('Error al descargar: ' + e.message, 'err', 4000); }
+}
+
+// ══════════════════════════════════════════════
+// WIDGET PWA — Periodic Background Sync
+// Muestra un resumen rápido en notificación
+// ══════════════════════════════════════════════
+async function registerWidgetSync(){
+  if(!('serviceWorker' in navigator) || !('periodicSync' in ServiceWorkerRegistration.prototype)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const status = await navigator.permissions.query({ name:'periodic-background-sync' });
+    if(status.state === 'granted'){
+      await reg.periodicSync.register('uni-widget-refresh', { minInterval: 60 * 60 * 1000 });
+    }
+  } catch(e){ console.info('Periodic sync no disponible:', e.message); }
+}
+
+function showWidgetPreview(){
+  // Notificación rica como "widget" — resumen del día
+  if(Notification.permission !== 'granted') return;
+  const pp       = calcPP();
+  const urgentes = TASKS.filter(t => !t.done && daysUntil(t.due) <= 1);
+  const proxExam = EXAMS.filter(e => daysUntil(e.date) >= 0).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date))[0];
+  let body = `PP: ${pp ? pp.toFixed(2) : '—'}/20`;
+  if(urgentes.length) body += `\n⚠ ${urgentes.length} tarea(s) urgente(s)`;
+  if(proxExam)        body += `\n📝 ${proxExam.course} en ${daysUntil(proxExam.date)}d`;
+  new Notification('📊 Uni — Resumen del día', { body, tag:'uni-widget', renotify:true });
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 function toggleTheme(){
@@ -3600,16 +4000,26 @@ function applyTheme(){
 (function init(){
   applyTheme();
   applyCompact();
-  // Abrir IndexedDB primero, luego cargar datos
+  // Restaurar estado de skip
+  if(localStorage.getItem('uni_fb_skipped') === '1') _fbSkipped = true;
   openIDB().catch(() => null).then(async () => {
     const loaded = await loadAllIDB();
-    // Reemplazar saveAll global con versión IDB
-    window.saveAll = saveAllIDB;
+    window.saveAll = async function(){
+      if(typeof saveAllIDB === 'function') await saveAllIDB();
+      if(window._fbUser && window._fbSetDoc && window._fbDoc){
+        _setSyncStatus('syncing','Sincronizando…');
+        try {
+          const payload = { STUDENT, COURSES, TASKS, EXAMS, SEMESTERS, ATTENDANCE, STUDY_H, HABITS, ts: Date.now() };
+          await window._fbSetDoc(window._fbDoc(window._fbUser.uid), payload);
+          _setSyncStatus('ok','Guardado en nube');
+        } catch(e){ _setSyncStatus('ok','Solo local'); }
+      }
+    };
     const now = new Date();
     const hr = now.getHours();
     const greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
     const greeting = document.getElementById('greeting'); if(greeting) greeting.textContent = greet;
-    const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
     const dateDisp = document.getElementById('dateDisp');
     if(dateDisp) dateDisp.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
@@ -3619,12 +4029,18 @@ function applyTheme(){
     refreshBnBadge();
     syncTimer();
     checkNotifStatus();
+    registerWidgetSync();
+    // Si saltó auth y hay datos locales → ocultar auth wall
+    if(_fbSkipped){
+      const wall = document.getElementById('auth-wall');
+      if(wall) wall.classList.add('hidden');
+    }
     setTimeout(() => {
       const splash = document.getElementById('splash');
       if(splash) splash.classList.add('hidden');
     }, 1400);
     if(loaded){
-      setTimeout(() => showToast('Datos cargados', 'info', 2000), 1600);
+      setTimeout(() => showToast('Datos cargados', 'info', 1800), 1600);
     }
   });
 })();
