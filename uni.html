@@ -178,7 +178,7 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 @keyframes toast-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes toast-out { to{opacity:0;transform:translateY(8px)} }
 @media (max-width: 768px) {
-  #toast-container { bottom: 12px; right: 12px; left: 12px }
+  #toast-container { bottom: 80px; right: 12px; left: 12px }
   .toast { max-width: 100% }
 }
 .topbar {
@@ -716,8 +716,87 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 .divider { height: 1px; background: var(--b0); margin: 4px 0 }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE
+   SPLASH SCREEN
 ═══════════════════════════════════════════ */
+#splash {
+  position: fixed; inset: 0; z-index: 9000;
+  background: var(--n0);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+#splash.hidden { opacity: 0; visibility: hidden; pointer-events: none }
+.splash-inner { display: flex; flex-direction: column; align-items: center; gap: 14px }
+.splash-emblem {
+  width: 72px; height: 72px; border-radius: 20px; background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  animation: splash-pop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.splash-emblem svg { width: 40px; height: 40px }
+.splash-name {
+  font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--t1);
+  letter-spacing: .04em; opacity: 0;
+  animation: splash-fade .4s .3s ease forwards;
+}
+.splash-sub {
+  font-size: 11px; color: var(--t3); letter-spacing: .16em; text-transform: uppercase;
+  opacity: 0; animation: splash-fade .4s .45s ease forwards;
+}
+.splash-bar {
+  width: 120px; height: 2px; background: var(--s2); border-radius: 2px;
+  overflow: hidden; margin-top: 8px;
+  opacity: 0; animation: splash-fade .3s .5s ease forwards;
+}
+.splash-fill {
+  height: 100%; width: 0; border-radius: 2px;
+  background: linear-gradient(90deg, var(--red), var(--gold));
+  animation: splash-load 1.1s .55s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes splash-pop { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+@keyframes splash-fade { to{opacity:1} }
+@keyframes splash-load { to{width:100%} }
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+  background: var(--n1); border-top: 1px solid var(--b0);
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  flex-direction: row; justify-content: space-around; align-items: flex-end;
+}
+.bn-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 6px 4px 2px;
+  color: var(--t3); transition: color .18s; position: relative; min-width: 0;
+}
+.bn-item.active { color: var(--blue) }
+.bn-ico { width: 22px; height: 22px; flex-shrink: 0 }
+.bn-lbl { font-size: 9.5px; font-family: 'Syne', sans-serif; font-weight: 500; letter-spacing: .02em; white-space: nowrap }
+.bn-badge {
+  position: absolute; top: 4px; right: calc(50% - 18px);
+  min-width: 14px; height: 14px; border-radius: 7px; background: var(--red);
+  font-size: 8px; font-weight: 700; color: #fff; display: none;
+  align-items: center; justify-content: center; padding: 0 3px;
+}
+.bn-badge.show { display: flex }
+
+@media (max-width: 768px) {
+  .bottom-nav { display: flex }
+  .main { padding-bottom: 80px }
+  #toast-container { bottom: 80px }
+}
+
+/* ═══════════════════════════════════════════
+   PAGE TRANSITIONS
+═══════════════════════════════════════════ */
+@keyframes slide-in-right { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slide-in-left  { from{opacity:0;transform:translateX(-18px)} to{opacity:1;transform:translateX(0)} }
+.fade { animation: fadein .22s ease }
+.slide-right { animation: slide-in-right .22s cubic-bezier(.4,0,.2,1) }
+.slide-left  { animation: slide-in-left  .22s cubic-bezier(.4,0,.2,1) }
+
+
 @media (max-width: 900px) {
   :root { --sw: 0px }
   .sidebar { display: none }
@@ -765,6 +844,26 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 <meta name="apple-mobile-web-app-title" content="Uni UCSM">
 </head>
 <body>
+
+<!-- ════════════════════════════════════
+     SPLASH SCREEN
+════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-inner">
+    <div class="splash-emblem">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3L4 8v2h16V8L12 3z" fill="white" opacity=".95"/>
+        <rect x="5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="10.5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="16" y="11" width="3" height="8" fill="white" opacity=".9"/>
+        <rect x="3" y="19" width="18" height="2" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div class="splash-name">Uni</div>
+    <div class="splash-sub">UCSM · Ingeniería Civil</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+  </div>
+</div>
 
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="shell">
@@ -1238,6 +1337,33 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 </div><!-- end shell -->
 
 <!-- ════════════════════════════════════
+     BOTTOM NAV (mobile only)
+════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" onclick="showPage('dashboard'); bnActive(this)" data-page="dashboard">
+    <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span class="bn-lbl">Inicio</span>
+  </button>
+  <button class="bn-item" onclick="showPage('tareas'); bnActive(this)" data-page="tareas">
+    <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+    <span class="bn-lbl">Tareas</span>
+    <span class="bn-badge" id="bn-badge-tareas"></span>
+  </button>
+  <button class="bn-item" onclick="showPage('cursos'); bnActive(this)" data-page="cursos">
+    <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3L3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+    <span class="bn-lbl">Cursos</span>
+  </button>
+  <button class="bn-item" onclick="showPage('horario'); bnActive(this)" data-page="horario">
+    <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+    <span class="bn-lbl">Horario</span>
+  </button>
+  <button class="bn-item" onclick="showPage('ajustes'); bnActive(this)" data-page="ajustes">
+    <svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    <span class="bn-lbl">Más</span>
+  </button>
+</nav>
+
+<!-- ════════════════════════════════════
      FOCUS OVERLAY
 ════════════════════════════════════ -->
 <div id="fov">
@@ -1363,8 +1489,54 @@ function showToast(msg, type='ok', duration=2800){
 }
 
 // ══════════════════════════════════════════════
-// MOBILE SIDEBAR
+// BOTTOM NAV — sync active state
 // ══════════════════════════════════════════════
+function bnActive(btn){
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function bnSyncPage(page){
+  document.querySelectorAll('.bn-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
+}
+function refreshBnBadge(){
+  const pending = TASKS.filter(t => !t.done).length;
+  const el = document.getElementById('bn-badge-tareas');
+  if(!el) return;
+  if(pending > 0){ el.textContent = pending > 9 ? '9+' : pending; el.classList.add('show'); }
+  else { el.classList.remove('show'); }
+}
+
+// ══════════════════════════════════════════════
+// PAGE TRANSITIONS — enhanced showPage
+// ══════════════════════════════════════════════
+const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','asistencia','pomodoro','habitos','importar','ajustes'];
+let _currentPage = 'dashboard';
+
+function showPage(name, noAnim){
+  const pages = document.querySelectorAll('.main');
+  const prevIdx = PAGE_ORDER.indexOf(_currentPage);
+  const nextIdx = PAGE_ORDER.indexOf(name);
+  const dir = nextIdx >= prevIdx ? 'slide-right' : 'slide-left';
+  pages.forEach(p => { p.classList.remove('active','fade','slide-right','slide-left') });
+  const target = document.getElementById('page-' + name);
+  if(target){
+    target.classList.add('active');
+    if(!noAnim) target.classList.add(dir);
+  }
+  // Sidebar items
+  document.querySelectorAll('.s-item').forEach(i => i.classList.remove('active'));
+  const sItem = document.querySelector(`.s-item[onclick*="'${name}'"]`);
+  if(sItem) sItem.classList.add('active');
+  // Bottom nav sync
+  bnSyncPage(name);
+  _currentPage = name;
+  closeSidebar();
+  renderPage(name);
+}
+
+
 function toggleSidebar(){
   const sb = document.querySelector('.sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -1886,6 +2058,7 @@ function refreshBadges(){
     } else { riskEl.style.display = 'none'; }
   }
   refreshNotifDot();
+  refreshBnBadge();
 }
 
 function quickAddTask(){
@@ -2754,9 +2927,15 @@ function applyTheme(){
   applyStudentUI();
   renderPage('dashboard');
   refreshBadges();
+  refreshBnBadge();
   syncTimer();
+  // Dismiss splash after assets settle
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if(splash) splash.classList.add('hidden');
+  }, 1400);
   if(loaded){
-    setTimeout(() => showToast('Datos cargados desde tu sesión anterior', 'info', 2500), 600);
+    setTimeout(() => showToast('Datos cargados desde tu sesión anterior', 'info', 2500), 1600);
   }
 })();
 // ══════════════════════════════════════════════
