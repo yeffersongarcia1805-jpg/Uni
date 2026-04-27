@@ -173,16 +173,59 @@ onAuthStateChanged(auth, user => {
 .gamif-racha-sub  { font-size: 10px; color: var(--t3); margin-top: 1px }
 .gamif-racha-count { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--gold) }
 
-/* Meta progress */
-.meta-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--b0) }
-.meta-row:last-child { border-bottom: none }
-.meta-ico { font-size: 16px; flex-shrink: 0 }
-.meta-info { flex: 1; min-width: 0 }
-.meta-name { font-size: 12px; color: var(--t1); font-weight: 500; margin-bottom: 5px }
-.meta-track { height: 4px; background: var(--s2); border-radius: 2px; overflow: hidden; margin-bottom: 3px }
-.meta-fill { height: 100%; border-radius: 2px; transition: width .6s }
-.meta-val { font-size: 9.5px; color: var(--t3) }
-.meta-check { font-size: 16px; flex-shrink: 0 }
+.meta-edit-btn {
+  background: none; border: none; color: var(--t3); cursor: pointer;
+  font-size: 13px; padding: 2px 5px; border-radius: var(--rxs);
+  transition: color .15s, background .15s; flex-shrink: 0; line-height: 1;
+}
+.meta-edit-btn:hover { color: var(--gold); background: var(--gold-dim) }
+.meta-del-btn {
+  background: none; border: none; color: var(--t3); cursor: pointer;
+  font-size: 12px; padding: 2px 5px; border-radius: var(--rxs);
+  transition: color .15s; flex-shrink: 0;
+}
+.meta-del-btn:hover { color: var(--danger) }
+.meta-inline-edit {
+  background: var(--n3); border: 1px solid var(--b2); border-radius: var(--rs);
+  padding: 11px 13px; margin-bottom: 8px; display: none;
+  flex-direction: column; gap: 9px;
+  animation: fadein .15s ease;
+}
+.meta-inline-edit.open { display: flex }
+.meta-edit-row { display: flex; align-items: center; gap: 8px }
+.meta-edit-lbl { font-size: 10.5px; color: var(--t3); width: 90px; flex-shrink: 0 }
+.meta-edit-in {
+  flex: 1; background: var(--n4); border: 1px solid var(--b0); border-radius: var(--rxs);
+  color: var(--t1); font-family: 'DM Mono', monospace; font-size: 12px;
+  padding: 5px 8px; outline: none; transition: border-color .18s;
+}
+.meta-edit-in:focus { border-color: var(--gold) }
+.meta-edit-actions { display: flex; gap: 7px; margin-top: 2px }
+.meta-save-btn {
+  background: var(--gold); border: none; color: var(--n1);
+  font-family: 'Syne', sans-serif; font-size: 11.5px; font-weight: 700;
+  padding: 6px 14px; border-radius: var(--rxs); cursor: pointer; transition: background .18s;
+}
+.meta-save-btn:hover { background: var(--gold-2) }
+.meta-cancel-btn {
+  background: var(--s1); border: 1px solid var(--b0); color: var(--t2);
+  font-family: 'Syne', sans-serif; font-size: 11.5px;
+  padding: 6px 12px; border-radius: var(--rxs); cursor: pointer; transition: background .18s;
+}
+.meta-cancel-btn:hover { background: var(--s2) }
+.meta-completed-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 8px; background: var(--green-dim);
+  color: var(--green); border: 1px solid var(--green-b); flex-shrink: 0;
+}
+
+/* Add meta personal form */
+.add-meta-form {
+  background: var(--n3); border: 1px solid var(--b2); border-radius: var(--rs);
+  padding: 13px; margin-top: 10px; display: none; flex-direction: column; gap: 9px;
+  animation: fadein .15s ease;
+}
+.add-meta-form.open { display: flex }
 
 /* ═══════════════════════════════════════════
    HISTORIAL DE CICLOS (FASE 3)
@@ -2166,7 +2209,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
     <div id="gamif-logros-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:4px"></div>
   </div>
   <div class="card">
-    <div class="card-head"><span class="card-title">🎯 Metas activas</span></div>
+    <div class="card-head">
+      <span class="card-title">🎯 Metas activas</span>
+      <span class="card-action gold" onclick="addMetaPersonal()" style="cursor:pointer">+ Nueva meta</span>
+    </div>
     <div id="gamif-metas-list"></div>
   </div>
 </main>
@@ -5164,19 +5210,60 @@ function calcLogros(){
   return LOGROS_DEF.map(l => ({ ...l, unlocked: l.check() }));
 }
 
-// Meta definitions
-function buildMetas(){
+// Meta definitions — editable targets stored in localStorage
+const METAS_DEFAULTS = [
+  { id:'pp',      ico:'🎯', name:'Promedio ponderado',   target:17,  unit:'/20',  type:'pp' },
+  { id:'tasks',   ico:'✅', name:'Tareas completadas',   target:20,  unit:' tareas', type:'tasks' },
+  { id:'streak',  ico:'🔥', name:'Racha de hábito',      target:14,  unit:' días', type:'streak' },
+  { id:'study',   ico:'⏱️', name:'Horas de estudio sem.', target:30, unit:'h/sem', type:'study' },
+];
+
+function loadMetaTargets(){
+  try {
+    const raw = localStorage.getItem('uni_meta_targets');
+    if(raw) return JSON.parse(raw);
+  } catch(e){}
+  return null;
+}
+function saveMetaTargets(metas){
+  try { localStorage.setItem('uni_meta_targets', JSON.stringify(metas)); } catch(e){}
+}
+
+function getMetasDef(){
+  const saved = loadMetaTargets();
+  if(!saved) return JSON.parse(JSON.stringify(METAS_DEFAULTS));
+  // Merge: keep saved targets, add new defaults if missing
+  const base = JSON.parse(JSON.stringify(METAS_DEFAULTS));
+  return base.map(d => {
+    const s = saved.find(x => x.id === d.id);
+    return s ? { ...d, target: s.target, name: s.name || d.name } : d;
+  }).concat((saved.filter(s => !base.find(d => d.id === s.id))));
+}
+
+function getMetaProgress(m){
   const pp = calcPP();
   const doneTasks = TASKS.filter(t=>t.done).length;
   const bestStreak = HABITS.length ? Math.max(...HABITS.map(h=>h.streak)) : 0;
   const weekH = STUDY_H.reduce((a,b)=>a+b.h,0);
-  const metas = [
-    { ico:'🎯', name:'PP meta 17', pct: pp ? Math.min((pp/17)*100,100) : 0, val: pp ? pp.toFixed(2)+'/17' : '—/17', color:'var(--gold)' },
-    { ico:'✅', name:'20 tareas completadas', pct: Math.min((doneTasks/20)*100,100), val: doneTasks+'/20', color:'var(--green)' },
-    { ico:'🔥', name:'Racha de 14 días', pct: Math.min((bestStreak/14)*100,100), val: bestStreak+'/14 días', color:'var(--amber)' },
-    { ico:'⏱️', name:'30h estudio semanal', pct: Math.min((weekH/30)*100,100), val: weekH.toFixed(1)+'/30h', color:'var(--blue)' },
-  ];
-  return metas;
+  const vals = { pp: pp || 0, tasks: doneTasks, streak: bestStreak, study: weekH };
+  const cur = m.type === 'custom' ? (m.current||0) : (vals[m.type] ?? 0);
+  return { cur, pct: Math.min((cur / m.target)*100, 100) };
+}
+
+function buildMetas(){
+  const metas = getMetasDef();
+  const pp = calcPP();
+  const doneTasks = TASKS.filter(t=>t.done).length;
+  const bestStreak = HABITS.length ? Math.max(...HABITS.map(h=>h.streak)) : 0;
+  const weekH = STUDY_H.reduce((a,b)=>a+b.h,0);
+  const colors = { pp:'var(--gold)', tasks:'var(--green)', streak:'var(--amber)', study:'var(--blue)', custom:'var(--purple)' };
+  return metas.map(m => {
+    const { cur, pct } = getMetaProgress(m);
+    const valStr = m.type === 'pp' ? (pp ? pp.toFixed(2) : '—') + m.unit :
+                   m.type === 'study' ? weekH.toFixed(1) + m.unit :
+                   cur + m.unit;
+    return { ...m, pct, val: valStr + ' / ' + m.target + m.unit, color: colors[m.type] || colors.custom };
+  });
 }
 
 function renderGamificacion(){
@@ -5184,13 +5271,10 @@ function renderGamificacion(){
   if(!el) return;
   const logros = calcLogros();
   const unlocked = logros.filter(l=>l.unlocked);
-  const bestStreak = HABITS.length ? HABITS.reduce((a,b)=>a.streak>b.streak?a:b) : null;
-  const maxStreak = HABITS.length ? Math.max(...HABITS.map(h=>h.streak)) : 0;
+  const top3 = [...HABITS].sort((a,b)=>b.streak-a.streak).slice(0,3).filter(h=>h.streak>0);
 
   let html = '';
-  // Top rachas
-  if(bestStreak && maxStreak > 0){
-    const top3 = [...HABITS].sort((a,b)=>b.streak-a.streak).slice(0,3).filter(h=>h.streak>0);
+  if(top3.length){
     html += '<div style="margin-bottom:10px">';
     html += '<div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px">🔥 Mejores rachas</div>';
     html += top3.map(h=>`<div class="gamif-racha-row">
@@ -5200,15 +5284,12 @@ function renderGamificacion(){
     </div>`).join('');
     html += '</div>';
   }
-  // Logros desbloqueados preview
   html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
     <div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase">🏆 Logros</div>
     <div style="font-size:10.5px;color:var(--gold)">${unlocked.length}/${LOGROS_DEF.length} desbloqueados</div>
   </div>`;
-  // Progress bar logros
   const pct = Math.round((unlocked.length/LOGROS_DEF.length)*100);
   html += `<div style="height:4px;background:var(--s2);border-radius:2px;overflow:hidden;margin-bottom:10px"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:2px;transition:width .6s"></div></div>`;
-  // Show last 3 unlocked
   const recent = unlocked.slice(-3);
   if(recent.length){
     html += `<div style="display:flex;gap:8px;flex-wrap:wrap">`;
@@ -5220,7 +5301,6 @@ function renderGamificacion(){
   } else {
     html += '<div style="font-size:11.5px;color:var(--t3)">Completa actividades para desbloquear logros.</div>';
   }
-
   el.innerHTML = html;
 }
 
@@ -5236,20 +5316,122 @@ function renderGamificacionHabitos(){
       <span class="logro-badge ${l.unlocked?'gold':'locked'}">${l.unlocked?'✓ Desbloqueado':'Bloqueado'}</span>
     </div>`).join('');
   }
-  // Metas list
+  // Metas editables
+  renderMetasList();
+}
+
+function renderMetasList(){
   const mlist = document.getElementById('gamif-metas-list');
-  if(mlist){
-    const metas = buildMetas();
-    mlist.innerHTML = metas.map(m => `<div class="meta-row">
+  if(!mlist) return;
+  const metas = buildMetas();
+
+  mlist.innerHTML = metas.map((m, i) => {
+    const done = m.pct >= 100;
+    return `
+    <div class="meta-inline-edit" id="meta-edit-${i}">
+      <div class="meta-edit-row">
+        <span class="meta-edit-lbl">Nombre</span>
+        <input class="meta-edit-in" id="meta-name-in-${i}" value="${m.name}" maxlength="40" placeholder="Nombre de la meta">
+      </div>
+      <div class="meta-edit-row">
+        <span class="meta-edit-lbl">Objetivo</span>
+        <input class="meta-edit-in" id="meta-target-in-${i}" type="number" min="1" max="9999" step="0.5" value="${m.target}" style="width:80px;flex:unset">
+        <span style="font-size:11px;color:var(--t3)">${m.unit}</span>
+      </div>
+      <div class="meta-edit-actions">
+        <button class="meta-save-btn" onclick="saveMeta(${i})">Guardar</button>
+        <button class="meta-cancel-btn" onclick="closeMetaEdit(${i})">Cancelar</button>
+        ${m.id && !METAS_DEFAULTS.find(d=>d.id===m.id) || m.type==='custom' ? `<button class="meta-del-btn" onclick="deleteMeta('${m.id}')">Eliminar</button>` : ''}
+      </div>
+    </div>
+    <div class="meta-row" id="meta-row-${i}">
       <span class="meta-ico">${m.ico}</span>
       <div class="meta-info">
-        <div class="meta-name">${m.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+          <div class="meta-name">${m.name}</div>
+          ${done ? '<span class="meta-completed-badge">✓ Lograda</span>' : ''}
+        </div>
         <div class="meta-track"><div class="meta-fill" style="width:${m.pct}%;background:${m.color}"></div></div>
         <div class="meta-val">${m.val}</div>
       </div>
-      <span class="meta-check">${m.pct >= 100 ? '✅' : '⭕'}</span>
-    </div>`).join('');
-  }
+      <button class="meta-edit-btn" onclick="openMetaEdit(${i})" title="Editar meta">✏</button>
+    </div>`;
+  }).join('');
+
+  // Add-meta form at the bottom
+  mlist.innerHTML += `
+  <div class="add-meta-form" id="add-meta-form">
+    <div style="font-size:11px;color:var(--t2);font-weight:600;margin-bottom:4px">Nueva meta personalizada</div>
+    <div class="meta-edit-row">
+      <span class="meta-edit-lbl">Nombre</span>
+      <input class="meta-edit-in" id="new-meta-name" placeholder="Ej: Leer 10 libros" maxlength="40">
+    </div>
+    <div class="meta-edit-row">
+      <span class="meta-edit-lbl">Objetivo</span>
+      <input class="meta-edit-in" id="new-meta-target" type="number" min="1" max="9999" value="10" style="width:80px;flex:unset">
+      <input class="meta-edit-in" id="new-meta-unit" placeholder="unidad (ej: libros)" maxlength="12" style="width:100px">
+    </div>
+    <div class="meta-edit-actions">
+      <button class="meta-save-btn" onclick="saveNewMeta()">Crear meta</button>
+      <button class="meta-cancel-btn" onclick="closeAddMeta()">Cancelar</button>
+    </div>
+  </div>`;
+}
+
+function openMetaEdit(i){
+  // Close any other open editors first
+  document.querySelectorAll('.meta-inline-edit.open').forEach(el => el.classList.remove('open'));
+  document.getElementById('meta-edit-' + i).classList.add('open');
+  document.getElementById('meta-row-' + i).style.opacity = '0.4';
+}
+
+function closeMetaEdit(i){
+  document.getElementById('meta-edit-' + i).classList.remove('open');
+  document.getElementById('meta-row-' + i).style.opacity = '';
+}
+
+function saveMeta(i){
+  const metas = getMetasDef();
+  const m = metas[i];
+  const newName = (document.getElementById('meta-name-in-' + i).value || '').trim() || m.name;
+  const newTarget = parseFloat(document.getElementById('meta-target-in-' + i).value) || m.target;
+  metas[i] = { ...m, name: newName, target: newTarget };
+  saveMetaTargets(metas.map(x => ({ id: x.id, target: x.target, name: x.name, type: x.type, unit: x.unit, ico: x.ico })));
+  showToast('Meta actualizada', 'ok');
+  renderMetasList();
+  renderGamificacion();
+}
+
+function deleteMeta(id){
+  const saved = getMetasDef().filter(m => m.id !== id);
+  saveMetaTargets(saved.map(x => ({ id: x.id, target: x.target, name: x.name, type: x.type, unit: x.unit, ico: x.ico })));
+  showToast('Meta eliminada', 'warn');
+  renderMetasList();
+}
+
+function addMetaPersonal(){
+  document.querySelectorAll('.meta-inline-edit.open').forEach(el => el.classList.remove('open'));
+  const form = document.getElementById('add-meta-form');
+  if(form){ form.classList.toggle('open'); if(form.classList.contains('open')) document.getElementById('new-meta-name').focus(); }
+}
+
+function closeAddMeta(){
+  const form = document.getElementById('add-meta-form');
+  if(form) form.classList.remove('open');
+}
+
+function saveNewMeta(){
+  const name = (document.getElementById('new-meta-name').value||'').trim();
+  const target = parseFloat(document.getElementById('new-meta-target').value) || 10;
+  const unit = (document.getElementById('new-meta-unit').value||'').trim() || 'puntos';
+  if(!name){ showToast('Ingresa un nombre para la meta', 'warn'); return; }
+  const existing = getMetasDef();
+  const id = 'custom_' + Date.now();
+  existing.push({ id, type:'custom', ico:'🎯', name, target, unit: ' '+unit, current: 0 });
+  saveMetaTargets(existing.map(x => ({ id: x.id, target: x.target, name: x.name, type: x.type, unit: x.unit, ico: x.ico })));
+  showToast('Meta creada', 'ok');
+  closeAddMeta();
+  renderMetasList();
 }
 
 // ══════════════════════════════════════════════
