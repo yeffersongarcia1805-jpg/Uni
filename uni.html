@@ -1577,6 +1577,92 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 .att-track { width: 80px; height: 3px; background: var(--s2); border-radius: 2px; overflow: hidden }
 .att-fill { height: 100%; border-radius: 2px }
 .att-val { font-size: 10.5px; font-family: 'DM Mono', monospace; color: var(--t2); min-width: 32px; text-align: right }
+
+/* ═══════════════════════════════════════════
+   MÉTODOS DE ESTUDIO
+═══════════════════════════════════════════ */
+.met-tabs {
+  display: flex; gap: 6px; padding: 2px 0;
+}
+.met-tab {
+  background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rm);
+  color: var(--t2); font-family: 'Syne', sans-serif; font-size: 12px;
+  padding: 7px 16px; cursor: pointer; transition: all .18s;
+}
+.met-tab:hover { background: var(--s2); color: var(--t1) }
+.met-tab.active { background: var(--gold-dim); border-color: var(--gold-b); color: var(--gold); font-weight: 600 }
+.met-bloque-card { position: relative; overflow: hidden }
+.met-bloque-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px }
+.met-bloque-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px; border: 1px solid transparent;
+}
+.met-bloque-cond { font-size: 11px; color: var(--t3) }
+.met-bloque-title { font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 2px }
+.met-bloque-method { font-size: 11px; color: var(--gold); font-weight: 600; margin-bottom: 6px; letter-spacing: .02em }
+.met-bloque-desc { font-size: 11.5px; color: var(--t2); line-height: 1.6; margin-bottom: 12px }
+.met-bloque-course-row { display: flex; gap: 8px; margin-bottom: 12px }
+.met-select {
+  background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs);
+  color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12px;
+  padding: 6px 10px; outline: none; cursor: pointer; transition: border-color .18s;
+}
+.met-select:focus { border-color: var(--gold) }
+.met-input {
+  flex: 1; background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs);
+  color: var(--t1); font-family: 'Syne', sans-serif; font-size: 12px;
+  padding: 6px 10px; outline: none; transition: border-color .18s;
+}
+.met-input:focus { border-color: var(--gold) }
+.met-start-btn {
+  display: flex; align-items: center; gap: 7px; justify-content: center;
+  background: var(--gold); color: var(--n0); border: none;
+  font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 700;
+  padding: 9px 18px; border-radius: var(--rs); cursor: pointer; transition: background .18s; width: 100%;
+}
+.met-start-btn:hover { background: var(--gold-2) }
+.met-start-btn.running { background: var(--danger); animation: met-pulse 2s infinite }
+@keyframes met-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,85,85,.4) }50%{ box-shadow:0 0 0 6px rgba(255,85,85,0) } }
+.met-timer-row { margin-top: 12px; display: flex; align-items: center; gap: 12px }
+.met-timer-row.hidden { display: none !important }
+.met-timer-disp { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--t1); letter-spacing: .04em; min-width: 90px }
+.met-timer-btns { display: flex; gap: 7px }
+.met-rot-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--b0) }
+.met-rot-row:last-child { border-bottom: none }
+.met-rot-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+.met-rot-name { font-size: 12.5px; color: var(--t1); flex: 1 }
+.met-rot-days { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--t3); flex-shrink: 0 }
+.met-rot-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 8px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .06em }
+.met-rot-badge.urgent { background: var(--danger-dim); color: var(--danger) }
+.met-rot-badge.soon   { background: var(--amber-dim);  color: var(--amber) }
+.met-rot-badge.ok     { background: var(--green-dim);  color: var(--green) }
+.met-hist-item { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--b0) }
+.met-hist-item:last-child { border-bottom: none }
+.met-hist-method-badge { font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; margin-top: 1px }
+.met-hist-info { flex: 1; min-width: 0 }
+.met-hist-topic { font-size: 12.5px; color: var(--t1); font-weight: 500 }
+.met-hist-sub { font-size: 10.5px; color: var(--t3); margin-top: 2px }
+.met-hist-mins { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--t2); flex-shrink: 0 }
+.met-hist-del { background: none; border: none; color: var(--t3); cursor: pointer; font-size: 12px; padding: 2px 5px; border-radius: var(--rxs); transition: color .15s }
+.met-hist-del:hover { color: var(--danger) }
+.met-mini-bar-row { display: flex; align-items: center; gap: 10px; padding: 6px 0 }
+.met-mini-bar-lbl { font-size: 11.5px; color: var(--t2); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.met-mini-bar-track { flex: 1; height: 8px; background: var(--s2); border-radius: 4px; overflow: hidden }
+.met-mini-bar-fill { height: 100%; border-radius: 4px; transition: width .6s cubic-bezier(.4,0,.2,1) }
+.met-mini-bar-val { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--t3); width: 38px; text-align: right; flex-shrink: 0 }
+.met-review-chip { display: flex; align-items: center; gap: 6px; background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rs); padding: 5px 10px; margin-bottom: 5px; font-size: 11px; color: var(--t2) }
+.met-review-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0 }
+.met-guia-ico { font-size: 32px; margin-bottom: 8px }
+.met-guia-title { font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 6px }
+.met-guia-badge { display: inline-flex; font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px }
+.met-guia-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px }
+.met-guia-step { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--t2); line-height: 1.5 }
+.met-step-n { width: 20px; height: 20px; border-radius: 50%; background: var(--s2); border: 1px solid var(--b1); color: var(--t3); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px }
+.met-guia-tip { background: var(--gold-dim); border: 1px solid var(--gold-b); border-radius: var(--rs); padding: 9px 12px; font-size: 11.5px; color: var(--t2); line-height: 1.5 }
+.met-empty { text-align:center; padding: 32px 16px; color: var(--t3); font-size: 12px }
+.met-empty-ico { font-size: 32px; margin-bottom: 8px }
+.met-bloque-card.done { border-color: var(--green-b) }
+.met-done-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--green-dim); color: var(--green); border: 1px solid var(--green-b); margin-top: 8px }
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -1836,6 +1922,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
   <div class="s-item" onclick="showPage('pomodoro')">
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="9" r="5"/><path d="M6 2h4M8 4v1"/><path d="M8 7v2.5l1.5 1.5" stroke-linecap="round"/></svg>
     Pomodoro
+  </div>
+  <div class="s-item" onclick="showPage('metodos')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3h12M2 6h8M2 9h10M2 12h6"/><circle cx="13" cy="11" r="2.5"/><path d="M12 11l.7.7 1.3-1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Métodos</span>
   </div>
   <div class="s-item" onclick="showPage('habitos')">
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8a5 5 0 1 0 10 0 5 5 0 0 0-10 0"/><path d="M8 6v2l1.5 1" stroke-linecap="round"/></svg>
@@ -2266,6 +2356,232 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 </main>
 
 <!-- ════════════════════════════════════
+     PAGE: MÉTODOS DE ESTUDIO
+════════════════════════════════════ -->
+<main class="main fade" id="page-metodos">
+  <div class="ph">
+    <div>
+      <div class="pt">Métodos de Estudio</div>
+      <span class="ps">Bloques diferenciados · Práctica espaciada · Problem-Based Learning</span>
+    </div>
+    <div class="ph-actions">
+      <button class="qa-btn" onclick="metOpenNewSession()">+ Nueva sesión</button>
+    </div>
+  </div>
+
+  <!-- Stats rápidas -->
+  <div class="stats" id="met-stats-row"></div>
+
+  <!-- Tabs -->
+  <div class="met-tabs">
+    <button class="met-tab active" onclick="metSwitchTab('hoy',this)">📅 Plan de hoy</button>
+    <button class="met-tab" onclick="metSwitchTab('historial',this)">📊 Historial</button>
+    <button class="met-tab" onclick="metSwitchTab('guias',this)">📖 Guías</button>
+  </div>
+
+  <!-- TAB: HOY -->
+  <div id="met-tab-hoy">
+    <div class="g2">
+      <!-- Bloque 1 -->
+      <div class="card met-bloque-card" id="met-b1-card">
+        <div class="met-bloque-hdr">
+          <div class="met-bloque-badge" style="background:rgba(240,168,64,.15);color:var(--amber);border-color:rgba(240,168,64,.3)">Bloque 1 · 45 min</div>
+          <span class="met-bloque-cond">🔇 En silencio</span>
+        </div>
+        <div class="met-bloque-title">Concepto nuevo</div>
+        <div class="met-bloque-method">✦ Método Feynman</div>
+        <div class="met-bloque-desc">Lee → cierra → explica en voz alta. Un solo tema por sesión.</div>
+        <div class="met-bloque-course-row">
+          <select class="met-select" id="met-b1-course"></select>
+          <input class="met-input" id="met-b1-topic" placeholder="Tema a estudiar…" maxlength="60">
+        </div>
+        <button class="met-start-btn" onclick="metStartBloque(1)">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M5 3l8 5-8 5V3z"/></svg>
+          Iniciar bloque
+        </button>
+        <div class="met-timer-row hidden" id="met-b1-timer">
+          <div class="met-timer-disp" id="met-b1-tdisp">45:00</div>
+          <div class="met-timer-btns">
+            <button class="tbtn" onclick="metPauseBloque(1)">Pausar</button>
+            <button class="tbtn primary" onclick="metFinishBloque(1)">Completar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloque 2 -->
+      <div class="card met-bloque-card" id="met-b2-card">
+        <div class="met-bloque-hdr">
+          <div class="met-bloque-badge" style="background:var(--blue-dim);color:var(--blue);border-color:var(--blue-b)">Bloque 2 · 90 min</div>
+          <span class="met-bloque-cond">🎵 Con música</span>
+        </div>
+        <div class="met-bloque-title">Resolución de problemas</div>
+        <div class="met-bloque-method">✦ Problem-Based Learning</div>
+        <div class="met-bloque-desc">Lánzate al ejercicio primero. La teoría viene cuando te atascas.</div>
+        <div class="met-bloque-course-row">
+          <select class="met-select" id="met-b2-course"></select>
+          <input class="met-input" id="met-b2-topic" placeholder="Ejercicios o práctica…" maxlength="60">
+        </div>
+        <button class="met-start-btn" onclick="metStartBloque(2)">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M5 3l8 5-8 5V3z"/></svg>
+          Iniciar bloque
+        </button>
+        <div class="met-timer-row hidden" id="met-b2-timer">
+          <div class="met-timer-disp" id="met-b2-tdisp">90:00</div>
+          <div class="met-timer-btns">
+            <button class="tbtn" onclick="metPauseBloque(2)">Pausar</button>
+            <button class="tbtn primary" onclick="metFinishBloque(2)">Completar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloque 3 -->
+    <div class="card met-bloque-card" id="met-b3-card">
+      <div class="met-bloque-hdr">
+        <div class="met-bloque-badge" style="background:var(--green-dim);color:var(--green);border-color:var(--green-b)">Bloque 3 · 20 min</div>
+        <span class="met-bloque-cond">🌙 Antes de dormir</span>
+      </div>
+      <div style="display:flex;gap:24px;align-items:flex-start">
+        <div style="flex:1">
+          <div class="met-bloque-title">Repaso espaciado</div>
+          <div class="met-bloque-method">✦ Práctica espaciada</div>
+          <div class="met-bloque-desc">Nada nuevo. Escribe en una hoja en blanco todo lo que recuerdas de los temas de hoy y de días anteriores. Luego verifica.</div>
+        </div>
+        <div id="met-b3-review-queue" style="min-width:200px"></div>
+      </div>
+      <div class="met-bloque-course-row" style="margin-top:12px">
+        <select class="met-select" id="met-b3-course" style="flex:1"></select>
+        <input class="met-input" id="met-b3-topic" placeholder="Tema a repasar (opcional)…" maxlength="60">
+      </div>
+      <button class="met-start-btn" onclick="metStartBloque(3)">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M5 3l8 5-8 5V3z"/></svg>
+        Iniciar repaso
+      </button>
+      <div class="met-timer-row hidden" id="met-b3-timer">
+        <div class="met-timer-disp" id="met-b3-tdisp">20:00</div>
+        <div class="met-timer-btns">
+          <button class="tbtn" onclick="metPauseBloque(3)">Pausar</button>
+          <button class="tbtn primary" onclick="metFinishBloque(3)">Completar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotación de cursos -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">🔄 Rotación de cursos</span>
+        <span class="card-action gold" onclick="metRecalcRotacion()">Recalcular</span>
+      </div>
+      <div id="met-rotacion-list"></div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORIAL -->
+  <div id="met-tab-historial" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Sesiones completadas</span>
+        <span id="met-hist-count" style="font-size:11px;color:var(--t3)"></span>
+      </div>
+      <div id="met-historial-list"></div>
+    </div>
+    <div class="g2" style="margin-top:0">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Minutos por método</span></div>
+        <div id="met-chart-metodos" style="padding:8px 0"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Minutos por curso</span></div>
+        <div id="met-chart-cursos" style="padding:8px 0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: GUÍAS -->
+  <div id="met-tab-guias" style="display:none">
+    <div class="g2">
+      <div class="card">
+        <div class="met-guia-ico">🔇</div>
+        <div class="met-guia-title">Método Feynman</div>
+        <div class="met-guia-badge" style="background:rgba(240,168,64,.12);color:var(--amber)">Bloque 1 · Silencio</div>
+        <div class="met-guia-steps">
+          <div class="met-guia-step"><span class="met-step-n">1</span><span>Lee el concepto completo sin subrayar</span></div>
+          <div class="met-guia-step"><span class="met-step-n">2</span><span>Cierra el libro/apuntes</span></div>
+          <div class="met-guia-step"><span class="met-step-n">3</span><span>Explícalo en voz alta como si se lo contaras a alguien que no sabe nada</span></div>
+          <div class="met-guia-step"><span class="met-step-n">4</span><span>Identifica dónde te trabas — eso es lo que no sabes realmente</span></div>
+          <div class="met-guia-step"><span class="met-step-n">5</span><span>Vuelve al material solo para esos puntos ciegos</span></div>
+          <div class="met-guia-step"><span class="met-step-n">6</span><span>Repite hasta poder explicarlo limpio y completo</span></div>
+        </div>
+        <div class="met-guia-tip">💡 Para Civil: ideal en Mecánica de Suelos, Estructuras, Hidráulica y cualquier concepto de física aplicada.</div>
+      </div>
+      <div class="card">
+        <div class="met-guia-ico">🎵</div>
+        <div class="met-guia-title">Problem-Based Learning</div>
+        <div class="met-guia-badge" style="background:var(--blue-dim);color:var(--blue)">Bloque 2 · Con música</div>
+        <div class="met-guia-steps">
+          <div class="met-guia-step"><span class="met-step-n">1</span><span>Abre el ejercicio o práctica directamente — sin releer teoría primero</span></div>
+          <div class="met-guia-step"><span class="met-step-n">2</span><span>Intenta resolverlo con lo que ya sabes</span></div>
+          <div class="met-guia-step"><span class="met-step-n">3</span><span>Cuando te atascas, ahí vas a buscar exactamente lo que falta</span></div>
+          <div class="met-guia-step"><span class="met-step-n">4</span><span>Resuelve, luego compara con la solución tapada — nunca al revés</span></div>
+          <div class="met-guia-step"><span class="met-step-n">5</span><span>Anota qué concepto falló para el Bloque 3</span></div>
+        </div>
+        <div class="met-guia-tip">💡 Para Civil: cálculo diferencial, resistencia de materiales, análisis estructural, hidráulica numérica.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="met-guia-ico" style="font-size:28px">🌙</div>
+        <div style="flex:1">
+          <div class="met-guia-title" style="margin-bottom:4px">Práctica Espaciada</div>
+          <div class="met-guia-badge" style="background:var(--green-dim);color:var(--green);display:inline-flex;margin-bottom:10px">Bloque 3 · Antes de dormir</div>
+          <div class="met-guia-steps" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="met-guia-step"><span class="met-step-n">1</span><span>Toma una hoja en blanco</span></div>
+            <div class="met-guia-step"><span class="met-step-n">2</span><span>Escribe todo lo que recuerdas del día sin mirar nada</span></div>
+            <div class="met-guia-step"><span class="met-step-n">3</span><span>Repasa también temas de hace 3 días</span></div>
+            <div class="met-guia-step"><span class="met-step-n">4</span><span>Verifica abriendo tus apuntes — solo al final</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="met-guia-tip" style="margin-top:12px">💡 La regla de oro: nunca dejes pasar más de 3 días sin tocar un curso, aunque sean 20 minutos de repaso nocturno.</div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal nueva sesión manual -->
+<div class="modal-overlay hidden" id="met-session-modal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head"><span class="modal-title">Registrar sesión</span><button class="modal-close" onclick="metCloseModal()">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:16px">
+      <div>
+        <div class="ob-label">Método</div>
+        <select class="ob-select" id="met-modal-method">
+          <option value="feynman">Método Feynman (Bloque 1)</option>
+          <option value="pbl">Problem-Based Learning (Bloque 2)</option>
+          <option value="espaciada">Práctica Espaciada (Bloque 3)</option>
+        </select>
+      </div>
+      <div>
+        <div class="ob-label">Curso</div>
+        <select class="ob-select" id="met-modal-course"></select>
+      </div>
+      <div>
+        <div class="ob-label">Tema</div>
+        <input class="ob-input" id="met-modal-topic" placeholder="¿Qué estudiaste?" maxlength="80">
+      </div>
+      <div>
+        <div class="ob-label">Duración (minutos)</div>
+        <input class="ob-input" id="met-modal-mins" type="number" min="5" max="240" value="45">
+      </div>
+      <div>
+        <div class="ob-label">Notas (opcional)</div>
+        <textarea class="ob-input" id="met-modal-notes" rows="2" placeholder="¿Qué puntos ciegos encontraste?" style="resize:vertical"></textarea>
+      </div>
+      <button class="met-start-btn" style="width:100%" onclick="metSaveManualSession()">Guardar sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      PAGE: HÁBITOS
 ════════════════════════════════════ -->
 <main class="main fade" id="page-habitos">
@@ -2687,7 +3003,7 @@ function refreshBnBadge(){
 // ══════════════════════════════════════════════
 // PAGE TRANSITIONS — enhanced showPage
 // ══════════════════════════════════════════════
-const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','historial','asistencia','pomodoro','habitos','importar','ajustes'];
+const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','historial','asistencia','pomodoro','metodos','habitos','importar','ajustes'];
 let _currentPage = 'dashboard';
 
 function showPage(name, noAnim){
@@ -4112,6 +4428,7 @@ function renderPage(id){
     case 'historial':   renderHistorial(); break;
     case 'asistencia':  renderAttendance(); refreshNotifDot(); break;
     case 'pomodoro':    renderStudyChart('schart2'); syncTimer(); break;
+    case 'metodos':     renderMetodos(); break;
     case 'habitos':     renderHabits(); renderGamificacionHabitos(); break;
     case 'ajustes':     loadSettingsForm(); renderCourseEditor(); renderSemEditor(); checkNotifStatus(); break;
   }
@@ -5656,6 +5973,265 @@ function applyTheme(){
 // ══════════════════════════════════════════════
 // BACKUP & RESTAURAR
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// MÉTODOS DE ESTUDIO
+// ══════════════════════════════════════════════
+const MET_COLORS = {
+  feynman:   { bg:'rgba(240,168,64,.15)',  color:'var(--amber)', label:'Feynman' },
+  pbl:       { bg:'var(--blue-dim)',       color:'var(--blue)',  label:'P-B-L' },
+  espaciada: { bg:'var(--green-dim)',      color:'var(--green)', label:'Espaciada' }
+};
+const MET_DURATIONS = { 1: 45*60, 2: 90*60, 3: 20*60 };
+const MET_METHODS   = { 1:'feynman', 2:'pbl', 3:'espaciada' };
+
+let MET_SESSIONS = [];      // { id, method, course, topic, mins, date, notes }
+let _metTimers = {};        // bloque -> { interval, remaining, running }
+let _metCurrentTab = 'hoy';
+
+function metLoadSessions(){
+  try { MET_SESSIONS = JSON.parse(localStorage.getItem('uni_met_sessions') || '[]'); } catch(e){ MET_SESSIONS = []; }
+}
+function metSaveSessions(){
+  try { localStorage.setItem('uni_met_sessions', JSON.stringify(MET_SESSIONS)); } catch(e){}
+}
+
+function renderMetodos(){
+  metLoadSessions();
+  metPopulateCourseSelects();
+  metRenderStats();
+  metRenderRotacion();
+  metRenderReviewQueue();
+  metSwitchTab(_metCurrentTab);
+}
+
+function metPopulateCourseSelects(){
+  const courses = COURSES.length ? COURSES : [{ name:'Sin cursos', color:'#888' }];
+  ['met-b1-course','met-b2-course','met-b3-course','met-modal-course'].forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.innerHTML = courses.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  });
+}
+
+function metRenderStats(){
+  const row = document.getElementById('met-stats-row'); if(!row) return;
+  const totalMins = MET_SESSIONS.reduce((a,s) => a+s.mins, 0);
+  const today = new Date().toDateString();
+  const todayMins = MET_SESSIONS.filter(s => new Date(s.date).toDateString()===today).reduce((a,s)=>a+s.mins,0);
+  const streak = metCalcStreak();
+  const methodCounts = { feynman:0, pbl:0, espaciada:0 };
+  MET_SESSIONS.forEach(s => { if(methodCounts[s.method]!==undefined) methodCounts[s.method]++; });
+  const topMethod = Object.entries(methodCounts).sort((a,b)=>b[1]-a[1])[0];
+  row.innerHTML = [
+    { ico:'⏱️', val: Math.round(totalMins)+'m', lbl:'Total acumulado', color:'var(--gold)' },
+    { ico:'📅', val: Math.round(todayMins)+'m', lbl:'Hoy', color:'var(--blue)' },
+    { ico:'🔥', val: streak+'d', lbl:'Racha de sesiones', color:'var(--amber)' },
+    { ico:'✦',  val: topMethod ? MET_COLORS[topMethod[0]].label : '—', lbl:'Método más usado', color:'var(--green)' }
+  ].map(s => `
+    <div class="sc-card" style="background:var(--n2);border:1px solid var(--b0);border-radius:var(--r);padding:14px 16px">
+      <div style="font-size:18px;margin-bottom:4px">${s.ico}</div>
+      <div class="sc-val" style="color:${s.color};font-family:'DM Mono',monospace;font-size:22px;font-weight:500">${s.val}</div>
+      <div style="font-size:10.5px;color:var(--t3);margin-top:2px">${s.lbl}</div>
+    </div>`).join('');
+}
+
+function metCalcStreak(){
+  if(!MET_SESSIONS.length) return 0;
+  const days = [...new Set(MET_SESSIONS.map(s => new Date(s.date).toDateString()))].sort((a,b)=>new Date(b)-new Date(a));
+  let streak = 0, cur = new Date();
+  for(const d of days){
+    const diff = Math.round((cur - new Date(d)) / 86400000);
+    if(diff <= 1){ streak++; cur = new Date(d); } else break;
+  }
+  return streak;
+}
+
+function metRenderRotacion(){
+  const list = document.getElementById('met-rotacion-list'); if(!list) return;
+  if(!COURSES.length){ list.innerHTML = '<div class="met-empty">Agrega cursos en Ajustes para ver la rotación</div>'; return; }
+  const today = new Date();
+  const courseColors = ['var(--blue)','var(--green)','var(--amber)','var(--purple)','var(--red)','var(--gold)'];
+  list.innerHTML = COURSES.map((c, i) => {
+    const lastSession = MET_SESSIONS.filter(s=>s.course===c.name).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    const daysSince = lastSession ? Math.round((today - new Date(lastSession.date))/86400000) : 99;
+    const badge = daysSince >= 4 ? 'urgent' : daysSince >= 2 ? 'soon' : 'ok';
+    const badgeTxt = daysSince >= 99 ? 'Nunca' : daysSince === 0 ? 'Hoy' : `hace ${daysSince}d`;
+    return `<div class="met-rot-row">
+      <div class="met-rot-dot" style="background:${c.color||courseColors[i%courseColors.length]}"></div>
+      <div class="met-rot-name">${c.name}</div>
+      <div class="met-rot-days">${badgeTxt}</div>
+      <span class="met-rot-badge ${badge}">${badge==='urgent'?'¡Estudiar ya!':badge==='soon'?'Pronto':'Al día'}</span>
+    </div>`;
+  }).join('');
+}
+
+function metRecalcRotacion(){ metRenderRotacion(); showToast('Rotación actualizada','ok',1500); }
+
+function metRenderReviewQueue(){
+  const el = document.getElementById('met-b3-review-queue'); if(!el) return;
+  const today = new Date().toDateString();
+  const recentTopics = MET_SESSIONS
+    .filter(s => new Date(s.date).toDateString() !== today)
+    .sort((a,b) => new Date(b.date)-new Date(a.date))
+    .slice(0,4);
+  if(!recentTopics.length){ el.innerHTML = '<div style="font-size:11px;color:var(--t3)">Completa sesiones para ver qué repasar</div>'; return; }
+  el.innerHTML = '<div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Para repasar hoy</div>'
+    + recentTopics.map(s => `<div class="met-review-chip"><div class="met-review-chip-dot"></div>${s.topic || s.course}</div>`).join('');
+}
+
+// ── TIMERS ──────────────────────────────────
+function metStartBloque(b){
+  const btn = document.querySelector(`#met-b${b}-card .met-start-btn`);
+  const timerRow = document.getElementById(`met-b${b}-timer`);
+  const disp = document.getElementById(`met-b${b}-tdisp`);
+  if(_metTimers[b]?.running) return;
+  const duration = MET_DURATIONS[b];
+  if(!_metTimers[b]) _metTimers[b] = { remaining: duration, running: false };
+  _metTimers[b].running = true;
+  timerRow.classList.remove('hidden');
+  if(btn){ btn.classList.add('running'); btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" width="14"><rect x="3" y="3" width="4" height="10" rx="1"/><rect x="9" y="3" width="4" height="10" rx="1"/></svg> En progreso'; btn.disabled = true; }
+  _metTimers[b].interval = setInterval(() => {
+    _metTimers[b].remaining--;
+    if(disp) disp.textContent = metFmtTime(_metTimers[b].remaining);
+    if(_metTimers[b].remaining <= 0){
+      clearInterval(_metTimers[b].interval);
+      showToast(`⏰ Bloque ${b} terminado — ¡excelente!`, 'ok', 4000);
+      metFinishBloque(b);
+    }
+  }, 1000);
+  if(disp) disp.textContent = metFmtTime(_metTimers[b].remaining);
+}
+
+function metPauseBloque(b){
+  if(!_metTimers[b]) return;
+  clearInterval(_metTimers[b].interval);
+  _metTimers[b].running = false;
+  const btn = document.querySelector(`#met-b${b}-card .met-start-btn`);
+  if(btn){ btn.classList.remove('running'); btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M5 3l8 5-8 5V3z"/></svg> Reanudar'; btn.disabled = false; btn.onclick = () => metStartBloque(b); }
+}
+
+function metFinishBloque(b){
+  const elapsed = _metTimers[b] ? MET_DURATIONS[b] - _metTimers[b].remaining : MET_DURATIONS[b];
+  if(_metTimers[b]){ clearInterval(_metTimers[b].interval); _metTimers[b] = null; }
+  const courseEl = document.getElementById(`met-b${b}-course`);
+  const topicEl  = document.getElementById(`met-b${b}-topic`);
+  const course = courseEl?.value || (COURSES[0]?.name || '');
+  const topic  = topicEl?.value?.trim() || `Bloque ${b} — ${MET_METHODS[b]}`;
+  const mins   = Math.max(1, Math.round(elapsed / 60));
+  const method = MET_METHODS[b];
+  const id = 'ms_' + Date.now();
+  MET_SESSIONS.push({ id, method, course, topic, mins, date: new Date().toISOString(), notes:'' });
+  metSaveSessions();
+  showToast('✓ Sesión guardada', 'ok');
+  const card = document.getElementById(`met-b${b}-card`);
+  const timerRow = document.getElementById(`met-b${b}-timer`);
+  const btn = card?.querySelector('.met-start-btn');
+  if(timerRow) timerRow.classList.add('hidden');
+  if(card) card.classList.add('done');
+  if(btn){ btn.outerHTML = '<div class="met-done-chip">✓ Bloque completado</div>'; }
+  metRenderStats(); metRenderRotacion(); metRenderReviewQueue();
+  if(_metCurrentTab === 'historial') metRenderHistorial();
+}
+
+function metFmtTime(secs){
+  const m = Math.floor(Math.abs(secs)/60).toString().padStart(2,'0');
+  const s = (Math.abs(secs)%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+// ── HISTORIAL ───────────────────────────────
+function metRenderHistorial(){
+  const list = document.getElementById('met-historial-list'); if(!list) return;
+  const countEl = document.getElementById('met-hist-count');
+  if(countEl) countEl.textContent = MET_SESSIONS.length + ' sesiones';
+  if(!MET_SESSIONS.length){
+    list.innerHTML = '<div class="met-empty"><div class="met-empty-ico">📋</div>Aún no hay sesiones registradas.<br>Completa un bloque o registra una sesión manualmente.</div>';
+  } else {
+    const sorted = [...MET_SESSIONS].sort((a,b) => new Date(b.date)-new Date(a.date));
+    list.innerHTML = sorted.map(s => {
+      const mc = MET_COLORS[s.method] || MET_COLORS.feynman;
+      const dateStr = new Date(s.date).toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+      return `<div class="met-hist-item">
+        <span class="met-hist-method-badge" style="background:${mc.bg};color:${mc.color}">${mc.label}</span>
+        <div class="met-hist-info">
+          <div class="met-hist-topic">${s.topic || '—'}</div>
+          <div class="met-hist-sub">${s.course} · ${dateStr}${s.notes ? ' · ' + s.notes : ''}</div>
+        </div>
+        <div class="met-hist-mins">${s.mins}m</div>
+        <button class="met-hist-del" onclick="metDeleteSession('${s.id}')" title="Eliminar">✕</button>
+      </div>`;
+    }).join('');
+  }
+  metRenderCharts();
+}
+
+function metDeleteSession(id){
+  MET_SESSIONS = MET_SESSIONS.filter(s => s.id !== id);
+  metSaveSessions(); metRenderHistorial(); metRenderStats();
+}
+
+function metRenderCharts(){
+  // By method
+  const byMethod = document.getElementById('met-chart-metodos'); if(!byMethod) return;
+  const methodTotals = {};
+  MET_SESSIONS.forEach(s => { methodTotals[s.method] = (methodTotals[s.method]||0) + s.mins; });
+  const maxM = Math.max(1, ...Object.values(methodTotals));
+  byMethod.innerHTML = Object.entries(methodTotals).map(([m, mins]) => {
+    const mc = MET_COLORS[m] || MET_COLORS.feynman;
+    return `<div class="met-mini-bar-row">
+      <div class="met-mini-bar-lbl">${mc.label}</div>
+      <div class="met-mini-bar-track"><div class="met-mini-bar-fill" style="width:${(mins/maxM*100).toFixed(1)}%;background:${mc.color}"></div></div>
+      <div class="met-mini-bar-val">${mins}m</div>
+    </div>`;
+  }).join('') || '<div class="met-empty" style="padding:12px">Sin datos</div>';
+
+  // By course
+  const byCourse = document.getElementById('met-chart-cursos'); if(!byCourse) return;
+  const courseTotals = {};
+  MET_SESSIONS.forEach(s => { courseTotals[s.course] = (courseTotals[s.course]||0) + s.mins; });
+  const maxC = Math.max(1, ...Object.values(courseTotals));
+  const courseColors = ['var(--blue)','var(--green)','var(--amber)','var(--purple)','var(--red)','var(--gold)'];
+  byCourse.innerHTML = Object.entries(courseTotals).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,mins],i) => `
+    <div class="met-mini-bar-row">
+      <div class="met-mini-bar-lbl">${c}</div>
+      <div class="met-mini-bar-track"><div class="met-mini-bar-fill" style="width:${(mins/maxC*100).toFixed(1)}%;background:${courseColors[i%courseColors.length]}"></div></div>
+      <div class="met-mini-bar-val">${mins}m</div>
+    </div>`).join('') || '<div class="met-empty" style="padding:12px">Sin datos</div>';
+}
+
+// ── TABS ────────────────────────────────────
+function metSwitchTab(tab, btn){
+  _metCurrentTab = tab;
+  ['hoy','historial','guias'].forEach(t => {
+    const el = document.getElementById('met-tab-'+t);
+    if(el) el.style.display = t===tab ? '' : 'none';
+  });
+  document.querySelectorAll('.met-tab').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tab==='historial') metRenderHistorial();
+}
+
+// ── MODAL SESIÓN MANUAL ─────────────────────
+function metOpenNewSession(){
+  metPopulateCourseSelects();
+  document.getElementById('met-session-modal').classList.remove('hidden');
+}
+function metCloseModal(){
+  document.getElementById('met-session-modal').classList.add('hidden');
+}
+function metSaveManualSession(){
+  const method = document.getElementById('met-modal-method').value;
+  const course = document.getElementById('met-modal-course').value;
+  const topic  = (document.getElementById('met-modal-topic').value||'').trim();
+  const mins   = parseInt(document.getElementById('met-modal-mins').value) || 45;
+  const notes  = (document.getElementById('met-modal-notes').value||'').trim();
+  if(!topic){ showToast('Ingresa un tema','warn'); return; }
+  MET_SESSIONS.push({ id:'ms_'+Date.now(), method, course, topic, mins, date: new Date().toISOString(), notes });
+  metSaveSessions();
+  metCloseModal();
+  showToast('Sesión registrada','ok');
+  renderMetodos();
+}
+
 function exportBackup(){
   const data = {
     _uni_version: 'v5',
