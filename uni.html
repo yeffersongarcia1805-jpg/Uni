@@ -113,7 +113,100 @@ onAuthStateChanged(auth, user => {
 [data-theme="light"] .theme-toggle-switch { background: var(--gold-dim); border-color: var(--gold-b) }
 [data-theme="light"] .theme-toggle-switch::after { transform: translateX(16px); background: var(--gold) }
 
-/* ─── Skeleton screens ─── */
+/* ═══════════════════════════════════════════
+   TEMA UCSM OFICIAL (FASE 3)
+═══════════════════════════════════════════ */
+[data-theme="ucsm"] {
+  --n0: #0e0816; --n1: #150f22; --n2: #1c1430; --n3: #231a3a; --n4: #2c2248;
+  --t1: #f5f0ff; --t2: rgba(245,240,255,.65); --t3: rgba(245,240,255,.32); --t4: rgba(245,240,255,.1);
+  --s0: rgba(192,24,40,.03); --s1: rgba(192,24,40,.06); --s2: rgba(192,24,40,.11);
+  --b0: rgba(192,24,40,.12); --b1: rgba(192,24,40,.22); --b2: rgba(192,24,40,.38);
+  --red: #e02030; --red-dim: rgba(224,32,48,.12); --red-b: rgba(224,32,48,.28);
+  --gold: #e8b860; --gold-2: #c89840; --gold-dim: rgba(232,184,96,.1); --gold-b: rgba(232,184,96,.22);
+  --blue: #6db8ff; --blue-dim: rgba(109,184,255,.1); --blue-b: rgba(109,184,255,.2);
+  --green: #52d48a; --green-dim: rgba(82,212,138,.1); --green-b: rgba(82,212,138,.2);
+  --amber: #f5b840; --amber-dim: rgba(245,184,64,.1);
+  --danger: #ff6060; --danger-dim: rgba(255,96,96,.1);
+  --purple: #b09cf0;
+}
+[data-theme="ucsm"] .t-emblem { background: var(--red) }
+[data-theme="ucsm"] .splash-emblem { background: var(--red) }
+[data-theme="ucsm"] .s-item.active { background: rgba(192,24,40,.14); border-left-color: var(--red) }
+[data-theme="ucsm"] .topbar { border-bottom-color: rgba(192,24,40,.2) }
+[data-theme="ucsm"] .s-pfill { background: linear-gradient(90deg, var(--red), var(--gold)) }
+
+/* ─── Theme palette buttons ─── */
+.theme-palette-btn {
+  display: flex; align-items: center; gap: 6px; background: var(--s1);
+  border: 1.5px solid var(--b0); border-radius: var(--rs); padding: 6px 10px;
+  cursor: pointer; font-family: 'Syne', sans-serif; font-size: 11px; color: var(--t2);
+  transition: all .18s;
+}
+.theme-palette-btn:hover { background: var(--s2); border-color: var(--b1) }
+.theme-palette-btn.active { border-color: var(--gold); color: var(--t1); background: var(--gold-dim) }
+
+/* ═══════════════════════════════════════════
+   GAMIFICACIÓN (FASE 3)
+═══════════════════════════════════════════ */
+.logro-card {
+  background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rm);
+  padding: 12px; display: flex; flex-direction: column; align-items: center;
+  gap: 6px; text-align: center; transition: all .2s; cursor: default;
+}
+.logro-card.unlocked { border-color: var(--gold-b); background: var(--gold-dim) }
+.logro-card.unlocked:hover { box-shadow: 0 4px 16px rgba(200,160,96,.2) }
+.logro-card.locked { opacity: .45; filter: grayscale(.6) }
+.logro-ico { font-size: 24px; line-height: 1 }
+.logro-name { font-size: 11px; font-weight: 600; color: var(--t1) }
+.logro-desc { font-size: 9.5px; color: var(--t3); line-height: 1.4 }
+.logro-badge { font-size: 8px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 8px; }
+.logro-badge.gold { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-b) }
+.logro-badge.locked { background: var(--s1); color: var(--t3) }
+
+/* Racha widget en dashboard */
+.gamif-racha-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--b0) }
+.gamif-racha-row:last-child { border-bottom: none }
+.gamif-racha-fire { font-size: 18px; flex-shrink: 0 }
+.gamif-racha-info { flex: 1; min-width: 0 }
+.gamif-racha-name { font-size: 12px; color: var(--t1); font-weight: 500 }
+.gamif-racha-sub  { font-size: 10px; color: var(--t3); margin-top: 1px }
+.gamif-racha-count { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--gold) }
+
+/* Meta progress */
+.meta-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--b0) }
+.meta-row:last-child { border-bottom: none }
+.meta-ico { font-size: 16px; flex-shrink: 0 }
+.meta-info { flex: 1; min-width: 0 }
+.meta-name { font-size: 12px; color: var(--t1); font-weight: 500; margin-bottom: 5px }
+.meta-track { height: 4px; background: var(--s2); border-radius: 2px; overflow: hidden; margin-bottom: 3px }
+.meta-fill { height: 100%; border-radius: 2px; transition: width .6s }
+.meta-val { font-size: 9.5px; color: var(--t3) }
+.meta-check { font-size: 16px; flex-shrink: 0 }
+
+/* ═══════════════════════════════════════════
+   HISTORIAL DE CICLOS (FASE 3)
+═══════════════════════════════════════════ */
+.hist-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid var(--b0);
+}
+.hist-row:last-child { border-bottom: none }
+.hist-sem-lbl { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--t2); width: 62px; flex-shrink: 0 }
+.hist-bar-wrap { flex: 1 }
+.hist-track { height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden }
+.hist-fill { height: 100%; border-radius: 3px; transition: width .7s cubic-bezier(.4,0,.2,1) }
+.hist-val { font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500; width: 38px; text-align: right; flex-shrink: 0 }
+.hist-delta { font-size: 9.5px; width: 36px; text-align: right; flex-shrink: 0 }
+.hist-delta.up { color: var(--green) }
+.hist-delta.dn { color: var(--danger) }
+.hist-delta.eq { color: var(--t3) }
+.hist-best-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-b); flex-shrink: 0 }
+
+.hist-proj-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--b0) }
+.hist-proj-row:last-child { border-bottom: none }
+.hist-proj-lbl { font-size: 11.5px; color: var(--t2); flex: 1 }
+.hist-proj-val { font-size: 13px; font-family: 'DM Mono', monospace; font-weight: 500 }
 @keyframes sk-shine {
   0%   { background-position: -600px 0 }
   100% { background-position: 600px 0 }
@@ -1612,6 +1705,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5" stroke-dasharray="2 1.5"/><path d="M8 2.5v5.5l3.5 2"/></svg>
     Estadísticas
   </div>
+  <div class="s-item" onclick="showPage('historial')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 13V5l6-3 6 3v8"/><path d="M5 13V9h2v4M9 13V9h2v4"/><path d="M2 5l6 3 6-3"/></svg>
+    Historial ciclos
+  </div>
   <div class="s-item" onclick="showPage('asistencia')">
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
     Asistencia
@@ -1759,6 +1856,14 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
           <button class="ia-chip" role="listitem" onclick="askIA('semana')">Plan esta semana</button>
           <button class="ia-chip" role="listitem" onclick="askIA('meta')">Alcanzar mi meta</button>
         </div>
+      </div>
+      <!-- Gamificación panel -->
+      <div class="card" id="gamif-dash-card">
+        <div class="card-head">
+          <span class="card-title">🏆 Logros & Rachas</span>
+          <span class="card-action gold" onclick="showPage('habitos')">Ver hábitos →</span>
+        </div>
+        <div id="gamif-dash-content"></div>
       </div>
     </div>
   </div>
@@ -1958,8 +2063,41 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 </main>
 
 <!-- ════════════════════════════════════
-     PAGE: ASISTENCIA
+     PAGE: HISTORIAL DE CICLOS (FASE 3)
 ════════════════════════════════════ -->
+<main class="main fade" id="page-historial">
+  <div class="ph">
+    <div class="pt">Historial de ciclos</div>
+    <span class="ps">Evolución académica semestral</span>
+  </div>
+
+  <!-- Gráfico de evolución -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Evolución del promedio ponderado</span></div>
+    <div style="position:relative;width:100%;height:200px;margin-bottom:8px">
+      <canvas id="hist-chart" role="img" aria-label="Gráfico de evolución del PP por semestre"></canvas>
+    </div>
+    <div id="hist-trend-badge" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--green-dim);border:1px solid var(--green-b);border-radius:var(--rs);font-size:11.5px"></div>
+  </div>
+
+  <!-- Stats acumuladas -->
+  <div class="stats" id="hist-stats-grid"></div>
+
+  <!-- Tabla detallada por semestre -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Detalle por semestre</span>
+      <span class="card-action gold" onclick="showPage('ajustes')">Editar →</span>
+    </div>
+    <div id="hist-table"></div>
+  </div>
+
+  <!-- Comparativo con meta -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Proyección hacia la meta</span></div>
+    <div id="hist-meta-section"></div>
+  </div>
+</main>
 <main class="main fade" id="page-asistencia">
   <div class="ph"><div class="pt">Control de Asistencia</div><span class="ps">UCSM — Mínimo 70% de asistencia para aprobar</span></div>
   <div class="infobox" style="margin-bottom:4px">
@@ -2021,6 +2159,15 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
       <input type="text" class="habit-add-in" id="habit-new-in" placeholder="Nuevo hábito…" onkeydown="if(event.key==='Enter')addHabit()">
       <button class="qa-btn" onclick="addHabit()">+ Añadir</button>
     </div>
+  </div>
+  <!-- Gamificación en hábitos -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">🏆 Logros desbloqueados</span></div>
+    <div id="gamif-logros-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:4px"></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">🎯 Metas activas</span></div>
+    <div id="gamif-metas-list"></div>
   </div>
 </main>
 
@@ -2107,6 +2254,28 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
       <span class="theme-toggle-ico" id="theme-ico">🌙</span>
       <span class="theme-toggle-lbl" id="theme-lbl">Modo oscuro activo</span>
       <div class="theme-toggle-switch" id="theme-switch"></div>
+    </div>
+    <div style="height:8px"></div>
+    <!-- Tema UCSM -->
+    <div style="margin-top:4px">
+      <div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Tema de color</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="theme-palette-row">
+        <button class="theme-palette-btn active" id="tpal-dark" onclick="setThemePalette('dark')" title="Oscuro navy">
+          <div style="width:18px;height:18px;border-radius:4px;background:#08121e;border:1.5px solid #1e3350"></div>
+          <span>Oscuro</span>
+        </button>
+        <button class="theme-palette-btn" id="tpal-light" onclick="setThemePalette('light')" title="Claro">
+          <div style="width:18px;height:18px;border-radius:4px;background:#f0f2f5;border:1.5px solid #c0c8d4"></div>
+          <span>Claro</span>
+        </button>
+        <button class="theme-palette-btn" id="tpal-ucsm" onclick="setThemePalette('ucsm')" title="Tema UCSM oficial">
+          <div style="display:flex;gap:1px">
+            <div style="width:9px;height:18px;border-radius:4px 0 0 4px;background:#c01828"></div>
+            <div style="width:9px;height:18px;border-radius:0 4px 4px 0;background:#1a1428"></div>
+          </div>
+          <span>UCSM</span>
+        </button>
+      </div>
     </div>
     <div style="height:8px"></div>
     <div class="compact-toggle" onclick="toggleCompact()">
@@ -2398,7 +2567,7 @@ function refreshBnBadge(){
 // ══════════════════════════════════════════════
 // PAGE TRANSITIONS — enhanced showPage
 // ══════════════════════════════════════════════
-const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','asistencia','pomodoro','habitos','importar','ajustes'];
+const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','historial','asistencia','pomodoro','habitos','importar','ajustes'];
 let _currentPage = 'dashboard';
 
 function showPage(name, noAnim){
@@ -2845,6 +3014,7 @@ function loadSettingsForm(){
     'set-semester': STUDENT.semester, 'set-cycle': STUDENT.cycleChip
   };
   Object.entries(fields).forEach(([id,val]) => { const el = document.getElementById(id); if(el) el.value = val; });
+  applyThemePaletteBtn();
 }
 
 // ══════════════════════════════════════════════
@@ -3811,7 +3981,7 @@ function saveTask(){
 function renderPage(id){
   if(window._skCleanup){ window._skCleanup(); window._skCleanup = null; }
   switch(id){
-    case 'dashboard':   renderDashboard(); break;
+    case 'dashboard':   renderDashboard(); renderGamificacion(); break;
     case 'tareas':      renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); }));
                         if(_calView) renderCalendar(); break;
     case 'examenes':    renderExams(); break;
@@ -3819,9 +3989,10 @@ function renderPage(id){
     case 'cursos':      renderGCalc(); initSim(); break;
     case 'rendimiento': renderRendimiento(); break;
     case 'estadisticas': renderEstadisticas(); break;
+    case 'historial':   renderHistorial(); break;
     case 'asistencia':  renderAttendance(); refreshNotifDot(); break;
     case 'pomodoro':    renderStudyChart('schart2'); syncTimer(); break;
-    case 'habitos':     renderHabits(); break;
+    case 'habitos':     renderHabits(); renderGamificacionHabitos(); break;
     case 'ajustes':     loadSettingsForm(); renderCourseEditor(); renderSemEditor(); checkNotifStatus(); break;
   }
 }
@@ -4818,7 +4989,307 @@ async function fbForceLoad(){
 }
 
 // ══════════════════════════════════════════════
-// WIDGET PWA — Periodic Background Sync
+// FASE 3 — HISTORIAL DE CICLOS
+// ══════════════════════════════════════════════
+let _histChart = null;
+
+function renderHistorial(){
+  if(!SEMESTERS.length){
+    const card = document.getElementById('hist-table');
+    if(card) card.innerHTML = '<div style="font-size:11.5px;color:var(--t3);padding:10px 0">Sin semestres históricos registrados. Ve a Ajustes → Semestres históricos para añadir.</div>';
+    return;
+  }
+
+  const sems = SEMESTERS;
+  const gpas = sems.map(s => s.gpa);
+  const best = Math.max(...gpas);
+  const bestIdx = gpas.indexOf(best);
+  const worst = Math.min(...gpas);
+  const avg = (gpas.reduce((a,b)=>a+b,0)/gpas.length).toFixed(2);
+  const current = gpas[gpas.length-1];
+  const prev = gpas.length > 1 ? gpas[gpas.length-2] : null;
+  const trend = prev !== null ? current - prev : 0;
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
+  // ── Trend badge ──────────────────────────────
+  const tb = document.getElementById('hist-trend-badge');
+  if(tb){
+    if(trend > 0){
+      tb.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--green-dim);border:1px solid var(--green-b);border-radius:var(--rs);font-size:11.5px;color:var(--green)';
+      tb.innerHTML = `<span style="font-size:16px">📈</span><span>Tendencia positiva — subiste <strong>+${trend.toFixed(2)}</strong> puntos respecto al semestre anterior</span>`;
+    } else if(trend < 0){
+      tb.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--danger-dim);border:1px solid rgba(255,85,85,.25);border-radius:var(--rs);font-size:11.5px;color:var(--danger)';
+      tb.innerHTML = `<span style="font-size:16px">📉</span><span>Tendencia a revisar — bajaste <strong>${trend.toFixed(2)}</strong> puntos respecto al semestre anterior</span>`;
+    } else {
+      tb.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--s1);border:1px solid var(--b0);border-radius:var(--rs);font-size:11.5px;color:var(--t2)';
+      tb.innerHTML = `<span style="font-size:16px">📊</span><span>Sin variación respecto al semestre anterior — promedio estable en <strong>${current.toFixed(2)}</strong></span>`;
+    }
+  }
+
+  // ── Stats grid ────────────────────────────────
+  const sg = document.getElementById('hist-stats-grid');
+  if(sg){
+    const pp = calcPP();
+    const items = [
+      { lbl:'Promedio acumulado', val: avg, unit:'/20', color:'var(--gold)' },
+      { lbl:'Mejor semestre', val: best.toFixed(2), unit:'', color:'var(--green)', sub: sems[bestIdx].label },
+      { lbl:'Semestres cursados', val: sems.length, unit:'', color:'var(--blue)' },
+      { lbl:'PP semestre actual', val: pp !== null ? pp.toFixed(2) : '—', unit:'/20', color: pp >= 14 ? 'var(--green)' : pp >= 11 ? 'var(--gold)' : 'var(--danger)' },
+    ];
+    sg.innerHTML = items.map(it => `<div class="sc">
+      <div class="sc-lbl">${it.lbl}</div>
+      <div class="sc-val" style="color:${it.color}">${it.val}<span style="font-size:13px;font-weight:400">${it.unit}</span></div>
+      ${it.sub ? `<div class="sc-sub">${it.sub}</div>` : ''}
+    </div>`).join('');
+  }
+
+  // ── Gráfico línea ─────────────────────────────
+  const canvas = document.getElementById('hist-chart');
+  if(canvas && typeof Chart !== 'undefined'){
+    const gridColor = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)';
+    const tickColor = isLight ? 'rgba(26,34,51,0.5)' : 'rgba(237,230,216,0.4)';
+    const goldColor = isLight ? '#9a6f20' : '#c8a060';
+    if(_histChart){ _histChart.destroy(); _histChart = null; }
+    _histChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: sems.map(s => s.label),
+        datasets: [
+          {
+            label: 'PP Semestral',
+            data: gpas,
+            borderColor: goldColor,
+            backgroundColor: isLight ? 'rgba(154,111,32,0.1)' : 'rgba(200,160,96,0.1)',
+            borderWidth: 2.5,
+            tension: 0.35,
+            pointBackgroundColor: gpas.map(g => g === best ? (isLight?'#1a9655':'#46c87e') : goldColor),
+            pointRadius: gpas.map(g => g === best ? 7 : 4),
+            pointHoverRadius: 7,
+            fill: true,
+          },
+          {
+            label: 'Meta (17.0)',
+            data: sems.map(() => 17.0),
+            borderColor: isLight ? 'rgba(26,150,85,0.4)' : 'rgba(70,200,126,0.35)',
+            borderDash: [5, 5],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.datasetIndex === 0 ? ` PP: ${ctx.raw.toFixed(2)}/20` : ` Meta: ${ctx.raw.toFixed(1)}`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: tickColor, font: { size: 9.5 } }, grid: { color: gridColor } },
+          y: {
+            min: Math.max(0, Math.floor(Math.min(...gpas) - 1)),
+            max: 20,
+            ticks: { color: tickColor, font: { size: 9.5 }, stepSize: 2 },
+            grid: { color: gridColor }
+          }
+        }
+      }
+    });
+  }
+
+  // ── Tabla detalle ─────────────────────────────
+  const table = document.getElementById('hist-table');
+  if(table){
+    table.innerHTML = sems.map((s, i) => {
+      const delta = i > 0 ? s.gpa - sems[i-1].gpa : null;
+      const deltaCls = delta === null ? 'eq' : delta > 0 ? 'up' : delta < 0 ? 'dn' : 'eq';
+      const deltaTxt = delta === null ? '—' : (delta > 0 ? '+' : '') + delta.toFixed(2);
+      const pct = Math.min((s.gpa / 20) * 100, 100);
+      const barColor = s.gpa >= 17 ? 'var(--green)' : s.gpa >= 14 ? 'var(--blue)' : s.gpa >= 11 ? 'var(--gold)' : 'var(--danger)';
+      return `<div class="hist-row">
+        <span class="hist-sem-lbl">${s.label}</span>
+        <div class="hist-bar-wrap">
+          <div class="hist-track"><div class="hist-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        </div>
+        <span class="hist-val" style="color:${barColor}">${s.gpa.toFixed(2)}</span>
+        <span class="hist-delta ${deltaCls}">${deltaTxt}</span>
+        ${s.gpa === best ? '<span class="hist-best-badge">mejor</span>' : '<span style="width:36px"></span>'}
+      </div>`;
+    }).join('');
+  }
+
+  // ── Proyección hacia meta ─────────────────────
+  const meta = document.getElementById('hist-meta-section');
+  if(meta){
+    const META = 17.0;
+    const needed = META - current;
+    const semsFaltantes = needed > 0 ? Math.ceil(needed / Math.max(trend, 0.1)) : 0;
+    const proyItems = [
+      { lbl: 'PP semestre más reciente', val: current.toFixed(2), color: 'var(--gold)' },
+      { lbl: 'Meta objetivo', val: META.toFixed(1), color: 'var(--green)' },
+      { lbl: 'Diferencia a cubrir', val: needed > 0 ? '+' + needed.toFixed(2) : '✓ Meta alcanzada', color: needed <= 0 ? 'var(--green)' : 'var(--amber)' },
+      { lbl: trend > 0 ? `A este ritmo (+${trend.toFixed(2)}/sem) faltan` : 'Proyección', val: trend > 0 && needed > 0 ? `~${semsFaltantes} semestre(s)` : needed <= 0 ? '¡Ya lo lograste!' : 'Sube el ritmo', color: 'var(--blue)' },
+    ];
+    meta.innerHTML = proyItems.map(it =>
+      `<div class="hist-proj-row"><span class="hist-proj-lbl">${it.lbl}</span><span class="hist-proj-val" style="color:${it.color}">${it.val}</span></div>`
+    ).join('');
+  }
+}
+
+// ══════════════════════════════════════════════
+// FASE 3 — GAMIFICACIÓN
+// ══════════════════════════════════════════════
+
+// Definición de logros
+const LOGROS_DEF = [
+  { id:'first_habit',     ico:'🌱', name:'Primer paso',      desc:'Registra tu primer hábito',         check: () => HABITS.length >= 1 },
+  { id:'streak_7',        ico:'🔥', name:'Racha de 7',        desc:'Mantén un hábito 7 días seguidos',  check: () => HABITS.some(h => h.streak >= 7) },
+  { id:'streak_14',       ico:'⚡', name:'Racha de 14',       desc:'Hábito activo 14 días seguidos',    check: () => HABITS.some(h => h.streak >= 14) },
+  { id:'pp_11',           ico:'📘', name:'Aprobado',          desc:'Promedio ponderado ≥ 11',            check: () => { const p=calcPP(); return p !== null && p >= 11; } },
+  { id:'pp_14',           ico:'📗', name:'Notable',           desc:'Promedio ponderado ≥ 14',            check: () => { const p=calcPP(); return p !== null && p >= 14; } },
+  { id:'pp_17',           ico:'🌟', name:'Excelencia',        desc:'Promedio ponderado ≥ 17',            check: () => { const p=calcPP(); return p !== null && p >= 17; } },
+  { id:'no_risk',         ico:'🛡️', name:'Asistencia segura',  desc:'Sin cursos en riesgo de asistencia', check: () => ATTENDANCE.length > 0 && ATTENDANCE.every(a => a.total === 0 || (a.attended/a.total) >= 0.75) },
+  { id:'tasks_done_5',    ico:'✅', name:'5 tareas listas',   desc:'Completa 5 tareas',                  check: () => TASKS.filter(t=>t.done).length >= 5 },
+  { id:'tasks_done_20',   ico:'🏅', name:'20 tareas listas',  desc:'Completa 20 tareas',                 check: () => TASKS.filter(t=>t.done).length >= 20 },
+  { id:'pomodoro_10',     ico:'🍅', name:'Pomodorista',       desc:'Completa 10 sesiones Pomodoro',      check: () => pomodoroCount >= 10 },
+  { id:'all_pass',        ico:'🎓', name:'Todos aprobados',   desc:'Aprueba todos tus cursos del semestre', check: () => COURSES.length > 0 && COURSES.every(c=>{ const f=calcFinal(c); return f!==null && f>=11; }) },
+  { id:'habits_5',        ico:'💪', name:'Multi-hábito',      desc:'Registra 5 hábitos',                 check: () => HABITS.length >= 5 },
+];
+
+function calcLogros(){
+  return LOGROS_DEF.map(l => ({ ...l, unlocked: l.check() }));
+}
+
+// Meta definitions
+function buildMetas(){
+  const pp = calcPP();
+  const doneTasks = TASKS.filter(t=>t.done).length;
+  const bestStreak = HABITS.length ? Math.max(...HABITS.map(h=>h.streak)) : 0;
+  const weekH = STUDY_H.reduce((a,b)=>a+b.h,0);
+  const metas = [
+    { ico:'🎯', name:'PP meta 17', pct: pp ? Math.min((pp/17)*100,100) : 0, val: pp ? pp.toFixed(2)+'/17' : '—/17', color:'var(--gold)' },
+    { ico:'✅', name:'20 tareas completadas', pct: Math.min((doneTasks/20)*100,100), val: doneTasks+'/20', color:'var(--green)' },
+    { ico:'🔥', name:'Racha de 14 días', pct: Math.min((bestStreak/14)*100,100), val: bestStreak+'/14 días', color:'var(--amber)' },
+    { ico:'⏱️', name:'30h estudio semanal', pct: Math.min((weekH/30)*100,100), val: weekH.toFixed(1)+'/30h', color:'var(--blue)' },
+  ];
+  return metas;
+}
+
+function renderGamificacion(){
+  const el = document.getElementById('gamif-dash-content');
+  if(!el) return;
+  const logros = calcLogros();
+  const unlocked = logros.filter(l=>l.unlocked);
+  const bestStreak = HABITS.length ? HABITS.reduce((a,b)=>a.streak>b.streak?a:b) : null;
+  const maxStreak = HABITS.length ? Math.max(...HABITS.map(h=>h.streak)) : 0;
+
+  let html = '';
+  // Top rachas
+  if(bestStreak && maxStreak > 0){
+    const top3 = [...HABITS].sort((a,b)=>b.streak-a.streak).slice(0,3).filter(h=>h.streak>0);
+    html += '<div style="margin-bottom:10px">';
+    html += '<div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px">🔥 Mejores rachas</div>';
+    html += top3.map(h=>`<div class="gamif-racha-row">
+      <span class="gamif-racha-fire">🔥</span>
+      <div class="gamif-racha-info"><div class="gamif-racha-name">${h.name}</div><div class="gamif-racha-sub">días consecutivos</div></div>
+      <span class="gamif-racha-count">${h.streak}</span>
+    </div>`).join('');
+    html += '</div>';
+  }
+  // Logros desbloqueados preview
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+    <div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase">🏆 Logros</div>
+    <div style="font-size:10.5px;color:var(--gold)">${unlocked.length}/${LOGROS_DEF.length} desbloqueados</div>
+  </div>`;
+  // Progress bar logros
+  const pct = Math.round((unlocked.length/LOGROS_DEF.length)*100);
+  html += `<div style="height:4px;background:var(--s2);border-radius:2px;overflow:hidden;margin-bottom:10px"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:2px;transition:width .6s"></div></div>`;
+  // Show last 3 unlocked
+  const recent = unlocked.slice(-3);
+  if(recent.length){
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+    html += recent.map(l=>`<div style="display:flex;align-items:center;gap:6px;background:var(--gold-dim);border:1px solid var(--gold-b);border-radius:var(--rs);padding:5px 10px">
+      <span style="font-size:14px">${l.ico}</span>
+      <div><div style="font-size:11px;color:var(--t1);font-weight:600">${l.name}</div><div style="font-size:9.5px;color:var(--t3)">${l.desc}</div></div>
+    </div>`).join('');
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:11.5px;color:var(--t3)">Completa actividades para desbloquear logros.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function renderGamificacionHabitos(){
+  // Logros grid
+  const grid = document.getElementById('gamif-logros-grid');
+  if(grid){
+    const logros = calcLogros();
+    grid.innerHTML = logros.map(l => `<div class="logro-card ${l.unlocked?'unlocked':'locked'}">
+      <span class="logro-ico">${l.ico}</span>
+      <div class="logro-name">${l.name}</div>
+      <div class="logro-desc">${l.desc}</div>
+      <span class="logro-badge ${l.unlocked?'gold':'locked'}">${l.unlocked?'✓ Desbloqueado':'Bloqueado'}</span>
+    </div>`).join('');
+  }
+  // Metas list
+  const mlist = document.getElementById('gamif-metas-list');
+  if(mlist){
+    const metas = buildMetas();
+    mlist.innerHTML = metas.map(m => `<div class="meta-row">
+      <span class="meta-ico">${m.ico}</span>
+      <div class="meta-info">
+        <div class="meta-name">${m.name}</div>
+        <div class="meta-track"><div class="meta-fill" style="width:${m.pct}%;background:${m.color}"></div></div>
+        <div class="meta-val">${m.val}</div>
+      </div>
+      <span class="meta-check">${m.pct >= 100 ? '✅' : '⭕'}</span>
+    </div>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════
+// FASE 3 — TEMA UCSM / TEMA PALETTE
+// ══════════════════════════════════════════════
+function setThemePalette(palette){
+  const html = document.documentElement;
+  html.setAttribute('data-theme', palette);
+  localStorage.setItem('uni_theme', palette);
+  // Update toggle icon/label for dark/light compat
+  const ico = document.getElementById('theme-ico');
+  const lbl = document.getElementById('theme-lbl');
+  if(palette === 'light'){
+    if(ico) ico.textContent = '☀️';
+    if(lbl) lbl.textContent = 'Modo claro activo';
+  } else if(palette === 'ucsm'){
+    if(ico) ico.textContent = '🎓';
+    if(lbl) lbl.textContent = 'Tema UCSM oficial activo';
+  } else {
+    if(ico) ico.textContent = '🌙';
+    if(lbl) lbl.textContent = 'Modo oscuro activo';
+  }
+  // Sync palette buttons
+  document.querySelectorAll('.theme-palette-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tpal-' + palette);
+  if(btn) btn.classList.add('active');
+  // Redraw charts if needed
+  if(document.getElementById('page-rendimiento').classList.contains('active')) renderRendimiento();
+  if(document.getElementById('page-historial').classList.contains('active')) renderHistorial();
+  if(document.getElementById('page-estadisticas').classList.contains('active')) renderEstadisticas();
+}
+
+function applyThemePaletteBtn(){
+  const saved = localStorage.getItem('uni_theme') || 'dark';
+  document.querySelectorAll('.theme-palette-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tpal-' + saved);
+  if(btn) btn.classList.add('active');
+}
+
+
 // Muestra un resumen rápido en notificación
 // ══════════════════════════════════════════════
 async function registerWidgetSync(){
@@ -4863,8 +5334,16 @@ function applyTheme(){
   document.documentElement.setAttribute('data-theme', saved);
   const ico = document.getElementById('theme-ico');
   const lbl = document.getElementById('theme-lbl');
-  if(ico) ico.textContent = saved === 'light' ? '☀️' : '🌙';
-  if(lbl) lbl.textContent = saved === 'light' ? 'Modo claro activo' : 'Modo oscuro activo';
+  if(saved === 'light'){
+    if(ico) ico.textContent = '☀️';
+    if(lbl) lbl.textContent = 'Modo claro activo';
+  } else if(saved === 'ucsm'){
+    if(ico) ico.textContent = '🎓';
+    if(lbl) lbl.textContent = 'Tema UCSM oficial activo';
+  } else {
+    if(ico) ico.textContent = '🌙';
+    if(lbl) lbl.textContent = 'Modo oscuro activo';
+  }
 }
 
 (function init(){
@@ -4897,6 +5376,7 @@ function applyTheme(){
     renderPage('dashboard');
     refreshBadges();
     refreshBnBadge();
+    applyThemePaletteBtn();
     syncTimer();
     checkNotifStatus();
     registerWidgetSync();
