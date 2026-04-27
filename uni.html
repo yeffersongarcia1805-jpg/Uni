@@ -228,6 +228,80 @@ onAuthStateChanged(auth, user => {
 .add-meta-form.open { display: flex }
 
 /* ═══════════════════════════════════════════
+   META CARDS — display rows
+═══════════════════════════════════════════ */
+#gamif-metas-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.meta-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--n2); border: 1px solid var(--b0); border-radius: var(--rm);
+  padding: 11px 13px; transition: border-color .2s, background .2s;
+  position: relative; overflow: hidden;
+}
+.meta-row:hover { border-color: var(--b1); background: var(--n3) }
+
+/* subtle glow strip on left edge */
+.meta-row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--meta-color, var(--gold)); border-radius: 2px 0 0 2px;
+  opacity: .7;
+}
+
+.meta-ico {
+  font-size: 20px; flex-shrink: 0; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--s1); border-radius: var(--rs);
+}
+
+.meta-info { flex: 1; min-width: 0 }
+
+.meta-name {
+  font-size: 12.5px; font-weight: 600; color: var(--t1);
+  letter-spacing: .01em; line-height: 1.2;
+}
+
+.meta-track {
+  height: 5px; background: var(--s2); border-radius: 3px; overflow: hidden;
+  margin: 6px 0 4px;
+}
+.meta-fill {
+  height: 100%; border-radius: 3px;
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+/* shimmer on fill */
+.meta-fill::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+  animation: meta-shimmer 2.2s ease-in-out infinite;
+}
+@keyframes meta-shimmer {
+  0%   { left: -60% }
+  100% { left: 120% }
+}
+
+.meta-val {
+  font-size: 10.5px; color: var(--t3); font-family: 'DM Mono', monospace;
+}
+
+/* completed state */
+.meta-row.meta-done { border-color: var(--green-b); background: var(--green-dim) }
+.meta-row.meta-done::before { background: var(--green) }
+
+/* inline edit panel — improved */
+.meta-inline-edit {
+  background: var(--n3); border: 1px solid var(--gold-b); border-radius: var(--rm);
+  padding: 13px 14px; margin-bottom: 2px; display: none;
+  flex-direction: column; gap: 9px;
+  animation: fadein .15s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+.meta-inline-edit.open { display: flex }
+
+/* ═══════════════════════════════════════════
    HISTORIAL DE CICLOS (FASE 3)
 ═══════════════════════════════════════════ */
 .hist-row {
@@ -5344,10 +5418,10 @@ function renderMetasList(){
         ${m.id && !METAS_DEFAULTS.find(d=>d.id===m.id) || m.type==='custom' ? `<button class="meta-del-btn" onclick="deleteMeta('${m.id}')">Eliminar</button>` : ''}
       </div>
     </div>
-    <div class="meta-row" id="meta-row-${i}">
+    <div class="meta-row${done?' meta-done':''}" id="meta-row-${i}" style="--meta-color:${m.color}">
       <span class="meta-ico">${m.ico}</span>
       <div class="meta-info">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <div style="display:flex;align-items:center;gap:6px">
           <div class="meta-name">${m.name}</div>
           ${done ? '<span class="meta-completed-badge">✓ Lograda</span>' : ''}
         </div>
