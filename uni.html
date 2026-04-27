@@ -909,6 +909,57 @@ body.compact .compact-switch::after { transform: translateX(16px); background: v
 .ia-chip:hover { background:var(--blue-dim); border-color:var(--blue-b); color:var(--blue) }
 
 /* ═══════════════════════════════════════════
+   CRONOGRAMA IA
+═══════════════════════════════════════════ */
+.crono-ia-card {
+  background: linear-gradient(135deg, rgba(70,200,126,.06), rgba(79,168,255,.06));
+  border: 1px solid var(--green-b); border-radius: var(--rm); padding: 16px;
+}
+.crono-ia-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px }
+.crono-ia-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.crono-ia-title { font-size: 13px; font-weight: 600; color: var(--t1) }
+.crono-ia-sub { font-size: 10px; color: var(--t3); margin-top: 1px }
+.crono-ia-output {
+  background: var(--s1); border: 1px solid var(--b0); border-radius: var(--rs);
+  padding: 11px 13px; font-size: 12px; color: var(--t2); line-height: 1.7;
+  min-height: 52px; white-space: pre-wrap; margin-bottom: 10px;
+}
+.crono-ia-output.loading { color: var(--t3); font-style: italic }
+.crono-chip-row { display: flex; gap: 7px; flex-wrap: wrap }
+.crono-chip {
+  background: var(--s1); border: 1px solid var(--b0); border-radius: 20px;
+  font-size: 10.5px; color: var(--t2); padding: 5px 12px; cursor: pointer;
+  transition: all .15s; font-family: 'Syne', sans-serif;
+}
+.crono-chip:hover { background: var(--green-dim); border-color: var(--green-b); color: var(--green) }
+
+/* ═══════════════════════════════════════════
+   ESTADÍSTICAS AVANZADAS
+═══════════════════════════════════════════ */
+.adv-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+@media (max-width: 768px) { .adv-stats-grid { grid-template-columns: 1fr } }
+.heatmap-wrap { margin-top: 6px }
+.heatmap-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 6px;
+}
+.hm-cell {
+  aspect-ratio: 1; border-radius: 3px; transition: opacity .15s; cursor: default;
+  min-height: 18px;
+}
+.hm-cell:hover { opacity: .7 }
+.heatmap-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 8px }
+.hm-lbl { font-size: 8px; color: var(--t3); text-align: center; letter-spacing: .04em }
+.heatmap-legend { display: flex; align-items: center; gap: 5px; margin-top: 4px }
+.hm-leg-lbl { font-size: 9px; color: var(--t3) }
+.hm-leg-cells { display: flex; gap: 3px }
+.hm-leg-cell { width: 12px; height: 12px; border-radius: 2px }
+.radar-wrap { position: relative; width: 100%; height: 200px }
+
+/* ═══════════════════════════════════════════
    GOOGLE DRIVE BACKUP
 ═══════════════════════════════════════════ */
 .gdrive-btn {
@@ -1019,6 +1070,182 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 
 /* sidebar user section improved */
 .s-user-sync { display:flex; align-items:center; gap:6px; margin-top:6px }
+
+/* ═══════════════════════════════════════════
+   ONBOARDING
+═══════════════════════════════════════════ */
+.ob-wall {
+  position:fixed; inset:0; z-index:8800;
+  background:var(--n0); display:flex; align-items:center; justify-content:center;
+  transition:opacity .4s; overflow-y:auto;
+}
+.ob-wall.hidden { opacity:0; pointer-events:none }
+.ob-box {
+  width:min(420px,94vw); background:var(--n1); border:1px solid var(--b1);
+  border-radius:var(--r); padding:32px 28px;
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+  animation:splash-pop .4s cubic-bezier(.34,1.56,.64,1) both;
+  margin:20px 0;
+}
+.ob-steps { display:flex; gap:6px; margin-bottom:28px; justify-content:center }
+.ob-step {
+  width:28px; height:4px; border-radius:2px; background:var(--s2);
+  transition:background .3s;
+}
+.ob-step.active  { background:var(--red) }
+.ob-step.done    { background:var(--green) }
+.ob-title { font-family:'DM Serif Display',serif; font-size:22px; color:var(--t1); margin-bottom:6px }
+.ob-sub   { font-size:12px; color:var(--t3); margin-bottom:22px; line-height:1.6 }
+.ob-field { margin-bottom:14px }
+.ob-label { font-size:10.5px; color:var(--t3); letter-spacing:.06em; text-transform:uppercase; margin-bottom:5px }
+.ob-input {
+  width:100%; background:var(--n3); border:1px solid var(--b1);
+  border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif;
+  font-size:13px; padding:9px 12px; outline:none; box-sizing:border-box;
+  transition:border-color .18s;
+}
+.ob-input:focus { border-color:var(--red) }
+.ob-select {
+  width:100%; background:var(--n3); border:1px solid var(--b1);
+  border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif;
+  font-size:13px; padding:9px 12px; outline:none; box-sizing:border-box;
+  cursor:pointer;
+}
+.ob-btn {
+  width:100%; padding:12px; border-radius:var(--rs); border:none;
+  background:var(--red); color:#fff; font-family:'Syne',sans-serif;
+  font-size:13px; font-weight:600; cursor:pointer; transition:opacity .18s; margin-top:6px
+}
+.ob-btn:hover { opacity:.88 }
+.ob-btn-sec {
+  width:100%; padding:10px; border-radius:var(--rs);
+  background:var(--s1); border:1px solid var(--b0); color:var(--t2);
+  font-family:'Syne',sans-serif; font-size:12px; cursor:pointer;
+  transition:background .18s; margin-top:8px
+}
+.ob-btn-sec:hover { background:var(--s2) }
+.ob-course-row {
+  display:flex; align-items:center; gap:8px; padding:8px 10px;
+  background:var(--s1); border:1px solid var(--b0); border-radius:var(--rs);
+  margin-bottom:6px;
+}
+.ob-course-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0 }
+.ob-course-name { flex:1; font-size:12px; color:var(--t1) }
+.ob-course-del {
+  background:none; border:none; color:var(--t3); cursor:pointer; font-size:14px;
+  line-height:1; padding:0 2px; transition:color .15s
+}
+.ob-course-del:hover { color:var(--danger) }
+.ob-add-row { display:flex; gap:6px; margin-top:8px }
+.ob-add-row .ob-input { flex:1 }
+.ob-add-btn {
+  background:var(--s2); border:1px solid var(--b1); color:var(--t1);
+  border-radius:var(--rs); padding:0 14px; cursor:pointer; font-size:18px;
+  transition:background .15s; flex-shrink:0
+}
+.ob-add-btn:hover { background:var(--s3) }
+.ob-success-icon {
+  width:56px; height:56px; border-radius:50%; background:var(--green-dim);
+  border:2px solid var(--green-b); display:flex; align-items:center;
+  justify-content:center; font-size:24px; margin:0 auto 16px
+}
+
+/* ═══════════════════════════════════════════
+   COMPARTIR HORARIO POR URL
+═══════════════════════════════════════════ */
+.share-url-box {
+  background:var(--s1); border:1px solid var(--b0); border-radius:var(--rs);
+  padding:10px 12px; display:flex; align-items:center; gap:8px; margin-top:10px
+}
+.share-url-text {
+  flex:1; font-family:'DM Mono',monospace; font-size:10.5px; color:var(--t2);
+  word-break:break-all; line-height:1.4
+}
+.share-copy-btn {
+  background:var(--blue-dim); border:1px solid var(--blue-b); color:var(--blue);
+  border-radius:var(--rxs); font-size:11px; font-family:'Syne',sans-serif;
+  font-weight:600; padding:5px 10px; cursor:pointer; white-space:nowrap; flex-shrink:0
+}
+.share-copy-btn:hover { background:var(--blue); color:#fff }
+
+/* ═══════════════════════════════════════════
+   MODO EXAMEN
+═══════════════════════════════════════════ */
+#exam-mode-overlay {
+  display: none; position: fixed; inset: 0; z-index: 850;
+  background: var(--n0); overflow-y: auto;
+  animation: fadein .2s ease;
+}
+#exam-mode-overlay.show { display: block }
+.em-topbar {
+  position: sticky; top: 0; background: var(--n1);
+  border-bottom: 1px solid rgba(192,24,40,.25);
+  padding: 10px 18px; display: flex; align-items: center; gap: 12px;
+  z-index: 10; backdrop-filter: blur(12px);
+}
+.em-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulse 1.5s infinite; flex-shrink: 0 }
+.em-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--t1); flex: 1 }
+.em-close {
+  background: var(--s1); border: 1px solid var(--b1); color: var(--t2);
+  font-family: 'Syne', sans-serif; font-size: 11.5px; padding: 5px 13px;
+  border-radius: 20px; cursor: pointer; transition: all .18s;
+}
+.em-close:hover { background: var(--s2); color: var(--t1) }
+.em-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; max-width: 780px; margin: 0 auto }
+.em-section-lbl {
+  font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 8px;
+}
+.em-exam-card {
+  background: var(--red-dim); border: 1px solid var(--red-b);
+  border-radius: var(--rm); padding: 13px 15px;
+  display: flex; align-items: center; gap: 13px;
+}
+.em-exam-badge {
+  width: 50px; height: 50px; background: var(--red); border-radius: var(--rs);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.em-exam-days { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: #fff; line-height: 1 }
+.em-exam-dtxt { font-size: 7.5px; letter-spacing: .1em; color: rgba(255,255,255,.7); text-transform: uppercase; margin-top: 1px }
+.em-exam-info { flex: 1; min-width: 0 }
+.em-exam-name { font-size: 13.5px; font-weight: 600; color: var(--t1); margin-bottom: 2px }
+.em-exam-det { font-size: 10.5px; color: var(--t3) }
+.em-task-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 13px;
+  background: var(--n3); border: 1px solid var(--b0); border-radius: var(--rs);
+  margin-bottom: 6px; transition: border-color .15s;
+}
+.em-task-row:last-child { margin-bottom: 0 }
+.em-task-row:hover { border-color: var(--b2) }
+.em-task-chk {
+  width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid var(--b1);
+  flex-shrink: 0; cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.em-task-chk.done { background: var(--green); border-color: var(--green) }
+.em-task-chk.done::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700 }
+.em-task-name { flex: 1; font-size: 12.5px; color: var(--t1); line-height: 1.3 }
+.em-task-name.done { text-decoration: line-through; color: var(--t3) }
+.em-task-meta { font-size: 10px; color: var(--t3); margin-top: 1px }
+.em-due-chip {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; flex-shrink: 0; white-space: nowrap;
+}
+.em-due-chip.red { background: var(--danger-dim); color: var(--danger) }
+.em-due-chip.amber { background: var(--amber-dim); color: var(--amber) }
+.em-due-chip.ok { background: var(--green-dim); color: var(--green) }
+.em-empty { font-size: 12px; color: var(--t3); padding: 10px 0 }
+
+/* button in topbar to launch exam mode */
+.exam-mode-btn {
+  display: flex; align-items: center; gap: 6px; background: var(--red-dim);
+  border: 1px solid var(--red-b); color: var(--red);
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600;
+  padding: 5px 13px; border-radius: 20px; cursor: pointer; transition: all .18s; white-space: nowrap;
+}
+.exam-mode-btn:hover { background: var(--red); color: #fff }
+.exam-mode-btn .em-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.5s infinite }
 
 /* ═══════════════════════════════════════════
    SPLASH SCREEN
@@ -1154,6 +1381,111 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
      SPLASH SCREEN
 ════════════════════════════════════ -->
 <!-- ════════════════════════════════════
+     ONBOARDING — primer uso
+════════════════════════════════════ -->
+<div id="ob-wall" class="ob-wall hidden">
+  <div class="ob-box">
+    <!-- Indicador de pasos -->
+    <div class="ob-steps">
+      <div class="ob-step active" id="ob-s1"></div>
+      <div class="ob-step" id="ob-s2"></div>
+      <div class="ob-step" id="ob-s3"></div>
+      <div class="ob-step" id="ob-s4"></div>
+    </div>
+
+    <!-- PASO 1 — Bienvenida -->
+    <div id="ob-p1">
+      <div style="text-align:center;margin-bottom:20px">
+        <div class="auth-emblem" style="margin:0 auto 16px">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L4 8v2h16V8L12 3z" fill="white" opacity=".95"/>
+            <rect x="5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+            <rect x="10.5" y="11" width="3" height="8" fill="white" opacity=".9"/>
+            <rect x="16" y="11" width="3" height="8" fill="white" opacity=".9"/>
+            <rect x="3" y="19" width="18" height="2" rx="1" fill="white"/>
+          </svg>
+        </div>
+        <div class="ob-title">Bienvenido a Uni</div>
+        <div class="ob-sub">Tu gestor académico para Ingeniería Civil UCSM.<br>Vamos a configurarlo en menos de 2 minutos.</div>
+      </div>
+      <button class="ob-btn" onclick="obNext(1)">Comenzar →</button>
+    </div>
+
+    <!-- PASO 2 — Datos personales -->
+    <div id="ob-p2" style="display:none">
+      <div class="ob-title">Tu información</div>
+      <div class="ob-sub">Estos datos aparecerán en tus reportes y nunca se comparten.</div>
+      <div class="ob-field">
+        <div class="ob-label">Nombre completo</div>
+        <input class="ob-input" id="ob-name" type="text" placeholder="Ej. Juan Pérez Mamani" autocomplete="name">
+      </div>
+      <div class="ob-field">
+        <div class="ob-label">Código de estudiante</div>
+        <input class="ob-input" id="ob-code" type="text" placeholder="Ej. 2023244001" maxlength="12">
+      </div>
+      <div class="ob-field">
+        <div class="ob-label">Carrera</div>
+        <select class="ob-select" id="ob-career">
+          <option value="Ingeniería Civil">Ingeniería Civil</option>
+          <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+          <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+          <option value="Arquitectura">Arquitectura</option>
+          <option value="Otra">Otra carrera UCSM</option>
+        </select>
+      </div>
+      <div class="ob-field">
+        <div class="ob-label">Ciclo actual</div>
+        <select class="ob-select" id="ob-cycle">
+          <option value="I">I ciclo</option>
+          <option value="II">II ciclo</option>
+          <option value="III">III ciclo</option>
+          <option value="IV">IV ciclo</option>
+          <option value="V" selected>V ciclo</option>
+          <option value="VI">VI ciclo</option>
+          <option value="VII">VII ciclo</option>
+          <option value="VIII">VIII ciclo</option>
+          <option value="IX">IX ciclo</option>
+          <option value="X">X ciclo</option>
+        </select>
+      </div>
+      <button class="ob-btn" onclick="obNext(2)">Continuar →</button>
+    </div>
+
+    <!-- PASO 3 — Semestre y cursos -->
+    <div id="ob-p3" style="display:none">
+      <div class="ob-title">Tu semestre</div>
+      <div class="ob-sub">Agrega tus cursos de este semestre. Puedes editarlos después.</div>
+      <div class="ob-field">
+        <div class="ob-label">Semestre vigente</div>
+        <select class="ob-select" id="ob-semester">
+          <option value="Semestre Impar 2025">Semestre Impar 2025</option>
+          <option value="Semestre Par 2025" selected>Semestre Par 2025</option>
+          <option value="Semestre Impar 2026">Semestre Impar 2026</option>
+          <option value="Semestre Par 2026">Semestre Par 2026</option>
+        </select>
+      </div>
+      <div class="ob-label" style="margin-bottom:8px">Cursos matriculados</div>
+      <div id="ob-course-list"></div>
+      <div class="ob-add-row">
+        <input class="ob-input" id="ob-course-input" type="text" placeholder="Nombre del curso" onkeydown="if(event.key==='Enter')obAddCourse()">
+        <input class="ob-input" id="ob-credits-input" type="number" placeholder="Cr." min="1" max="8" style="width:60px;flex:none" onkeydown="if(event.key==='Enter')obAddCourse()">
+        <button class="ob-add-btn" onclick="obAddCourse()">+</button>
+      </div>
+      <button class="ob-btn" style="margin-top:16px" onclick="obNext(3)">Continuar →</button>
+      <button class="ob-btn-sec" onclick="obSkipCourses()">Agregar cursos después</button>
+    </div>
+
+    <!-- PASO 4 — Listo -->
+    <div id="ob-p4" style="display:none;text-align:center">
+      <div class="ob-success-icon">✓</div>
+      <div class="ob-title">¡Todo listo!</div>
+      <div class="ob-sub" id="ob-summary">Tu perfil está configurado.<br>Puedes ajustar todo desde Ajustes en cualquier momento.</div>
+      <button class="ob-btn" onclick="obFinish()">Entrar a Uni →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      AUTH WALL — Google login
 ════════════════════════════════════ -->
 <div id="auth-wall" class="auth-wall">
@@ -1225,6 +1557,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
   <span class="t-chip" id="cycle-chip">Semestre Par 2025 · E.P. 45</span>
   <div class="t-spacer"></div>
   <button class="t-focus-btn" onclick="launchFocus()"><div class="t-pulse"></div><span>Modo Enfoque</span></button>
+  <button class="exam-mode-btn" onclick="openExamMode()" title="Modo Examen — vista compacta de urgentes"><span class="em-dot"></span> Modo Examen</button>
   <button class="notif-btn" onclick="toggleNotifPanel()" id="notif-btn" title="Alertas">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <div class="notif-dot" id="notif-dot"></div>
@@ -1232,7 +1565,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
   <div class="t-user" onclick="showPage('ajustes')">
     <img id="fb-avatar-img" class="fb-avatar" style="display:none" alt="foto de perfil">
     <div class="t-ava" id="ava-initials">YG</div>
-    <span class="t-uname" id="stu-name-label">Yefferson García</span>
+    <span class="t-uname" id="stu-name-label">—</span>
   </div>
   <div class="sync-pill" id="sync-pill">
     <div class="sync-dot" id="sync-dot"></div>
@@ -1275,6 +1608,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><polyline points="2,12 6,7 10,9 14,4"/><path d="M11 4h3v3"/></svg>
     Rendimiento
   </div>
+  <div class="s-item" onclick="showPage('estadisticas')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5" stroke-dasharray="2 1.5"/><path d="M8 2.5v5.5l3.5 2"/></svg>
+    Estadísticas
+  </div>
   <div class="s-item" onclick="showPage('asistencia')">
     <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
     Asistencia
@@ -1312,7 +1649,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 
   <div class="s-foot">
     <div class="t-ava" style="width:20px;height:20px;font-size:7.5px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0" id="s-ava">YG</div>
-    <span class="s-code" id="sid-code">COD 2022244651</span>
+    <span class="s-code" id="sid-code">COD —</span>
   </div>
 </nav>
 
@@ -1489,6 +1826,18 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 <main class="main fade" id="page-horario">
   <div class="ph"><div class="pt">Horario semanal</div><span class="ps">Ingeniería Civil · UCSM</span></div>
   <div class="card"><div id="sch-full"></div></div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Compartir horario</span></div>
+    <div style="font-size:11.5px;color:var(--t2);margin-bottom:8px">Genera un enlace para que tus compañeros vean tu horario. Solo incluye cursos y horarios, no tus notas ni datos personales.</div>
+    <button class="tbtn" onclick="generateShareURL()">🔗 Generar enlace</button>
+    <div id="share-url-result" style="display:none">
+      <div class="share-url-box">
+        <span class="share-url-text" id="share-url-text"></span>
+        <button class="share-copy-btn" onclick="copyShareURL()">Copiar</button>
+      </div>
+      <div style="font-size:10.5px;color:var(--t3);margin-top:6px">⚠ Este enlace muestra solo tu horario de clases, no tus notas ni información personal.</div>
+    </div>
+  </div>
 </main>
 
 <!-- ════════════════════════════════════
@@ -1562,7 +1911,49 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
       <button class="export-pdf-btn" onclick="exportReportePDF()" aria-label="Exportar reporte de notas como PDF">
         <span>📄</span> Exportar reporte de notas PDF
       </button>
+      <button class="export-pdf-btn" style="background:var(--blue-dim);border-color:var(--blue-b);color:var(--blue);margin-top:6px" onclick="showPage('estadisticas')">
+        <span>📊</span> Ver estadísticas avanzadas →
+      </button>
     </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════
+     PAGE: ESTADÍSTICAS AVANZADAS
+════════════════════════════════════ -->
+<main class="main fade" id="page-estadisticas">
+  <div class="ph">
+    <div class="pt">Estadísticas avanzadas</div>
+    <span class="ps">Radar de rendimiento y mapa de calor de estudio</span>
+  </div>
+  <div class="adv-stats-grid">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Radar de rendimiento por curso</span></div>
+      <div class="radar-wrap">
+        <canvas id="radar-chart" role="img" aria-label="Gráfico radar de notas por curso"></canvas>
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-top:8px;text-align:center">Escala 0–20 · Aprobación ≥ 11</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Heatmap de estudio — últimas 4 semanas</span></div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-labels" id="hm-labels"></div>
+        <div class="heatmap-grid" id="hm-grid"></div>
+        <div class="heatmap-legend">
+          <span class="hm-leg-lbl">Menos</span>
+          <div class="hm-leg-cells" id="hm-legend"></div>
+          <span class="hm-leg-lbl">Más</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--b0)">
+        <div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Total por día de la semana</div>
+        <div id="hm-day-totals" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Resumen comparativo</span></div>
+    <div id="adv-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
   </div>
 </main>
 
@@ -1788,6 +2179,48 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 
 <div id="toast-container"></div>
 
+<!-- ════════════════════════════════════
+     MODO EXAMEN OVERLAY
+════════════════════════════════════ -->
+<div id="exam-mode-overlay">
+  <div class="em-topbar">
+    <div class="em-pulse"></div>
+    <div class="em-title">Modo Examen — Vista urgente</div>
+    <button class="em-close" onclick="closeExamMode()">✕ Salir</button>
+  </div>
+  <div class="em-body">
+    <!-- Exámenes próximos -->
+    <div>
+      <div class="em-section-lbl">Próximos exámenes</div>
+      <div id="em-exams"></div>
+    </div>
+    <!-- Tareas urgentes -->
+    <div>
+      <div class="em-section-lbl">Tareas urgentes (≤ 5 días)</div>
+      <div id="em-tasks"></div>
+    </div>
+    <!-- Cronograma de estudio -->
+    <div>
+      <div class="em-section-lbl">Plan de estudio sugerido</div>
+      <div class="crono-ia-card">
+        <div class="crono-ia-header">
+          <div class="crono-ia-icon">📅</div>
+          <div>
+            <div class="crono-ia-title">Cronograma IA</div>
+            <div class="crono-ia-sub">Plan según fechas de examen y tareas pendientes</div>
+          </div>
+        </div>
+        <div class="crono-ia-output" id="em-crono-output">Toca un botón para generar tu cronograma personalizado.</div>
+        <div class="crono-chip-row">
+          <button class="crono-chip" onclick="generateCrono('semana')">📅 Esta semana</button>
+          <button class="crono-chip" onclick="generateCrono('intensivo')">🔥 Modo intensivo</button>
+          <button class="crono-chip" onclick="generateCrono('equilibrado')">⚖️ Equilibrado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end shell -->
 
 <!-- ════════════════════════════════════
@@ -1965,7 +2398,7 @@ function refreshBnBadge(){
 // ══════════════════════════════════════════════
 // PAGE TRANSITIONS — enhanced showPage
 // ══════════════════════════════════════════════
-const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','asistencia','pomodoro','habitos','importar','ajustes'];
+const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','asistencia','pomodoro','habitos','importar','ajustes'];
 let _currentPage = 'dashboard';
 
 function showPage(name, noAnim){
@@ -2172,39 +2605,15 @@ function deleteHabit(hi){
 // DATA STORE — single source of truth
 // ══════════════════════════════════════════════
 let STUDENT = {
-  name: 'Yefferson García Cruz',
-  code: '2022244651',
-  semester: 'Semestre Par 2025',
-  cycleChip: 'Semestre Par 2025 · E.P. 45',
-  initials: 'YG'
+  name: '', code: '', career: 'Ingeniería Civil',
+  cycle: '', semester: '', cycleChip: '', initials: ''
 };
 
 const COURSE_COLORS = ['#4fa8ff','#46c87e','#c8a060','#9d86f0','#ff9b71','#f472b6','#34d399','#fbbf24'];
 
-let COURSES = [
-  {id:1, name:'Cálculo Integral',     code:'4502226', color:'#4fa8ff', crt:4, crt_t:3, crt_p:1, teoria:[14,19,17], practica:[8,14,9]},
-  {id:2, name:'Física II',            code:'4502229', color:'#46c87e', crt:4, crt_t:4, crt_p:0, teoria:[14,6,16],  practica:[]},
-  {id:3, name:'Mecánica de Suelos',   code:'4502301', color:'#c8a060', crt:4, crt_t:3, crt_p:1, teoria:[16,15,14], practica:[15,16,14]},
-  {id:4, name:'Topografía',           code:'4502310', color:'#9d86f0', crt:3, crt_t:2, crt_p:1, teoria:[13,15,16], practica:[17,16,18]},
-  {id:5, name:'Resistencia de Mat.',  code:'4502320', color:'#ff9b71', crt:4, crt_t:3, crt_p:1, teoria:[12,14,15], practica:[13,14,12]},
-];
-
-let TASKS = [
-  {id:1, name:'Informe Lab. Topografía N°3',        course:'Topografía',         type:'Laboratorio', due:'2025-06-20', prio:'high', done:false},
-  {id:2, name:'Tarea 5 — Integrales dobles',         course:'Cálculo Integral',   type:'Tarea',       due:'2025-06-22', prio:'high', done:false},
-  {id:3, name:'Práctica de Mecánica de Suelos N°4', course:'Mecánica de Suelos', type:'Práctica',    due:'2025-06-24', prio:'med',  done:false},
-  {id:4, name:'Proyecto de Resistencia — avance 2', course:'Resistencia de Mat.', type:'Proyecto',   due:'2025-06-28', prio:'med',  done:false},
-  {id:5, name:'Cuestionario Física — ondas',         course:'Física II',          type:'Tarea',       due:'2025-06-30', prio:'low',  done:true},
-  {id:6, name:'Resumen capítulo 7 — Física II',      course:'Física II',          type:'Tarea',       due:'2025-07-02', prio:'low',  done:false},
-];
-
-let EXAMS = [
-  {id:1, name:'Examen Parcial',  course:'Cálculo Integral',   date:'2025-06-23', room:'Aula 204', tipo:'Parcial'},
-  {id:2, name:'Examen Parcial',  course:'Física II',           date:'2025-06-27', room:'Lab F-01', tipo:'Parcial'},
-  {id:3, name:'Examen Final',    course:'Mecánica de Suelos',  date:'2025-07-10', room:'Aula 308', tipo:'Final'},
-  {id:4, name:'Examen Final',    course:'Topografía',          date:'2025-07-13', room:'Lab T-02', tipo:'Final'},
-  {id:5, name:'Examen Final',    course:'Resistencia de Mat.', date:'2025-07-17', room:'Aula 210', tipo:'Final'},
-];
+let COURSES = [];
+let TASKS   = [];
+let EXAMS   = [];
 
 const SCHEDULE = {
   LUN:[],
@@ -2372,26 +2781,6 @@ function launchFocus(){
   document.getElementById('fov').classList.add('show');
 }
 function closeFocus(){ document.getElementById('fov').classList.remove('show'); }
-
-// ══════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════
-function showPage(id){
-  closeSidebar();
-  document.querySelectorAll('.main').forEach(el => el.classList.remove('active'));
-  const p = document.getElementById('page-' + id);
-  if(!p) return;
-  p.classList.add('active'); p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade');
-  document.querySelectorAll('.s-item').forEach(el => {
-    el.classList.remove('active');
-    const oc = el.getAttribute('onclick') || '';
-    if(oc.includes("'" + id + "'")) el.classList.add('active');
-  });
-  // Skeleton: mostrar placeholder brevemente antes de renderizar contenido real
-  showSkeleton(id, p);
-  if(window._skTimer) clearTimeout(window._skTimer);
-  window._skTimer = setTimeout(() => renderPage(id), 90);
-}
 
 function showSkeleton(id, el){
   const skRow = (n, w) => '<div class="sk sk-line ' + (w||'full') + '" style="margin-bottom:7px"></div>'.repeat(n);
@@ -2964,6 +3353,312 @@ function renderRendimiento(){
 }
 
 // ══════════════════════════════════════════════
+// FASE 2 — MODO EXAMEN
+// ══════════════════════════════════════════════
+function openExamMode(){
+  // Render exams section
+  const emExams = document.getElementById('em-exams');
+  if(emExams){
+    const upcoming = [...EXAMS].filter(e => daysUntil(e.date) >= 0)
+      .sort((a,b) => daysUntil(a.date) - daysUntil(b.date)).slice(0,6);
+    if(!upcoming.length){
+      emExams.innerHTML = '<div class="em-empty">Sin exámenes próximos registrados.</div>';
+    } else {
+      emExams.innerHTML = upcoming.map(e => {
+        const d = daysUntil(e.date);
+        const urgColor = d <= 3 ? 'var(--danger)' : d <= 7 ? 'var(--amber)' : 'var(--blue)';
+        const urgBg = d <= 3 ? 'var(--red-dim)' : d <= 7 ? 'var(--amber-dim)' : 'var(--blue-dim)';
+        const urgBorder = d <= 3 ? 'var(--red-b)' : d <= 7 ? 'rgba(240,168,64,.25)' : 'var(--blue-b)';
+        return `<div class="em-exam-card" style="background:${urgBg};border-color:${urgBorder};margin-bottom:8px">
+          <div class="em-exam-badge" style="background:${urgColor}">
+            <div class="em-exam-days">${d}</div>
+            <div class="em-exam-dtxt">días</div>
+          </div>
+          <div class="em-exam-info">
+            <div class="em-exam-name">${e.course} — ${e.name}</div>
+            <div class="em-exam-det">${e.tipo}${e.room ? ' · ' + e.room : ''} · ${e.date}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+  // Render urgent tasks
+  const emTasks = document.getElementById('em-tasks');
+  if(emTasks){
+    const urgent = TASKS.filter(t => !t.done && daysUntil(t.due) <= 5)
+      .sort((a,b) => daysUntil(a.due) - daysUntil(b.due));
+    const done5 = TASKS.filter(t => t.done).slice(0,3);
+    const all = [...urgent, ...done5];
+    if(!all.length){
+      emTasks.innerHTML = '<div class="em-empty">✓ Sin tareas urgentes pendientes.</div>';
+    } else {
+      emTasks.innerHTML = all.map(t => {
+        const d = daysUntil(t.due);
+        const chipCls = t.done ? 'ok' : d < 0 ? 'red' : d <= 2 ? 'red' : d <= 4 ? 'amber' : 'ok';
+        const chipTxt = t.done ? '✓ Hecho' : d < 0 ? 'Vencida' : d === 0 ? 'Hoy' : d + 'd';
+        const c = (COURSES.find(x => x.name === t.course)||{}).color || '#888';
+        return `<div class="em-task-row">
+          <div class="em-task-chk ${t.done?'done':''}" onclick="toggleTask(${t.id});refreshExamMode()"></div>
+          <div style="flex:1;min-width:0">
+            <div class="em-task-name ${t.done?'done':''}">${t.name}</div>
+            <div class="em-task-meta"><span style="color:${c}">${t.course}</span> · ${t.type}</div>
+          </div>
+          <span class="em-due-chip ${chipCls}">${chipTxt}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+  document.getElementById('exam-mode-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExamMode(){
+  document.getElementById('exam-mode-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function refreshExamMode(){
+  // Re-render just the tasks portion after a toggle
+  const emTasks = document.getElementById('em-tasks');
+  if(!emTasks) return;
+  const urgent = TASKS.filter(t => !t.done && daysUntil(t.due) <= 5)
+    .sort((a,b) => daysUntil(a.due) - daysUntil(b.due));
+  const done5 = TASKS.filter(t => t.done).slice(0,3);
+  const all = [...urgent, ...done5];
+  if(!all.length){ emTasks.innerHTML = '<div class="em-empty">✓ Sin tareas urgentes.</div>'; return; }
+  emTasks.innerHTML = all.map(t => {
+    const d = daysUntil(t.due);
+    const chipCls = t.done ? 'ok' : d < 0 ? 'red' : d <= 2 ? 'red' : d <= 4 ? 'amber' : 'ok';
+    const chipTxt = t.done ? '✓ Hecho' : d < 0 ? 'Vencida' : d === 0 ? 'Hoy' : d + 'd';
+    const c = (COURSES.find(x => x.name === t.course)||{}).color || '#888';
+    return `<div class="em-task-row">
+      <div class="em-task-chk ${t.done?'done':''}" onclick="toggleTask(${t.id});refreshExamMode()"></div>
+      <div style="flex:1;min-width:0">
+        <div class="em-task-name ${t.done?'done':''}">${t.name}</div>
+        <div class="em-task-meta"><span style="color:${c}">${t.course}</span> · ${t.type}</div>
+      </div>
+      <span class="em-due-chip ${chipCls}">${chipTxt}</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// FASE 2 — CRONOGRAMA IA
+// ══════════════════════════════════════════════
+async function generateCrono(mode){
+  const out = document.getElementById('em-crono-output');
+  if(!out) return;
+  out.textContent = '✦ Generando tu cronograma personalizado…';
+  out.classList.add('loading');
+
+  // Build context
+  const exams = EXAMS.filter(e => daysUntil(e.date) >= 0)
+    .sort((a,b) => daysUntil(a.date)-daysUntil(b.date)).slice(0,5);
+  const tasks = TASKS.filter(t => !t.done && daysUntil(t.due) <= 14)
+    .sort((a,b) => daysUntil(a.due)-daysUntil(b.due)).slice(0,8);
+  const pp = calcPP();
+  const totalStudyWeek = STUDY_H.reduce((a,b)=>a+b.h,0).toFixed(1);
+
+  const modeDesc = {
+    semana: 'un plan práctico y realista para esta semana',
+    intensivo: 'un plan intensivo de máxima dedicación para los días críticos',
+    equilibrado: 'un plan equilibrado que distribuya el estudio uniformemente'
+  }[mode] || 'un plan de estudio';
+
+  const examCtx = exams.length
+    ? exams.map(e => `- ${e.course} (${e.tipo}) en ${daysUntil(e.date)} días`).join('\n')
+    : 'Sin exámenes próximos registrados.';
+
+  const taskCtx = tasks.length
+    ? tasks.map(t => `- ${t.name} (${t.course}) — vence en ${daysUntil(t.due)}d, prioridad ${t.prio}`).join('\n')
+    : 'Sin tareas urgentes.';
+
+  const prompt = `Eres un consejero académico de la UCSM (Universidad Católica de Santa María, Arequipa, Perú). 
+El estudiante de Ingeniería Civil tiene los siguientes datos:
+- Promedio ponderado actual: ${pp !== null ? pp.toFixed(2) : 'no disponible'}/20
+- Horas de estudio esta semana: ${totalStudyWeek}h
+
+EXÁMENES PRÓXIMOS:
+${examCtx}
+
+TAREAS PENDIENTES:
+${taskCtx}
+
+Genera ${modeDesc}, en español, con formato de días de la semana (Lun, Mar, Mié, Jue, Vie, Sáb, Dom). 
+Sé específico, motivador y conciso. Incluye tiempos aproximados y qué estudiar cada día.
+Máximo 220 palabras. No uses markdown ni asteriscos, solo texto plano con emojis básicos.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = (data.content || []).map(b => b.text || '').join('');
+    out.classList.remove('loading');
+    out.textContent = text || 'No se pudo generar el cronograma. Intenta de nuevo.';
+  } catch(e){
+    out.classList.remove('loading');
+    out.textContent = 'Sin conexión a IA. Verifica tu conexión e intenta de nuevo.';
+  }
+}
+
+// ══════════════════════════════════════════════
+// FASE 2 — ESTADÍSTICAS AVANZADAS
+// ══════════════════════════════════════════════
+let _radarChart = null;
+
+function renderEstadisticas(){
+  renderRadarChart();
+  renderHeatmap();
+  renderAdvSummary();
+}
+
+function renderRadarChart(){
+  const canvas = document.getElementById('radar-chart');
+  if(!canvas || typeof Chart === 'undefined') return;
+
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.07)';
+  const tickColor = isLight ? 'rgba(26,34,51,0.5)' : 'rgba(237,230,216,0.4)';
+
+  const labels = COURSES.map(c => c.name.length > 16 ? c.name.slice(0,14)+'…' : c.name);
+  const data = COURSES.map(c => { const f = calcFinal(c); return f !== null ? Math.min(Math.max(f,0),20) : 0; });
+  const colors = COURSES.map(c => c.color);
+
+  if(_radarChart){ _radarChart.destroy(); _radarChart = null; }
+
+  if(!COURSES.length){
+    canvas.parentElement.innerHTML = '<div style="font-size:12px;color:var(--t3);text-align:center;padding:40px 0">Sin cursos registrados.</div>';
+    return;
+  }
+
+  _radarChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Nota final',
+        data,
+        borderColor: isLight ? '#9a6f20' : '#c8a060',
+        backgroundColor: isLight ? 'rgba(154,111,32,0.12)' : 'rgba(200,160,96,0.12)',
+        borderWidth: 2,
+        pointBackgroundColor: colors,
+        pointBorderColor: colors,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0, max: 20,
+          ticks: { stepSize: 5, color: tickColor, font: { size: 9 }, backdropColor: 'transparent' },
+          grid: { color: gridColor },
+          angleLines: { color: gridColor },
+          pointLabels: { color: tickColor, font: { size: 9.5 } }
+        }
+      }
+    }
+  });
+}
+
+function renderHeatmap(){
+  const grid = document.getElementById('hm-grid');
+  const labels = document.getElementById('hm-labels');
+  const legend = document.getElementById('hm-legend');
+  const totals = document.getElementById('hm-day-totals');
+  if(!grid) return;
+
+  const days = ['L','M','X','J','V','S','D'];
+  if(labels) labels.innerHTML = days.map(d => `<div class="hm-lbl">${d}</div>`).join('');
+
+  // Build 4 weeks × 7 days = 28 cells
+  // Use STUDY_H (one week) repeated/extended as mock data for 4 weeks
+  // In a real app this would use historical data; we simulate with variation
+  const dayOrder = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const baseHours = dayOrder.map(d => (STUDY_H.find(x=>x.d===d)||{h:0}).h);
+
+  // Generate 4 weeks of data (week 4 = current = exact, rest = slight variation)
+  const cells = [];
+  for(let w = 3; w >= 0; w--){
+    dayOrder.forEach((_, di) => {
+      const base = baseHours[di];
+      const noise = w === 0 ? 0 : (Math.sin(w*7+di)*0.8);
+      cells.push(Math.max(0, +(base + noise).toFixed(1)));
+    });
+  }
+
+  const maxH = Math.max(...cells, 1);
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
+  function heatColor(h){
+    if(h === 0) return isLight ? '#e8eaed' : 'rgba(255,255,255,0.06)';
+    const pct = h / maxH;
+    if(pct < 0.25) return isLight ? '#b6deff' : 'rgba(79,168,255,0.2)';
+    if(pct < 0.5)  return isLight ? '#60b0f0' : 'rgba(79,168,255,0.45)';
+    if(pct < 0.75) return isLight ? '#2080d0' : 'rgba(79,168,255,0.7)';
+    return isLight ? '#1a60b0' : '#4fa8ff';
+  }
+
+  grid.innerHTML = cells.map((h, i) =>
+    `<div class="hm-cell" style="background:${heatColor(h)}" title="${h}h"></div>`
+  ).join('');
+
+  // Legend
+  if(legend) legend.innerHTML = [0, maxH*0.25, maxH*0.5, maxH*0.75, maxH].map(h =>
+    `<div class="hm-leg-cell" style="background:${heatColor(h)}"></div>`
+  ).join('');
+
+  // Day totals
+  if(totals){
+    const dayTotals = dayOrder.map((d, di) =>
+      cells.filter((_, ci) => ci % 7 === di).reduce((a,b)=>a+b, 0).toFixed(1)
+    );
+    const maxT = Math.max(...dayTotals.map(Number), 1);
+    totals.innerHTML = days.map((d, i) => {
+      const pct = Math.round((Number(dayTotals[i])/maxT)*100);
+      return `<div style="text-align:center">
+        <div style="font-size:9px;color:var(--t3);margin-bottom:4px">${d}</div>
+        <div style="height:40px;display:flex;align-items:flex-end;justify-content:center">
+          <div style="width:18px;border-radius:3px 3px 0 0;background:var(--blue);opacity:.7;height:${pct}%"></div>
+        </div>
+        <div style="font-size:9px;color:var(--t2);font-family:'DM Mono',monospace;margin-top:3px">${dayTotals[i]}h</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function renderAdvSummary(){
+  const el = document.getElementById('adv-summary');
+  if(!el) return;
+  const pp = calcPP();
+  const totalCr = COURSES.reduce((a,c)=>a+c.crt,0);
+  const pendingTasks = TASKS.filter(t=>!t.done).length;
+  const weekStudy = STUDY_H.reduce((a,b)=>a+b.h,0).toFixed(1);
+  const passing = COURSES.filter(c=>{ const f=calcFinal(c); return f!==null && f>=11; }).length;
+  const items = [
+    { lbl:'Promedio actual', val: pp !== null ? pp.toFixed(2) : '—', unit:'/20', color:'var(--gold)' },
+    { lbl:'Cursos aprobados', val: `${passing}/${COURSES.length}`, unit:'', color:'var(--green)' },
+    { lbl:'Horas esta semana', val: weekStudy, unit:'h', color:'var(--blue)' },
+    { lbl:'Tareas pendientes', val: pendingTasks, unit:'', color: pendingTasks > 3 ? 'var(--danger)' : 'var(--t2)' },
+  ];
+  el.innerHTML = items.map(it => `
+    <div class="sc">
+      <div class="sc-lbl">${it.lbl}</div>
+      <div class="sc-val" style="color:${it.color}">${it.val}<span style="font-size:13px;font-weight:400">${it.unit}</span></div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
 // RENDER — HABITS
 // ══════════════════════════════════════════════
 function renderHabits(){
@@ -3123,6 +3818,7 @@ function renderPage(id){
     case 'horario':     renderSchFull(); break;
     case 'cursos':      renderGCalc(); initSim(); break;
     case 'rendimiento': renderRendimiento(); break;
+    case 'estadisticas': renderEstadisticas(); break;
     case 'asistencia':  renderAttendance(); refreshNotifDot(); break;
     case 'pomodoro':    renderStudyChart('schart2'); syncTimer(); break;
     case 'habitos':     renderHabits(); break;
@@ -3762,6 +4458,180 @@ function exportToGDrive(){
 }
 
 // ══════════════════════════════════════════════
+// ONBOARDING — primer uso
+// ══════════════════════════════════════════════
+let _obCourses = [];
+let _obStep    = 1;
+
+function isOnboarded(){
+  return !!localStorage.getItem('uni_onboarded');
+}
+
+function showOnboarding(){
+  const wall = document.getElementById('ob-wall');
+  if(wall) wall.classList.remove('hidden');
+}
+
+function obUpdateSteps(step){
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById('ob-s'+i);
+    if(!el) continue;
+    el.classList.remove('active','done');
+    if(i < step) el.classList.add('done');
+    else if(i === step) el.classList.add('active');
+  }
+}
+
+function obShowStep(n){
+  for(let i=1;i<=4;i++){
+    const p = document.getElementById('ob-p'+i);
+    if(p) p.style.display = i===n ? 'block' : 'none';
+  }
+  obUpdateSteps(n);
+  _obStep = n;
+}
+
+function obNext(from){
+  if(from === 1){
+    obShowStep(2);
+    setTimeout(() => document.getElementById('ob-name')?.focus(), 100);
+  } else if(from === 2){
+    const name  = document.getElementById('ob-name')?.value.trim();
+    const code  = document.getElementById('ob-code')?.value.trim();
+    const career= document.getElementById('ob-career')?.value;
+    const cycle = document.getElementById('ob-cycle')?.value;
+    if(!name){ showToast('Ingresa tu nombre completo', 'warn'); return; }
+    if(!code){ showToast('Ingresa tu código de estudiante', 'warn'); return; }
+    const parts = name.split(' ');
+    STUDENT.name    = name;
+    STUDENT.code    = code;
+    STUDENT.career  = career;
+    STUDENT.cycle   = cycle;
+    STUDENT.initials= (parts[0]?.[0]||'')+(parts[parts.length-1]?.[0]||'');
+    obShowStep(3);
+    obRenderCourseList();
+  } else if(from === 3){
+    const sem = document.getElementById('ob-semester')?.value;
+    STUDENT.semester  = sem;
+    STUDENT.cycleChip = sem + ' · ' + STUDENT.cycle + ' ciclo';
+    // Guardar cursos del onboarding
+    COURSES = _obCourses.map((c,i) => ({
+      id: i+1, name: c.name,
+      code: String(4500000 + i + 1),
+      color: COURSE_COLORS[i % COURSE_COLORS.length],
+      crt: c.crt, crt_t: Math.ceil(c.crt * 0.75),
+      crt_p: Math.floor(c.crt * 0.25),
+      teoria:[], practica:[]
+    }));
+    // Mostrar resumen
+    const summary = document.getElementById('ob-summary');
+    if(summary){
+      summary.innerHTML = `Bienvenido, <strong>${STUDENT.name.split(' ')[0]}</strong>.<br>
+        ${COURSES.length} curso${COURSES.length!==1?'s':''} configurado${COURSES.length!==1?'s':''}.<br>
+        Puedes ajustar todo desde Ajustes en cualquier momento.`;
+    }
+    obShowStep(4);
+  }
+}
+
+function obSkipCourses(){
+  const sem = document.getElementById('ob-semester')?.value || 'Semestre Par 2025';
+  STUDENT.semester  = sem;
+  STUDENT.cycleChip = sem + ' · ' + (STUDENT.cycle||'V') + ' ciclo';
+  COURSES = [];
+  const summary = document.getElementById('ob-summary');
+  if(summary){
+    summary.innerHTML = `Bienvenido, <strong>${STUDENT.name.split(' ')[0]}</strong>.<br>
+      Recuerda agregar tus cursos desde la sección <strong>Ajustes</strong>.`;
+  }
+  obShowStep(4);
+}
+
+function obFinish(){
+  localStorage.setItem('uni_onboarded','1');
+  saveAll();
+  const wall = document.getElementById('ob-wall');
+  if(wall) wall.classList.add('hidden');
+  applyStudentUI();
+  renderPage('dashboard');
+  refreshBadges(); refreshBnBadge();
+  showToast('¡Bienvenido a Uni, ' + STUDENT.name.split(' ')[0] + '! 🎉', 'ok', 3000);
+}
+
+function obRenderCourseList(){
+  const list = document.getElementById('ob-course-list');
+  if(!list) return;
+  list.innerHTML = _obCourses.map((c,i) =>
+    `<div class="ob-course-row">
+      <div class="ob-course-dot" style="background:${COURSE_COLORS[i%COURSE_COLORS.length]}"></div>
+      <span class="ob-course-name">${c.name} <span style="color:var(--t3)">(${c.crt} cr.)</span></span>
+      <button class="ob-course-del" onclick="obRemoveCourse(${i})">×</button>
+    </div>`
+  ).join('') || '<div style="font-size:11.5px;color:var(--t3);padding:6px 0">Aún no agregaste cursos.</div>';
+}
+
+function obAddCourse(){
+  const nameIn = document.getElementById('ob-course-input');
+  const crtIn  = document.getElementById('ob-credits-input');
+  const name   = nameIn?.value.trim();
+  const crt    = parseInt(crtIn?.value) || 4;
+  if(!name){ showToast('Escribe el nombre del curso', 'warn'); return; }
+  if(_obCourses.length >= 8){ showToast('Máximo 8 cursos por semestre', 'warn'); return; }
+  _obCourses.push({ name, crt });
+  if(nameIn) nameIn.value = '';
+  if(crtIn)  crtIn.value  = '';
+  obRenderCourseList();
+  nameIn?.focus();
+}
+
+function obRemoveCourse(i){
+  _obCourses.splice(i,1);
+  obRenderCourseList();
+}
+
+// ══════════════════════════════════════════════
+// COMPARTIR HORARIO POR URL
+// ══════════════════════════════════════════════
+function generateShareURL(){
+  if(!COURSES.length){ showToast('Agrega cursos primero', 'warn'); return; }
+  const payload = {
+    name: STUDENT.name.split(' ')[0],
+    career: STUDENT.career,
+    cycle: STUDENT.cycle,
+    semester: STUDENT.semester,
+    schedule: window.SCHEDULE || {}
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const url = `${location.origin}${location.pathname}?share=${encoded}`;
+  const result = document.getElementById('share-url-result');
+  const text   = document.getElementById('share-url-text');
+  if(result) result.style.display = 'block';
+  if(text)   text.textContent = url;
+}
+
+function copyShareURL(){
+  const text = document.getElementById('share-url-text')?.textContent;
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Enlace copiado ✓', 'ok');
+  }).catch(() => {
+    showToast('Copia el texto manualmente', 'warn');
+  });
+}
+
+function checkShareParam(){
+  const params = new URLSearchParams(location.search);
+  const share  = params.get('share');
+  if(!share) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(share))));
+    // Mostrar vista pública del horario
+    document.title = `Horario de ${data.name} — Uni`;
+    showToast(`Viendo horario de ${data.name} (${data.semester})`, 'info', 5000);
+  } catch(e){ console.warn('Share param inválido'); }
+}
+
+// ══════════════════════════════════════════════
 // FIREBASE AUTH & FIRESTORE SYNC
 // ══════════════════════════════════════════════
 let _fbSkipped   = false;
@@ -4000,8 +4870,8 @@ function applyTheme(){
 (function init(){
   applyTheme();
   applyCompact();
-  // Restaurar estado de skip
   if(localStorage.getItem('uni_fb_skipped') === '1') _fbSkipped = true;
+  checkShareParam();
   openIDB().catch(() => null).then(async () => {
     const loaded = await loadAllIDB();
     window.saveAll = async function(){
@@ -4016,7 +4886,7 @@ function applyTheme(){
       }
     };
     const now = new Date();
-    const hr = now.getHours();
+    const hr  = now.getHours();
     const greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
     const greeting = document.getElementById('greeting'); if(greeting) greeting.textContent = greet;
     const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -4030,7 +4900,6 @@ function applyTheme(){
     syncTimer();
     checkNotifStatus();
     registerWidgetSync();
-    // Si saltó auth y hay datos locales → ocultar auth wall
     if(_fbSkipped){
       const wall = document.getElementById('auth-wall');
       if(wall) wall.classList.add('hidden');
@@ -4038,6 +4907,10 @@ function applyTheme(){
     setTimeout(() => {
       const splash = document.getElementById('splash');
       if(splash) splash.classList.add('hidden');
+      // Mostrar onboarding si es primer uso
+      if(!isOnboarded() && !loaded){
+        setTimeout(() => showOnboarding(), 300);
+      }
     }, 1400);
     if(loaded){
       setTimeout(() => showToast('Datos cargados', 'info', 1800), 1600);
