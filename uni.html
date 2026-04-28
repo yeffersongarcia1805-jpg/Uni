@@ -636,8 +636,56 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 .exam-del:hover { background: rgba(255,85,85,.18) }
 
 /* ═══════════════════════════════════════════
-   ATTENDANCE — +/- controls
+   ASISTENCIA — rediseño
 ═══════════════════════════════════════════ */
+.att-course-card {
+  background: var(--n2); border: 1px solid var(--b0); border-radius: var(--r);
+  padding: 16px; margin-bottom: 10px; position: relative; overflow: hidden;
+}
+.att-course-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background: var(--att-color, var(--gold)); border-radius:2px 0 0 2px;
+}
+.att-course-hdr { display:flex; align-items:center; gap:10px; margin-bottom:12px }
+.att-course-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0 }
+.att-course-name { font-size:13px; font-weight:700; color:var(--t1); flex:1 }
+.att-course-pct { font-family:'DM Mono',monospace; font-size:18px; font-weight:500; min-width:52px; text-align:right }
+.att-big-track { height:8px; background:var(--s2); border-radius:4px; overflow:hidden; margin-bottom:10px }
+.att-big-fill { height:100%; border-radius:4px; transition:width .5s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden }
+.att-big-fill::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent); animation:meta-shimmer 2.5s ease-in-out infinite }
+.att-counters { display:flex; gap:20px; flex-wrap:wrap; align-items:flex-end }
+.att-counter { display:flex; flex-direction:column; gap:1px }
+.att-counter-val { font-family:'DM Mono',monospace; font-size:17px; color:var(--t1) }
+.att-counter-lbl { font-size:9.5px; color:var(--t3); text-transform:uppercase; letter-spacing:.06em }
+.att-status-chip { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.05em }
+.att-risk { margin-top:4px; padding:9px 13px; border-radius:var(--rs); background:var(--danger-dim); border:1px solid rgba(255,85,85,.25); font-size:11.5px; color:var(--danger); display:none; margin-bottom:8px }
+.att-risk.show { display:block }
+.att-log-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--b0) }
+.att-log-item:last-child { border-bottom:none }
+.att-log-date { font-size:11px; font-family:'DM Mono',monospace; color:var(--t3); min-width:58px }
+.att-log-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0 }
+.att-log-course { font-size:12px; color:var(--t1); flex:1 }
+.att-log-time { font-size:10.5px; color:var(--t3); font-family:'DM Mono',monospace; flex-shrink:0 }
+.att-log-status { font-size:10px; font-weight:700; padding:2px 9px; border-radius:14px; text-transform:uppercase; letter-spacing:.05em; flex-shrink:0 }
+.att-log-status.ok { background:var(--green-dim); color:var(--green) }
+.att-log-status.miss { background:var(--danger-dim); color:var(--danger) }
+.att-log-del { background:none; border:none; color:var(--t3); cursor:pointer; font-size:11px; padding:2px 5px; border-radius:var(--rxs); transition:color .15s }
+.att-log-del:hover { color:var(--danger) }
+.att-day-class-row { display:flex; align-items:center; gap:10px; background:var(--s1); border:1px solid var(--b0); border-radius:var(--rs); padding:10px 12px }
+.att-day-class-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
+.att-day-class-name { font-size:12.5px; color:var(--t1); flex:1 }
+.att-day-class-time { font-size:10.5px; color:var(--t3); font-family:'DM Mono',monospace }
+.att-toggle-group { display:flex; gap:5px }
+.att-toggle { font-size:10px; font-weight:700; padding:4px 10px; border-radius:14px; border:1px solid var(--b1); background:var(--s2); color:var(--t3); cursor:pointer; transition:all .15s; text-transform:uppercase; letter-spacing:.05em }
+.att-toggle.selected-ok { background:var(--green-dim); border-color:var(--green); color:var(--green) }
+.att-toggle.selected-miss { background:var(--danger-dim); border-color:var(--danger); color:var(--danger) }
+.att-config-row { display:flex; align-items:center; gap:10px; background:var(--s1); border:1px solid var(--b0); border-radius:var(--rs); padding:10px 12px }
+.att-config-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
+.att-config-name { font-size:12.5px; color:var(--t1); flex:1 }
+.att-config-input { width:64px; background:var(--n3); border:1px solid var(--b1); border-radius:var(--rxs); color:var(--t1); font-family:'DM Mono',monospace; font-size:13px; padding:5px 8px; text-align:center; outline:none }
+.att-config-input:focus { border-color:var(--gold) }
+.att-empty { text-align:center; padding:24px 16px; color:var(--t3); font-size:12px }
+/* legacy kept */
 .att-ctrls { display: flex; align-items: center; gap: 5px; flex-shrink: 0 }
 .att-btn {
   width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--b1);
@@ -648,18 +696,6 @@ html,body { min-height: 100vh; background: var(--n0); color: var(--t1);
 .att-btn:hover { background: var(--s2); border-color: var(--b2) }
 .att-btn.plus:hover { background: var(--green-dim); border-color: var(--green); color: var(--green) }
 .att-btn.minus:hover { background: var(--danger-dim); border-color: var(--danger); color: var(--danger) }
-.att-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--b0) }
-.att-row:last-child { border-bottom: none }
-.att-name { font-size: 12px; color: var(--t1); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.att-track { flex: 1; height: 4px; background: var(--s2); border-radius: 2px; overflow: hidden; min-width: 60px }
-.att-fill { height: 100%; border-radius: 2px; transition: width .3s }
-.att-val { font-size: 11px; font-family: 'DM Mono',monospace; min-width: 36px; text-align: right; flex-shrink: 0 }
-.att-risk {
-  margin-top: 10px; padding: 9px 13px; border-radius: var(--rs);
-  background: var(--danger-dim); border: 1px solid rgba(255,85,85,.25);
-  font-size: 11.5px; color: var(--danger); display: none
-}
-.att-risk.show { display: block }
 
 /* ═══════════════════════════════════════════
    NOTE INPUT VALIDATION
@@ -2341,17 +2377,73 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
   </div>
 </main>
 <main class="main fade" id="page-asistencia">
-  <div class="ph"><div class="pt">Control de Asistencia</div><span class="ps">UCSM — Mínimo 70% de asistencia para aprobar</span></div>
-  <div class="infobox" style="margin-bottom:4px">
-    <div class="infobox-dot"></div>
-    <span>Reglamento UCSM: El estudiante que acumule más de <strong style="color:var(--t1)">30% de inasistencias</strong> en cualquier asignatura será inhabilitado.</span>
+  <div class="ph">
+    <div>
+      <div class="pt">Control de Asistencia</div>
+      <span class="ps">UCSM — Inhabilitación por más del 30% de faltas</span>
+    </div>
+    <div class="ph-actions">
+      <button class="qa-btn" onclick="attOpenDayModal()">📅 Registrar día</button>
+      <button class="qa-btn" onclick="attOpenConfigModal()" style="background:var(--s2)">⚙ Configurar fase</button>
+    </div>
   </div>
-  <div class="card">
-    <div class="card-head"><span class="card-title">Asistencia por curso</span><span style="font-size:10px;color:var(--t3)">Usa +/− para registrar asistencia</span></div>
-    <div id="attendance-list"></div>
-    <div class="att-risk" id="att-risk-banner"></div>
+
+  <!-- Alerta risk -->
+  <div class="att-risk" id="att-risk-banner"></div>
+
+  <!-- Stats rápidas -->
+  <div class="stats" id="att-stats-row"></div>
+
+  <!-- Cards por curso -->
+  <div id="att-course-cards"></div>
+
+  <!-- Log de días -->
+  <div class="card" style="margin-top:0">
+    <div class="card-head">
+      <span class="card-title">📋 Registro de clases</span>
+      <span id="att-log-count" style="font-size:11px;color:var(--t3)"></span>
+    </div>
+    <div id="att-log-list"></div>
   </div>
 </main>
+
+<!-- Modal: registrar día de clase -->
+<div class="modal-overlay hidden" id="att-day-modal" onclick="if(event.target===this)attCloseDayModal()">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-head">
+      <span class="modal-title">📅 Registrar día de clase</span>
+      <button class="modal-close" onclick="attCloseDayModal()">✕</button>
+    </div>
+    <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div class="ob-label">Fecha</div>
+        <input class="ob-input" type="date" id="att-day-date">
+      </div>
+      <div id="att-day-classes-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="att-day-empty" style="display:none;font-size:12px;color:var(--t3);text-align:center;padding:12px">
+        No hay clases en ese día según tu horario
+      </div>
+      <button class="met-start-btn" onclick="attSaveDayModal()">Guardar asistencia</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: configurar fase -->
+<div class="modal-overlay hidden" id="att-config-modal" onclick="if(event.target===this)attCloseConfigModal()">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head">
+      <span class="modal-title">⚙ Configurar fase académica</span>
+      <button class="modal-close" onclick="attCloseConfigModal()">✕</button>
+    </div>
+    <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px">
+      <div style="background:var(--gold-dim);border:1px solid var(--gold-b);border-radius:var(--rs);padding:10px 12px;font-size:11.5px;color:var(--t2)">
+        Define cuántas sesiones de clase tiene cada curso en la fase académica. Esto establece el máximo de clases posibles.
+      </div>
+      <div id="att-config-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="met-start-btn" onclick="attSaveConfig()">Guardar configuración</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════
      PAGE: POMODORO
@@ -3189,31 +3281,6 @@ function deleteExam(id){
 }
 
 // ══════════════════════════════════════════════
-// ATTENDANCE +/- CONTROLS
-// ══════════════════════════════════════════════
-function attMark(idx, delta){
-  const a = ATTENDANCE[idx];
-  if(!a) return;
-  if(delta > 0){
-    a.total = (a.total || 0) + 1;
-    a.attended = (a.attended || 0) + 1;
-  } else {
-    // Mark absence: total+1, attended stays
-    a.total = (a.total || 0) + 1;
-  }
-  saveAll(); renderAttendance(); refreshNotifDot();
-}
-function attUndo(idx){
-  const a = ATTENDANCE[idx];
-  if(!a || a.total <= 0) return;
-  // Undo last session (removes a total slot and re-check attended)
-  if(a.attended >= a.total){ a.attended = Math.max(0, a.attended - 1); }
-  a.total = Math.max(0, a.total - 1);
-  if(a.attended > a.total) a.attended = a.total;
-  saveAll(); renderAttendance();
-}
-
-// ══════════════════════════════════════════════
 // HABITS INTERACTIVE
 // ══════════════════════════════════════════════
 function toggleHabit(hi, di){
@@ -3295,13 +3362,27 @@ let STUDY_H = [
   {d:'Jue',h:4.5},{d:'Vie',h:2.5},{d:'Sáb',h:2.0},{d:'Dom',h:0},
 ];
 
-// Attendance data — valores estables (no random)
+// Attendance — new model
+// ATT_LOG: array of { id, date(YYYY-MM-DD), courseName, courseColor, time, attended(bool) }
+// ATT_CONFIG: { courseName: totalSessions }
+let ATT_LOG = [];
+let ATT_CONFIG = {}; // set from COURSES on first load
+
+function attInit(){
+  try { ATT_LOG    = JSON.parse(localStorage.getItem('uni_att_log')   || '[]'); } catch(e){ ATT_LOG = []; }
+  try { ATT_CONFIG = JSON.parse(localStorage.getItem('uni_att_cfg')   || '{}'); } catch(e){ ATT_CONFIG = {}; }
+  // Fill missing courses with default 18 sessions
+  COURSES.forEach(c => { if(!ATT_CONFIG[c.name]) ATT_CONFIG[c.name] = 18; });
+}
+function attSave(){
+  localStorage.setItem('uni_att_log', JSON.stringify(ATT_LOG));
+  localStorage.setItem('uni_att_cfg', JSON.stringify(ATT_CONFIG));
+}
+
+// Legacy ATTENDANCE kept for dashboard compatibility
 let ATTENDANCE = COURSES.map((c,i) => ({
-  courseId: c.id,
-  name: c.name,
-  color: c.color,
-  total: 18,
-  attended: [16, 15, 17, 14, 16][i % 5]
+  courseId: c.id, name: c.name, color: c.color,
+  total: 18, attended: [16,15,17,14,16][i%5]
 }));
 
 // ══════════════════════════════════════════════
@@ -4316,40 +4397,242 @@ function renderHabits(){
 }
 
 // ══════════════════════════════════════════════
-// RENDER — ATTENDANCE
+// RENDER — ATTENDANCE (new)
 // ══════════════════════════════════════════════
 function renderAttendance(){
-  const el = document.getElementById('attendance-list'); if(!el) return;
-  const riskBanner = document.getElementById('att-risk-banner');
-  const atRisk = [];
-  el.innerHTML = ATTENDANCE.map((a, idx) => {
-    const pct = a.total > 0 ? Math.round((a.attended / a.total) * 100) : 100;
-    const missed = a.total - a.attended;
-    const maxMiss = Math.floor(a.total * 0.3);
-    const remaining = Math.max(0, maxMiss - missed);
-    const color = pct >= 80 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--danger)';
-    if(pct < 75) atRisk.push(a.name);
-    return `<div class="att-row">
-      <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
-      <span class="att-name">${a.name}</span>
-      <div class="att-track"><div class="att-fill" style="width:${pct}%;background:${color}"></div></div>
-      <span class="att-val" style="color:${color}">${pct}%</span>
-      <span style="font-size:9.5px;color:var(--t3);min-width:68px;text-align:right">${a.attended}/${a.total} · ${remaining} faltas max</span>
-      <div class="att-ctrls">
-        <button class="att-btn plus" onclick="attMark(${idx},1)" title="Asistí">+</button>
-        <button class="att-btn minus" onclick="attMark(${idx},-1)" title="Falté">−</button>
+  attInit();
+  attRenderStats();
+  attRenderCards();
+  attRenderLog();
+}
+
+function attGetStats(courseName){
+  const total = ATT_CONFIG[courseName] || 18;
+  const log = ATT_LOG.filter(l => l.courseName === courseName);
+  const attended = log.filter(l => l.attended).length;
+  const missed   = log.filter(l => !l.attended).length;
+  const registered = log.length;
+  const pct = registered > 0 ? Math.round((attended / registered) * 100) : 100;
+  const maxMiss = Math.floor(total * 0.3);
+  const remaining = Math.max(0, maxMiss - missed);
+  return { total, attended, missed, registered, pct, maxMiss, remaining };
+}
+
+function attRenderStats(){
+  const row = document.getElementById('att-stats-row'); if(!row) return;
+  const totalMissed = ATT_LOG.filter(l => !l.attended).length;
+  const atRisk = COURSES.filter(c => {
+    const s = attGetStats(c.name);
+    return s.registered > 0 && s.pct < 75;
+  });
+  const bestCourse = COURSES.reduce((best, c) => {
+    const s = attGetStats(c.name);
+    return (!best || s.pct > attGetStats(best.name).pct) ? c : best;
+  }, null);
+  row.innerHTML = [
+    { ico:'📅', val: ATT_LOG.length, lbl:'Clases registradas', color:'var(--gold)' },
+    { ico:'✅', val: ATT_LOG.filter(l=>l.attended).length, lbl:'Asistencias', color:'var(--green)' },
+    { ico:'❌', val: totalMissed, lbl:'Faltas totales', color: totalMissed > 3 ? 'var(--danger)' : 'var(--t2)' },
+    { ico:'⚠️', val: atRisk.length, lbl:'Cursos en riesgo', color: atRisk.length ? 'var(--danger)' : 'var(--green)' }
+  ].map(s => `
+    <div style="background:var(--n2);border:1px solid var(--b0);border-radius:var(--r);padding:14px 16px">
+      <div style="font-size:18px;margin-bottom:4px">${s.ico}</div>
+      <div style="color:${s.color};font-family:'DM Mono',monospace;font-size:22px;font-weight:500">${s.val}</div>
+      <div style="font-size:10.5px;color:var(--t3);margin-top:2px">${s.lbl}</div>
+    </div>`).join('');
+
+  // Risk banner
+  const banner = document.getElementById('att-risk-banner');
+  if(banner){
+    if(atRisk.length){
+      banner.classList.add('show');
+      banner.innerHTML = `⚠️ <strong>Riesgo de inhabilitación:</strong> ${atRisk.map(c=>c.name).join(', ')} — asistencia por debajo del 75%`;
+    } else { banner.classList.remove('show'); }
+  }
+}
+
+function attRenderCards(){
+  const el = document.getElementById('att-course-cards'); if(!el) return;
+  el.innerHTML = COURSES.map(c => {
+    const s = attGetStats(c.name);
+    const color = s.pct >= 80 ? 'var(--green)' : s.pct >= 70 ? 'var(--amber)' : 'var(--danger)';
+    const statusTxt = s.pct >= 80 ? 'Al día' : s.pct >= 70 ? 'Precaución' : '¡En riesgo!';
+    const statusBg  = s.pct >= 80 ? 'var(--green-dim)' : s.pct >= 70 ? 'var(--amber-dim)' : 'var(--danger-dim)';
+    const phasePct  = s.registered > 0 ? Math.round((s.registered / s.total) * 100) : 0;
+    return `
+    <div class="att-course-card" style="--att-color:${c.color}">
+      <div class="att-course-hdr">
+        <div class="att-course-dot" style="background:${c.color}"></div>
+        <div class="att-course-name">${c.name}</div>
+        <div class="att-course-pct" style="color:${color}">${s.pct}%</div>
+        <span class="att-status-chip" style="background:${statusBg};color:${color}">${statusTxt}</span>
+      </div>
+      <!-- Barra de asistencia -->
+      <div style="font-size:9px;color:var(--t3);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Asistencia · ${s.attended}/${s.registered} clases registradas</div>
+      <div class="att-big-track">
+        <div class="att-big-fill" style="width:${s.pct}%;background:${color}"></div>
+      </div>
+      <!-- Barra de avance de fase -->
+      <div style="font-size:9px;color:var(--t3);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Avance de fase · ${s.registered}/${s.total} sesiones</div>
+      <div class="att-big-track" style="height:4px;margin-bottom:12px">
+        <div class="att-big-fill" style="width:${phasePct}%;background:var(--blue)"></div>
+      </div>
+      <div class="att-counters">
+        <div class="att-counter"><div class="att-counter-val" style="color:var(--green)">${s.attended}</div><div class="att-counter-lbl">Asistencias</div></div>
+        <div class="att-counter"><div class="att-counter-val" style="color:${s.missed>0?'var(--danger)':'var(--t3)'}">${s.missed}</div><div class="att-counter-lbl">Faltas</div></div>
+        <div class="att-counter"><div class="att-counter-val" style="color:${s.remaining<=2?'var(--danger)':'var(--amber)'}">${s.remaining}</div><div class="att-counter-lbl">Faltas restantes</div></div>
+        <div class="att-counter"><div class="att-counter-val" style="color:var(--t3)">${s.total - s.registered}</div><div class="att-counter-lbl">Clases por venir</div></div>
       </div>
     </div>`;
   }).join('');
-  if(riskBanner){
-    if(atRisk.length){
-      riskBanner.classList.add('show');
-      riskBanner.innerHTML = `⚠️ <strong>Riesgo de inhabilitación:</strong> ${atRisk.join(', ')} — asistencia por debajo del 75%`;
-    } else {
-      riskBanner.classList.remove('show');
-    }
-  }
 }
+
+function attRenderLog(){
+  const el = document.getElementById('att-log-list'); if(!el) return;
+  const cnt = document.getElementById('att-log-count');
+  if(cnt) cnt.textContent = ATT_LOG.length + ' registros';
+  if(!ATT_LOG.length){
+    el.innerHTML = '<div class="att-empty">Aún no hay registros.<br>Usa <strong>Registrar día</strong> para marcar tu asistencia basada en el horario.</div>';
+    return;
+  }
+  const sorted = [...ATT_LOG].sort((a,b) => new Date(b.date+' '+b.time) - new Date(a.date+' '+a.time));
+  el.innerHTML = sorted.map(l => {
+    const d = new Date(l.date + 'T12:00:00');
+    const dateStr = d.toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short'});
+    return `<div class="att-log-item">
+      <span class="att-log-date">${dateStr}</span>
+      <div class="att-log-dot" style="background:${l.courseColor||'var(--t3)'}"></div>
+      <span class="att-log-course">${l.courseName}</span>
+      <span class="att-log-time">${l.time||''}</span>
+      <span class="att-log-status ${l.attended?'ok':'miss'}">${l.attended?'Asistí':'Falté'}</span>
+      <button class="att-log-del" onclick="attDeleteLog('${l.id}')" title="Eliminar">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function attDeleteLog(id){
+  ATT_LOG = ATT_LOG.filter(l => l.id !== id);
+  attSave(); renderAttendance(); refreshNotifDot();
+}
+
+// ── DAY MODAL ───────────────────────────────
+const DAY_MAP = { 0:'DOM', 1:'LUN', 2:'MAR', 3:'MIÉ', 4:'JUE', 5:'VIE', 6:'SÁB' };
+let _attDaySelections = {}; // classKey -> 'ok'|'miss'|null
+
+function attOpenDayModal(){
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  const input = document.getElementById('att-day-date');
+  if(input) input.value = `${yyyy}-${mm}-${dd}`;
+  attLoadDayClasses(`${yyyy}-${mm}-${dd}`);
+  document.getElementById('att-day-modal').classList.remove('hidden');
+}
+function attCloseDayModal(){ document.getElementById('att-day-modal').classList.add('hidden'); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const di = document.getElementById('att-day-date');
+  if(di) di.addEventListener('change', e => attLoadDayClasses(e.target.value));
+});
+
+function attLoadDayClasses(dateStr){
+  const d = new Date(dateStr + 'T12:00:00');
+  const dayKey = DAY_MAP[d.getDay()];
+  const classes = (SCHEDULE[dayKey] || []).filter(b => b.tipo !== 'TUT');
+  const listEl  = document.getElementById('att-day-classes-list');
+  const emptyEl = document.getElementById('att-day-empty');
+  _attDaySelections = {};
+  if(!classes.length){
+    if(listEl) listEl.innerHTML = '';
+    if(emptyEl) emptyEl.style.display = '';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+  if(listEl) listEl.innerHTML = classes.map((b, i) => {
+    const key = `${i}_${b.name}`;
+    _attDaySelections[key] = null;
+    return `<div class="att-day-class-row">
+      <div class="att-day-class-dot" style="background:${b.c}"></div>
+      <div>
+        <div class="att-day-class-name">${b.name}</div>
+        <div class="att-day-class-time">${b.t} · ${b.aula} · ${b.tipo}</div>
+      </div>
+      <div class="att-toggle-group">
+        <button class="att-toggle" id="atog-ok-${i}" onclick="attToggleSel('${key}','ok',${i})">✓ Asistí</button>
+        <button class="att-toggle" id="atog-miss-${i}" onclick="attToggleSel('${key}','miss',${i})">✗ Falté</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function attToggleSel(key, val, i){
+  _attDaySelections[key] = _attDaySelections[key] === val ? null : val;
+  const okBtn   = document.getElementById(`atog-ok-${i}`);
+  const missBtn = document.getElementById(`atog-miss-${i}`);
+  if(okBtn)   okBtn.className   = 'att-toggle' + (_attDaySelections[key]==='ok'   ? ' selected-ok'   : '');
+  if(missBtn) missBtn.className = 'att-toggle' + (_attDaySelections[key]==='miss' ? ' selected-miss' : '');
+}
+
+function attSaveDayModal(){
+  const dateStr = document.getElementById('att-day-date')?.value;
+  if(!dateStr){ showToast('Selecciona una fecha','warn'); return; }
+  const d = new Date(dateStr + 'T12:00:00');
+  const dayKey = DAY_MAP[d.getDay()];
+  const classes = (SCHEDULE[dayKey] || []).filter(b => b.tipo !== 'TUT');
+  let saved = 0;
+  Object.entries(_attDaySelections).forEach(([key, val]) => {
+    if(!val) return;
+    const idx = parseInt(key.split('_')[0]);
+    const b = classes[idx]; if(!b) return;
+    // Check not exceeding total
+    const s = attGetStats(b.name);
+    if(s.registered >= s.total){
+      showToast(`${b.name}: ya se registraron todas las sesiones de la fase`, 'warn', 3500); return;
+    }
+    // Check not duplicate
+    const dup = ATT_LOG.find(l => l.date===dateStr && l.courseName===b.name && l.time===b.t);
+    if(dup){ showToast(`${b.name} ya registrado para este horario`, 'warn', 3000); return; }
+    ATT_LOG.push({
+      id: 'al_'+Date.now()+'_'+idx,
+      date: dateStr, courseName: b.name, courseColor: b.c,
+      time: b.t, aula: b.aula, attended: val === 'ok'
+    });
+    saved++;
+  });
+  if(saved > 0){ attSave(); attCloseDayModal(); renderAttendance(); refreshNotifDot(); showToast(`${saved} registro${saved>1?'s':''} guardado${saved>1?'s':''}`, 'ok'); }
+  else { showToast('Selecciona al menos una clase con Asistí o Falté', 'warn'); }
+}
+
+// ── CONFIG MODAL ────────────────────────────
+function attOpenConfigModal(){
+  attInit();
+  const list = document.getElementById('att-config-list'); if(!list) return;
+  list.innerHTML = COURSES.map(c => `
+    <div class="att-config-row">
+      <div class="att-config-dot" style="background:${c.color}"></div>
+      <div class="att-config-name">${c.name}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;color:var(--t3)">sesiones</span>
+        <input class="att-config-input" type="number" min="1" max="100" value="${ATT_CONFIG[c.name]||18}" id="attcfg-${c.name.replace(/\s/g,'_')}">
+      </div>
+    </div>`).join('');
+  document.getElementById('att-config-modal').classList.remove('hidden');
+}
+function attCloseConfigModal(){ document.getElementById('att-config-modal').classList.add('hidden'); }
+function attSaveConfig(){
+  COURSES.forEach(c => {
+    const el = document.getElementById('attcfg-'+c.name.replace(/\s/g,'_'));
+    if(el) ATT_CONFIG[c.name] = Math.max(1, parseInt(el.value)||18);
+  });
+  attSave(); attCloseConfigModal(); renderAttendance(); showToast('Configuración guardada','ok');
+}
+
+// legacy stubs kept for any dashboard references
+function attMark(idx, delta){ showToast('Usa el botón "Registrar día" para marcar asistencia','info',3000) }
+function attUndo(idx){}
+
+
 
 // ══════════════════════════════════════════════
 // COURSE EDITOR
