@@ -2003,6 +2003,16 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
     Hábitos
   </div>
 
+  <div class="s-section">Estudio</div>
+
+  <div class="s-item" onclick="showPage('apuntes')">
+    <svg class="s-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M3 2h8l2 2v10H3V2z"/><path d="M6 6h4M6 9h4M6 12h2"/>
+    </svg>
+    Apuntes IA
+    <span class="s-badge" id="apuntes-badge" style="display:none">0</span>
+  </div>
+
   <div class="s-section">Sistema</div>
 
   <div class="s-item" onclick="showPage('importar')">
@@ -3063,6 +3073,12 @@ if(typeof pdfjsLib !== 'undefined'){
 // ══════════════════════════════════════════════
 const STORAGE_KEY = 'uni_ucsm_v3';
 
+// ── SAVEALL OPTIMIZADO: debounce para keystrokes, inmediato para acciones ──
+const _saveAllDebounced = (function(){
+  let t; return (delay=300) => { clearTimeout(t); t=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({STUDENT,COURSES,TASKS,EXAMS,SEMESTERS,ATTENDANCE,STUDY_H,HABITS,ts:Date.now()})); }catch(e){} },delay); };
+})();
+// saveAll() original se preserva para acciones críticas; oninput usa _saveAllDebounced()
+
 function saveAll(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -3130,7 +3146,7 @@ function refreshBnBadge(){
 // ══════════════════════════════════════════════
 // PAGE TRANSITIONS — enhanced showPage
 // ══════════════════════════════════════════════
-const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','historial','asistencia','pomodoro','metodos','habitos','importar','ajustes'];
+const PAGE_ORDER = ['dashboard','tareas','examenes','horario','cursos','rendimiento','estadisticas','historial','asistencia','pomodoro','metodos','habitos','apuntes','importar','ajustes'];
 let _currentPage = 'dashboard';
 
 function showPage(name, noAnim){
@@ -3411,10 +3427,16 @@ function calcFinal(c){
   return (avgT*(c.crt_t||0) + avgP*(c.crt_p||0)) / total;
 }
 
+// calcPP memoizado — O(1) en llamadas repetidas dentro del mismo render
+let _ppCache = null, _ppCacheDirty = true;
+function invalidatePPCache(){ _ppCacheDirty = true; }
 function calcPP(){
+  if(!_ppCacheDirty && _ppCache !== undefined) return _ppCache;
   let num = 0, den = 0;
   COURSES.forEach(c => { const f = calcFinal(c); if(f !== null){ num += f*c.crt; den += c.crt; } });
-  return den > 0 ? (num/den) : null;
+  _ppCache = den > 0 ? (num/den) : null;
+  _ppCacheDirty = false;
+  return _ppCache;
 }
 
 function gradeColor(v){
@@ -3905,6 +3927,7 @@ function toggleCalc(ci){
 
 function recalc(ci){
   const c = COURSES[ci];
+  invalidatePPCache(); // invalidar caché al cambiar notas
   const getVals = tipo => [0,1,2].map(i => {
     const el = document.querySelector(`[data-ci="${ci}"][data-t="${tipo}"][data-i="${i}"]`);
     return el && el.value !== '' ? parseFloat(el.value) : null;
@@ -3996,7 +4019,7 @@ function renderRendimiento(){
     diff.style.color = d <= 0 ? 'var(--green)' : 'var(--t3)';
   }
 
-  // ── Gráfico de línea PP histórico con Chart.js ──────────────────────────
+  // ── Gráfico de línea PP histórico con Chart.js — singleton optimizado ──────────────────────
   const chartCanvas = document.getElementById('pp-chart');
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   const gridColor  = isLight ? 'rgba(0,0,0,0.07)'  : 'rgba(255,255,255,0.05)';
@@ -4010,50 +4033,41 @@ function renderRendimiento(){
     const gpas   = SEMESTERS.map(s => s.gpa);
     const pointColors = gpas.map(g => g >= 15 ? greenHex : g >= 13 ? goldHex : dangerHex);
 
-    if(_ppChart){ _ppChart.destroy(); _ppChart = null; }
-
-    _ppChart = new Chart(chartCanvas, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Promedio Ponderado',
-          data: gpas,
-          borderColor: goldHex,
-          borderWidth: 2,
-          pointBackgroundColor: pointColors,
-          pointBorderColor: pointColors,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          tension: 0.35,
-          fill: true,
-          backgroundColor: isLight ? 'rgba(154,111,32,0.07)' : 'rgba(200,160,96,0.08)'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ' PP: ' + ctx.parsed.y.toFixed(2)
-            }
-          }
+    if(_ppChart && _ppChart.data) {
+      // OPTIMIZACIÓN: actualizar datos sin destruir el canvas context
+      _ppChart.data.labels = labels;
+      _ppChart.data.datasets[0].data = gpas;
+      _ppChart.data.datasets[0].pointBackgroundColor = pointColors;
+      _ppChart.data.datasets[0].pointBorderColor = pointColors;
+      _ppChart.options.scales.x.ticks.color = tickColor;
+      _ppChart.options.scales.y.ticks.color = tickColor;
+      _ppChart.update('none'); // 'none' = sin animación, más rápido
+    } else {
+      if(_ppChart){ _ppChart.destroy(); _ppChart = null; }
+      _ppChart = new Chart(chartCanvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Promedio Ponderado',
+            data: gpas,
+            borderColor: goldHex, borderWidth: 2,
+            pointBackgroundColor: pointColors, pointBorderColor: pointColors,
+            pointRadius: 5, pointHoverRadius: 7,
+            tension: 0.35, fill: true,
+            backgroundColor: isLight ? 'rgba(154,111,32,0.07)' : 'rgba(200,160,96,0.08)'
+          }]
         },
-        scales: {
-          x: {
-            ticks: { color: tickColor, font: { size: 10 }, autoSkip: false, maxRotation: 30 },
-            grid: { color: gridColor }
-          },
-          y: {
-            min: 0, max: 20,
-            ticks: { color: tickColor, font: { size: 10 }, stepSize: 5 },
-            grid: { color: gridColor }
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend:{display:false}, tooltip:{callbacks:{label:ctx=>' PP: '+ctx.parsed.y.toFixed(2)}} },
+          scales: {
+            x:{ticks:{color:tickColor,font:{size:10},autoSkip:false,maxRotation:30},grid:{color:gridColor}},
+            y:{min:0,max:20,ticks:{color:tickColor,font:{size:10},stepSize:5},grid:{color:gridColor}}
           }
         }
-      }
-    });
+      });
+    }
   }
   // Course grades
   const cg = document.getElementById('course-grades'); if(!cg) return;
@@ -4748,6 +4762,7 @@ function renderPage(id){
     case 'pomodoro':    renderStudyChart('schart2'); syncTimer(); break;
     case 'metodos':     renderMetodos(); break;
     case 'habitos':     renderHabits(); renderGamificacionHabitos(); break;
+    case 'apuntes':     renderApuntes(); break;
     case 'ajustes':     loadSettingsForm(); renderCourseEditor(); renderSemEditor(); checkNotifStatus(); break;
   }
 }
@@ -6623,6 +6638,682 @@ function installPWA(){
   });
 }
 
+// ══════════════════════════════════════════════════════════════════
+// MÓDULO APUNTES IA — Motor completo con optimizaciones de rendimiento
+// ══════════════════════════════════════════════════════════════════
+
+// ── STORE ──────────────────────────────────────────────────────────
+let APUNTES = [];          // { id, name, course, type, size, text, tags, date, analysis }
+let _apuntesFilter = 'all'; // 'all' | courseId | tag
+let _apuntesView   = 'grid'; // 'grid' | 'list'
+let _apuntesSearch = '';
+let _activeApunteId = null;
+
+// Debounce util (evita llamadas excesivas a Firestore/localStorage)
+function _debounce(fn, ms) {
+  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+const _saveApuntesDebounced = _debounce(() => {
+  try { localStorage.setItem('uni_apuntes', JSON.stringify(APUNTES)); } catch(e){}
+}, 400);
+
+function loadApuntes() {
+  try { APUNTES = JSON.parse(localStorage.getItem('uni_apuntes') || '[]'); } catch(e){ APUNTES = []; }
+}
+function saveApuntes() { _saveApuntesDebounced(); }
+
+// Filtro memoizado — evita re-filtrar si nada cambió
+let _apuntesCached = null, _apuntesCacheKey = '';
+function getFilteredApuntes() {
+  const key = `${_apuntesFilter}|${_apuntesSearch}|${APUNTES.length}`;
+  if(key === _apuntesCacheKey && _apuntesCached) return _apuntesCached;
+  let list = APUNTES;
+  if(_apuntesFilter !== 'all') list = list.filter(a => a.course === _apuntesFilter || (a.tags||[]).includes(_apuntesFilter));
+  if(_apuntesSearch) {
+    const q = _apuntesSearch.toLowerCase();
+    list = list.filter(a => a.name.toLowerCase().includes(q) || (a.text||'').toLowerCase().includes(q) || (a.tags||[]).join(' ').toLowerCase().includes(q));
+  }
+  _apuntesCached = list; _apuntesCacheKey = key;
+  return list;
+}
+function _invalidateApuntesCache() { _apuntesCacheKey = ''; _apuntesCached = null; }
+
+// ── RENDER PRINCIPAL ───────────────────────────────────────────────
+function renderApuntes() {
+  loadApuntes();
+  _renderApuntesStats();
+  _renderApuntesFilters();
+  _renderApuntesList();
+  _updateApuntesBadge();
+}
+
+function _updateApuntesBadge() {
+  const badge = document.getElementById('apuntes-badge');
+  if(!badge) return;
+  const n = APUNTES.length;
+  badge.textContent = n; badge.style.display = n > 0 ? 'inline-block' : 'none';
+}
+
+function _renderApuntesStats() {
+  const el = document.getElementById('ap-stats-row'); if(!el) return;
+  const totalFiles = APUNTES.length;
+  const analyzed   = APUNTES.filter(a => a.analysis).length;
+  const courses    = [...new Set(APUNTES.map(a => a.course).filter(Boolean))].length;
+  const totalSize  = APUNTES.reduce((s,a) => s+(a.size||0), 0);
+  const sizeStr    = totalSize > 1048576 ? (totalSize/1048576).toFixed(1)+'MB' : Math.round(totalSize/1024)+'KB';
+  el.innerHTML = [
+    { ico:'📁', val:totalFiles,  lbl:'Archivos',      color:'var(--gold)' },
+    { ico:'✦',  val:analyzed,    lbl:'Analizados',    color:'var(--blue)' },
+    { ico:'📚', val:courses,     lbl:'Cursos',        color:'var(--green)' },
+    { ico:'💾', val:sizeStr,     lbl:'Tamaño total',  color:'var(--t2)' },
+  ].map(s => `<div class="sc">
+    <div class="sc-lbl">${s.lbl}</div>
+    <div class="sc-val" style="color:${s.color};font-size:22px">${s.ico} ${s.val}</div>
+  </div>`).join('');
+}
+
+function _renderApuntesFilters() {
+  const el = document.getElementById('ap-filters'); if(!el) return;
+  const allTags = [...new Set(APUNTES.flatMap(a => a.tags||[]))].slice(0,8);
+  const courseNames = [...new Set(APUNTES.map(a=>a.course).filter(Boolean))];
+  el.innerHTML = `
+    <button class="ap-filter-btn ${_apuntesFilter==='all'?'active':''}" onclick="apSetFilter('all')">Todos (${APUNTES.length})</button>
+    ${courseNames.map(c => `<button class="ap-filter-btn ${_apuntesFilter===c?'active':''}" onclick="apSetFilter('${CSS.escape(c)}')">${c} (${APUNTES.filter(a=>a.course===c).length})</button>`).join('')}
+    ${allTags.map(t => `<button class="ap-filter-btn ap-tag-btn ${_apuntesFilter===t?'active':''}" onclick="apSetFilter('${CSS.escape(t)}')">#${t}</button>`).join('')}
+  `;
+}
+
+function _renderApuntesList() {
+  const el = document.getElementById('ap-grid'); if(!el) return;
+  const list = getFilteredApuntes();
+  if(!list.length) {
+    el.innerHTML = `<div class="ap-empty">
+      <div style="font-size:36px;margin-bottom:12px">📂</div>
+      <div style="font-size:14px;color:var(--t2);font-weight:600;margin-bottom:6px">
+        ${APUNTES.length===0 ? 'Sube tus primeros apuntes' : 'Sin resultados para este filtro'}
+      </div>
+      <div style="font-size:11.5px;color:var(--t3)">
+        ${APUNTES.length===0 ? 'Arrastra PDFs, imágenes o documentos de texto aquí' : 'Intenta con otro filtro o búsqueda'}
+      </div>
+    </div>`;
+    return;
+  }
+  // Renderizado eficiente: DocumentFragment evita reflow por cada item
+  const frag = document.createDocumentFragment();
+  const wrapper = document.createElement('div');
+  wrapper.className = _apuntesView === 'grid' ? 'ap-cards-grid' : 'ap-list-view';
+  wrapper.innerHTML = list.map(a => _buildApunteCard(a)).join('');
+  frag.appendChild(wrapper);
+  el.innerHTML = '';
+  el.appendChild(frag);
+}
+
+function _buildApunteCard(a) {
+  const typeIco = { pdf:'📄', img:'🖼️', txt:'📝', doc:'📘', ppt:'📊' }[a.type] || '📎';
+  const hasCourse = a.course && COURSES.find(c=>c.name===a.course);
+  const courseColor = hasCourse ? hasCourse.color : 'var(--t3)';
+  const dateStr = a.date ? new Date(a.date).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '';
+  const tags = (a.tags||[]).slice(0,3).map(t => `<span class="ap-tag">#${t}</span>`).join('');
+  const analysisSnippet = a.analysis ? `<div class="ap-card-analysis-preview">${a.analysis.summary||''}</div>` : '';
+  const pendingBadge = !a.analysis ? '<span class="ap-pending-badge">Sin analizar</span>' : '<span class="ap-done-badge">✓ Analizado</span>';
+
+  return `<div class="ap-card ${a.id===_activeApunteId?'ap-card-active':''}" id="apc-${a.id}" onclick="apOpenDetail('${a.id}')">
+    <div class="ap-card-head">
+      <span class="ap-card-ico">${typeIco}</span>
+      <div class="ap-card-meta">
+        <div class="ap-card-name">${a.name}</div>
+        <div class="ap-card-sub">
+          ${a.course ? `<span style="color:${courseColor};font-size:10px;font-weight:600">${a.course}</span>` : ''}
+          <span style="color:var(--t3);font-size:10px">${dateStr}</span>
+        </div>
+      </div>
+      ${pendingBadge}
+    </div>
+    ${tags ? `<div class="ap-card-tags">${tags}</div>` : ''}
+    ${analysisSnippet}
+    <div class="ap-card-actions">
+      <button class="ap-action-btn" onclick="event.stopPropagation();apAnalyze('${a.id}')" ${a.analysis?'title="Re-analizar"':'title="Analizar con IA"'}>
+        ${a.analysis ? '↺ Re-analizar' : '✦ Analizar'}
+      </button>
+      <button class="ap-action-btn ap-del-btn" onclick="event.stopPropagation();apDelete('${a.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+// ── UPLOAD ─────────────────────────────────────────────────────────
+function apHandleDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('ap-dropzone');
+  if(zone) zone.classList.remove('ap-drag');
+  const files = e.dataTransfer.files;
+  if(files.length) apProcessFiles(files);
+}
+
+function apProcessFiles(files) {
+  const allowed = ['application/pdf','text/plain','image/png','image/jpeg','image/webp',
+    'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  Array.from(files).forEach(file => {
+    const type = file.type;
+    if(!allowed.some(a => type.startsWith(a.split('/')[0]) || type === a)) {
+      showToast(`Tipo no soportado: ${file.name}`, 'warn'); return;
+    }
+    const apType = type === 'application/pdf' ? 'pdf'
+      : type.startsWith('image') ? 'img'
+      : type === 'text/plain' ? 'txt'
+      : type.includes('presentation') ? 'ppt' : 'doc';
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const id = 'ap_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      const apunte = {
+        id, name: file.name.replace(/\.[^.]+$/, ''), type: apType,
+        size: file.size, date: new Date().toISOString(),
+        course: _guessCoursefromName(file.name),
+        tags: [], analysis: null,
+        // Solo guardamos texto plano para PDFs de texto / txt; base64 para imágenes
+        raw: apType === 'img' ? e.target.result : null,
+        text: apType === 'txt' ? e.target.result : '',
+      };
+      // Para PDFs extraemos texto con pdf.js si está disponible
+      if(apType === 'pdf' && typeof pdfjsLib !== 'undefined') {
+        _extractPDFText(e.target.result, id);
+      }
+      APUNTES.unshift(apunte);
+      _invalidateApuntesCache();
+      saveApuntes();
+      _renderApuntesList();
+      _renderApuntesStats();
+      _updateApuntesBadge();
+      showToast(`Archivo subido: ${apunte.name}`, 'ok', 2000);
+      // Auto-sugerir análisis si es el primer archivo
+      if(APUNTES.length === 1) setTimeout(() => apAnalyze(id), 800);
+    };
+    if(apType === 'img') reader.readAsDataURL(file);
+    else reader.readAsArrayBuffer(file);
+  });
+}
+
+async function _extractPDFText(arrayBuffer, apunteId) {
+  try {
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for(let i=1; i<=Math.min(pdf.numPages, 20); i++) { // máx 20 pags para no saturar
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it=>it.str).join(' ') + '\n';
+    }
+    const a = APUNTES.find(x=>x.id===apunteId);
+    if(a) { a.text = text.slice(0, 15000); saveApuntes(); } // límite 15K chars
+  } catch(e){ console.warn('PDF extract error:', e); }
+}
+
+function _guessCoursefromName(filename) {
+  const fn = filename.toLowerCase();
+  const found = COURSES.find(c => {
+    const words = c.name.toLowerCase().split(' ').filter(w=>w.length>3);
+    return words.some(w => fn.includes(w));
+  });
+  return found ? found.name : (COURSES[0]?.name || '');
+}
+
+// ── ANÁLISIS IA ────────────────────────────────────────────────────
+async function apAnalyze(id) {
+  const apunte = APUNTES.find(a=>a.id===id);
+  if(!apunte) return;
+
+  // UI feedback inmediato sin re-render completo (quirúrgico)
+  const btn = document.querySelector(`#apc-${id} .ap-action-btn`);
+  if(btn) { btn.textContent = '⏳ Analizando…'; btn.disabled = true; }
+
+  const courseCtx = apunte.course
+    ? `El archivo pertenece al curso de ${apunte.course} de Ingeniería Civil UCSM (escala 0-20).` : '';
+
+  const contentForAI = apunte.text
+    ? `CONTENIDO DEL DOCUMENTO (primeros 8000 chars):\n${apunte.text.slice(0,8000)}`
+    : `El archivo se llama "${apunte.name}" y es de tipo ${apunte.type}. Analiza basándote en el nombre.`;
+
+  const prompt = `Eres un asistente académico experto en Ingeniería Civil para un estudiante universitario peruano. ${courseCtx}
+
+${contentForAI}
+
+Analiza el material y responde en JSON estricto (sin markdown, sin texto fuera del JSON):
+{
+  "summary": "Resumen del tema en 2 oraciones",
+  "topics": ["tema1", "tema2", "tema3"],
+  "keyFormulas": ["fórmula o concepto clave 1", "fórmula 2"],
+  "examLikely": ["pregunta probable de examen 1", "pregunta 2", "pregunta 3"],
+  "toImprove": [
+    {"area": "nombre del área débil", "suggestion": "qué estudiar exactamente", "priority": "alta|media|baja"},
+    {"area": "área 2", "suggestion": "sugerencia concreta", "priority": "media"}
+  ],
+  "studyTime": "tiempo estimado para dominar el tema en horas",
+  "difficulty": "fácil|medio|difícil",
+  "relatedTopics": ["tema relacionado 1", "tema relacionado 2"],
+  "tags": ["tag1", "tag2", "tag3"]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    let rawText = (data.content||[]).map(b=>b.text||'').join('');
+    // Strip markdown fences if present
+    rawText = rawText.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const analysis = JSON.parse(rawText);
+    apunte.analysis = analysis;
+    if(analysis.tags?.length) apunte.tags = [...new Set([...(apunte.tags||[]), ...analysis.tags])].slice(0,6);
+    _invalidateApuntesCache();
+    saveApuntes();
+    _renderApuntesList();
+    _renderApuntesFilters();
+    _renderApuntesStats();
+    // Si el detalle está abierto, actualizarlo quirúrgicamente
+    if(_activeApunteId === id) apOpenDetail(id);
+    showToast('Análisis completado ✓', 'ok');
+  } catch(e) {
+    const fallback = {
+      summary: `Apuntes de ${apunte.name} — análisis no disponible sin conexión.`,
+      topics: ['Ver contenido manualmente'],
+      keyFormulas: [], examLikely: [],
+      toImprove: [{ area: 'Revisar manualmente', suggestion: 'Lee el documento y extrae los puntos clave', priority: 'media' }],
+      studyTime: '—', difficulty: 'medio', relatedTopics: [], tags: []
+    };
+    apunte.analysis = fallback;
+    saveApuntes();
+    _renderApuntesList();
+    showToast('Sin conexión — análisis básico generado', 'warn', 3000);
+  }
+}
+
+async function apAnalyzeAll() {
+  const pending = APUNTES.filter(a => !a.analysis);
+  if(!pending.length) { showToast('Todos los archivos ya están analizados', 'info'); return; }
+  showToast(`Analizando ${pending.length} archivo(s)…`, 'info', 3000);
+  // Secuencial para no saturar la API
+  for(const a of pending) {
+    await apAnalyze(a.id);
+    await new Promise(r => setTimeout(r, 600)); // pequeña pausa entre llamadas
+  }
+}
+
+// ── DETALLE ────────────────────────────────────────────────────────
+function apOpenDetail(id) {
+  _activeApunteId = id;
+  const apunte = APUNTES.find(a=>a.id===id);
+  if(!apunte) return;
+  const panel = document.getElementById('ap-detail-panel');
+  if(!panel) return;
+
+  const analysis = apunte.analysis;
+  const typeIco = { pdf:'📄', img:'🖼️', txt:'📝', doc:'📘', ppt:'📊' }[apunte.type] || '📎';
+
+  panel.innerHTML = `
+    <div class="ap-detail-head">
+      <span style="font-size:28px">${typeIco}</span>
+      <div style="flex:1;min-width:0">
+        <div class="ap-detail-title" id="ap-title-edit-${id}" contenteditable="true"
+          onblur="apRenameApunte('${id}',this.textContent)"
+          style="outline:none;cursor:text">${apunte.name}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+          ${apunte.course?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${(COURSES.find(c=>c.name===apunte.course)||{color:'var(--t3)'}).color}22;color:${(COURSES.find(c=>c.name===apunte.course)||{color:'var(--t3)'}).color}">${apunte.course}</span>`:''}
+          ${(apunte.tags||[]).map(t=>`<span class="ap-tag">#${t}</span>`).join('')}
+        </div>
+      </div>
+      <button class="ap-action-btn" onclick="apAnalyze('${id}')" style="white-space:nowrap">
+        ${analysis ? '↺ Re-analizar' : '✦ Analizar con IA'}
+      </button>
+      <button onclick="_activeApunteId=null;document.getElementById('ap-detail-panel').innerHTML='<div class=ap-empty style=margin-top:40px>Selecciona un archivo para ver el análisis</div>'"
+        style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">✕</button>
+    </div>
+
+    ${!analysis ? `
+      <div style="text-align:center;padding:40px 20px;color:var(--t3)">
+        <div style="font-size:32px;margin-bottom:10px">✦</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:14px">Este archivo aún no ha sido analizado</div>
+        <button class="met-start-btn" style="max-width:200px;margin:0 auto" onclick="apAnalyze('${id}')">Analizar ahora</button>
+      </div>` : `
+      <!-- RESUMEN -->
+      <div class="ap-analysis-block">
+        <div class="ap-block-label">📋 Resumen</div>
+        <div class="ap-block-content">${analysis.summary||'—'}</div>
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--t3)">⏱ ${analysis.studyTime||'—'}h est.</span>
+          <span class="ap-difficulty-badge ap-diff-${analysis.difficulty||'medio'}">${analysis.difficulty||'—'}</span>
+        </div>
+      </div>
+
+      <!-- TEMAS CLAVE -->
+      <div class="ap-analysis-block">
+        <div class="ap-block-label">🎯 Temas principales</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          ${(analysis.topics||[]).map(t=>`<span class="ap-topic-chip">${t}</span>`).join('')}
+        </div>
+      </div>
+
+      <!-- FÓRMULAS / CONCEPTOS CLAVE -->
+      ${analysis.keyFormulas?.length ? `<div class="ap-analysis-block">
+        <div class="ap-block-label">📐 Fórmulas & conceptos clave</div>
+        ${analysis.keyFormulas.map(f=>`<div class="ap-formula-row"><span class="ap-formula-ico">⊞</span><span>${f}</span></div>`).join('')}
+      </div>` : ''}
+
+      <!-- PREGUNTAS PROBABLES DE EXAMEN -->
+      ${analysis.examLikely?.length ? `<div class="ap-analysis-block">
+        <div class="ap-block-label">📝 Preguntas probables de examen</div>
+        ${analysis.examLikely.map((q,i)=>`<div class="ap-exam-q"><span class="ap-q-num">${i+1}</span><span>${q}</span></div>`).join('')}
+      </div>` : ''}
+
+      <!-- QUÉ MEJORAR -->
+      ${analysis.toImprove?.length ? `<div class="ap-analysis-block ap-improve-block">
+        <div class="ap-block-label">🔧 Qué mejorar</div>
+        ${analysis.toImprove.map(t=>`
+          <div class="ap-improve-row">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <span class="ap-prio-badge ap-prio-${t.priority||'media'}">${t.priority||'media'}</span>
+              <span style="font-size:12.5px;font-weight:600;color:var(--t1)">${t.area}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--t2);padding-left:4px">${t.suggestion}</div>
+          </div>`).join('')}
+      </div>` : ''}
+
+      <!-- TEMAS RELACIONADOS -->
+      ${analysis.relatedTopics?.length ? `<div class="ap-analysis-block">
+        <div class="ap-block-label">🔗 Temas relacionados para estudiar</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          ${analysis.relatedTopics.map(t=>`<span class="ap-related-chip">${t}</span>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- ACCIÓN RÁPIDA: Crear tarea de estudio -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="met-start-btn" style="flex:1;font-size:11.5px" onclick="apCreateStudyTask('${id}')">
+          + Crear tarea de estudio
+        </button>
+        <button class="qa-btn" style="flex:1;font-size:11.5px;background:var(--s1);border:1px solid var(--b0);color:var(--t2)" onclick="apAskMore('${id}')">
+          ✦ Preguntar más
+        </button>
+      </div>
+
+      <!-- CHAT ADICIONAL -->
+      <div id="ap-chat-${id}" class="ap-chat-area"></div>
+    `}
+  `;
+  // Highlight active card
+  document.querySelectorAll('.ap-card').forEach(c => c.classList.remove('ap-card-active'));
+  const activeCard = document.getElementById('apc-'+id);
+  if(activeCard) activeCard.classList.add('ap-card-active');
+}
+
+function apRenameApunte(id, newName) {
+  const a = APUNTES.find(x=>x.id===id);
+  if(a && newName.trim()) { a.name = newName.trim(); _invalidateApuntesCache(); saveApuntes(); _renderApuntesList(); }
+}
+
+// Crear tarea de estudio desde apuntes
+function apCreateStudyTask(id) {
+  const a = APUNTES.find(x=>x.id===id); if(!a) return;
+  const topics = a.analysis?.topics?.slice(0,2).join(', ') || 'temas del archivo';
+  const due = new Date(); due.setDate(due.getDate()+3);
+  TASKS.push({
+    id: Date.now(), name: `Estudiar: ${a.name} (${topics})`,
+    course: a.course || (COURSES[0]?.name||'General'),
+    type: 'Tarea', prio: 'med',
+    due: due.toISOString().split('T')[0], done: false
+  });
+  saveAll(); refreshBadges();
+  showToast('Tarea de estudio creada ✓', 'ok');
+}
+
+// Chat con el apunte
+async function apAskMore(id) {
+  const a = APUNTES.find(x=>x.id===id); if(!a?.analysis) return;
+  const chatEl = document.getElementById(`ap-chat-${id}`); if(!chatEl) return;
+
+  // Mostrar input si no está
+  if(!chatEl.querySelector('.ap-chat-input-row')) {
+    chatEl.innerHTML = `
+      <div class="ap-chat-msgs" id="ap-msgs-${id}"></div>
+      <div class="ap-chat-input-row">
+        <input class="qa-in ap-chat-in" id="ap-chat-in-${id}" placeholder="Pregunta sobre este tema…" 
+          onkeydown="if(event.key==='Enter')apSendChat('${id}')">
+        <button class="qa-btn" onclick="apSendChat('${id}')">Enviar</button>
+      </div>`;
+  }
+}
+
+async function apSendChat(id) {
+  const a = APUNTES.find(x=>x.id===id); if(!a) return;
+  const inp = document.getElementById(`ap-chat-in-${id}`); if(!inp) return;
+  const q = inp.value.trim(); if(!q) return;
+  const msgs = document.getElementById(`ap-msgs-${id}`);
+  inp.value = '';
+
+  // User bubble
+  msgs.innerHTML += `<div class="ap-chat-bubble ap-chat-user">${q}</div>`;
+
+  // AI bubble placeholder
+  const aiId = 'ap-ai-' + Date.now();
+  msgs.innerHTML += `<div class="ap-chat-bubble ap-chat-ai" id="${aiId}">⏳ Pensando…</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const context = `Temas: ${(a.analysis?.topics||[]).join(', ')}. Resumen: ${a.analysis?.summary||''}. Contenido: ${(a.text||'').slice(0,4000)}`;
+  const prompt = `Eres un tutor de Ingeniería Civil. El estudiante estudia este material:\n${context}\n\nPregunta del estudiante: ${q}\n\nResponde en 2-4 oraciones, conciso y técnico.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(b=>b.text||'').join('');
+    const aiEl = document.getElementById(aiId);
+    if(aiEl) aiEl.textContent = text;
+  } catch(e) {
+    const aiEl = document.getElementById(aiId);
+    if(aiEl) aiEl.textContent = 'Sin conexión. Intenta de nuevo.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── CRUD ───────────────────────────────────────────────────────────
+function apDelete(id) {
+  if(!confirm('¿Eliminar este archivo?')) return;
+  APUNTES = APUNTES.filter(a=>a.id!==id);
+  if(_activeApunteId===id) { _activeApunteId=null; const p=document.getElementById('ap-detail-panel'); if(p) p.innerHTML='<div class="ap-empty" style="margin-top:40px">Selecciona un archivo</div>'; }
+  _invalidateApuntesCache();
+  saveApuntes();
+  renderApuntes();
+  showToast('Archivo eliminado','warn');
+}
+
+function apSetFilter(f) {
+  _apuntesFilter = f;
+  _invalidateApuntesCache();
+  _renderApuntesFilters();
+  _renderApuntesList();
+}
+
+function apSetSearch(val) {
+  _apuntesSearch = val;
+  _invalidateApuntesCache();
+  _renderApuntesList();
+}
+
+function apSetView(v) {
+  _apuntesView = v;
+  document.querySelectorAll('.ap-view-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('ap-view-'+v); if(btn) btn.classList.add('active');
+  _renderApuntesList();
+}
+
+// ── CSS APUNTES ────────────────────────────────────────────────────
+(function injectApuntesCSS(){
+  const style = document.createElement('style');
+  style.textContent = `
+/* ── Apuntes IA — Styles ── */
+#page-apuntes .ap-dropzone {
+  border: 2px dashed var(--b2); border-radius: var(--r); padding: 28px 20px;
+  text-align: center; cursor: pointer; transition: all .2s; background: var(--s0);
+  margin-bottom: 16px;
+}
+#page-apuntes .ap-dropzone:hover, #page-apuntes .ap-dropzone.ap-drag {
+  border-color: var(--gold); background: var(--gold-dim);
+}
+.ap-dropzone-inner { pointer-events: none }
+.ap-dz-ico { font-size: 28px; margin-bottom: 8px; opacity: .6 }
+.ap-dz-title { font-size: 13.5px; font-weight: 600; color: var(--t2); margin-bottom: 3px }
+.ap-dz-sub { font-size: 10.5px; color: var(--t3) }
+
+.ap-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px }
+.ap-search { flex:1; min-width:180px; background:var(--n3); border:1px solid var(--b0); border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif; font-size:12.5px; padding:7px 12px; outline:none; transition:border-color .18s }
+.ap-search:focus { border-color: var(--b2) }
+.ap-view-btn { background:var(--s1); border:1px solid var(--b0); color:var(--t3); border-radius:var(--rs); padding:6px 12px; cursor:pointer; font-family:'Syne',sans-serif; font-size:11.5px; transition:all .15s }
+.ap-view-btn.active, .ap-view-btn:hover { background:var(--gold-dim); border-color:var(--gold-b); color:var(--gold) }
+
+.ap-filters { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px }
+.ap-filter-btn { background:var(--s1); border:1px solid var(--b0); color:var(--t2); border-radius:20px; padding:4px 12px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; transition:all .15s }
+.ap-filter-btn:hover { background:var(--s2); color:var(--t1) }
+.ap-filter-btn.active { background:var(--gold-dim); border-color:var(--gold-b); color:var(--gold); font-weight:600 }
+.ap-tag-btn.active { background:var(--blue-dim); border-color:var(--blue-b); color:var(--blue) }
+
+.ap-layout { display:grid; grid-template-columns:1fr 380px; gap:16px; align-items:start }
+@media(max-width:900px){ .ap-layout { grid-template-columns:1fr } }
+
+.ap-cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px }
+.ap-list-view  { display:flex; flex-direction:column; gap:8px }
+
+.ap-card { background:var(--n2); border:1px solid var(--b0); border-radius:var(--r); padding:14px; cursor:pointer; transition:all .18s; position:relative }
+.ap-card:hover { border-color:var(--b2); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.2) }
+.ap-card-active { border-color:var(--gold)!important; background:var(--gold-dim)!important }
+.ap-card-head { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px }
+.ap-card-ico { font-size:22px; flex-shrink:0; line-height:1; margin-top:2px }
+.ap-card-meta { flex:1; min-width:0 }
+.ap-card-name { font-size:12.5px; font-weight:600; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:3px }
+.ap-card-sub { display:flex; gap:6px; align-items:center; flex-wrap:wrap }
+.ap-card-tags { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px }
+.ap-tag { font-size:9.5px; padding:1px 7px; border-radius:8px; background:var(--blue-dim); color:var(--blue); border:1px solid var(--blue-b) }
+.ap-card-analysis-preview { font-size:10.5px; color:var(--t3); line-height:1.45; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+.ap-card-actions { display:flex; gap:6px; align-items:center }
+.ap-action-btn { flex:1; background:var(--gold-dim); border:1px solid var(--gold-b); color:var(--gold); border-radius:var(--rxs); font-size:10.5px; font-weight:600; padding:5px 10px; cursor:pointer; font-family:'Syne',sans-serif; transition:all .15s }
+.ap-action-btn:hover { background:var(--gold); color:var(--n0) }
+.ap-del-btn { flex:0; background:var(--danger-dim); border-color:rgba(255,85,85,.2); color:var(--danger); padding:5px 9px }
+.ap-del-btn:hover { background:var(--danger); color:#fff }
+.ap-pending-badge { font-size:9px; font-weight:700; padding:2px 7px; border-radius:8px; background:var(--s2); color:var(--t3); white-space:nowrap; flex-shrink:0 }
+.ap-done-badge { font-size:9px; font-weight:700; padding:2px 7px; border-radius:8px; background:var(--green-dim); color:var(--green); border:1px solid var(--green-b); white-space:nowrap; flex-shrink:0 }
+
+.ap-empty { text-align:center; padding:32px 20px; color:var(--t3); font-size:12px }
+
+/* Detail panel */
+.ap-detail-panel { background:var(--n2); border:1px solid var(--b0); border-radius:var(--r); padding:18px; position:sticky; top:72px; max-height:calc(100vh - 100px); overflow-y:auto }
+.ap-detail-head { display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--b0) }
+.ap-detail-title { font-family:'DM Serif Display',serif; font-size:17px; color:var(--t1); letter-spacing:-.3px; min-height:24px }
+
+.ap-analysis-block { background:var(--n3); border:1px solid var(--b0); border-radius:var(--rm); padding:13px 14px; margin-bottom:10px }
+.ap-block-label { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--t3); margin-bottom:8px }
+.ap-block-content { font-size:12.5px; color:var(--t2); line-height:1.6 }
+
+.ap-topic-chip { font-size:11px; padding:3px 10px; border-radius:14px; background:var(--blue-dim); color:var(--blue); border:1px solid var(--blue-b) }
+.ap-related-chip { font-size:11px; padding:3px 10px; border-radius:14px; background:var(--s1); color:var(--t2); border:1px solid var(--b0) }
+.ap-formula-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--b0); font-size:12px; color:var(--t2) }
+.ap-formula-row:last-child { border-bottom:none }
+.ap-formula-ico { color:var(--gold); flex-shrink:0; margin-top:1px }
+.ap-exam-q { display:flex; gap:10px; padding:7px 0; border-bottom:1px solid var(--b0); font-size:12px; color:var(--t2); line-height:1.45 }
+.ap-exam-q:last-child { border-bottom:none }
+.ap-q-num { width:18px; height:18px; border-radius:50%; background:var(--amber-dim); color:var(--amber); font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px }
+
+.ap-improve-block { border-color:var(--gold-b)!important; background:var(--gold-dim)!important }
+.ap-improve-row { padding:8px 0; border-bottom:1px solid var(--b0) }
+.ap-improve-row:last-child { border-bottom:none }
+.ap-prio-badge { font-size:8.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:8px; flex-shrink:0 }
+.ap-prio-alta   { background:var(--danger-dim); color:var(--danger) }
+.ap-prio-media  { background:var(--amber-dim);  color:var(--amber) }
+.ap-prio-baja   { background:var(--green-dim);  color:var(--green) }
+
+.ap-difficulty-badge { font-size:9.5px; font-weight:700; padding:2px 9px; border-radius:10px; text-transform:uppercase; letter-spacing:.05em }
+.ap-diff-fácil  { background:var(--green-dim); color:var(--green) }
+.ap-diff-medio  { background:var(--amber-dim); color:var(--amber) }
+.ap-diff-difícil{ background:var(--danger-dim); color:var(--danger) }
+
+/* Chat */
+.ap-chat-area { margin-top:10px; border-top:1px solid var(--b0); padding-top:10px }
+.ap-chat-msgs { max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:10px }
+.ap-chat-bubble { font-size:12px; line-height:1.5; padding:9px 12px; border-radius:var(--rm); max-width:90% }
+.ap-chat-user { background:var(--gold-dim); border:1px solid var(--gold-b); color:var(--t1); align-self:flex-end }
+.ap-chat-ai { background:var(--blue-dim); border:1px solid var(--blue-b); color:var(--t2); align-self:flex-start }
+.ap-chat-input-row { display:flex; gap:7px }
+.ap-chat-in { flex:1; background:var(--n3); border:1px solid var(--b0); border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif; font-size:12px; padding:7px 10px; outline:none }
+.ap-chat-in:focus { border-color:var(--b2) }
+`;
+  document.head.appendChild(style);
+})();
+
 </script>
+
+<!-- ════════════════════════════════════
+     PAGE: APUNTES IA
+════════════════════════════════════ -->
+<main class="main fade" id="page-apuntes">
+  <div class="ph">
+    <div>
+      <div class="pt">Apuntes & Análisis IA</div>
+      <span class="ps">Sube tus apuntes — la IA identifica qué mejorar, fórmulas clave y preguntas de examen</span>
+    </div>
+    <div class="ph-actions">
+      <button class="qa-btn" onclick="document.getElementById('ap-file-in').click()">+ Subir archivo</button>
+      <button class="qa-btn" style="background:var(--s1);border:1px solid var(--b1);color:var(--t2)" onclick="apAnalyzeAll()">✦ Analizar todos</button>
+    </div>
+  </div>
+
+  <!-- Drop zone -->
+  <div class="ap-dropzone" id="ap-dropzone"
+    onclick="document.getElementById('ap-file-in').click()"
+    ondragover="event.preventDefault();this.classList.add('ap-drag')"
+    ondragleave="this.classList.remove('ap-drag')"
+    ondrop="apHandleDrop(event)">
+    <div class="ap-dropzone-inner">
+      <div class="ap-dz-ico">📂</div>
+      <div class="ap-dz-title">Arrastra tus apuntes aquí o haz clic para seleccionar</div>
+      <div class="ap-dz-sub">PDF, imágenes (fotos de apuntes), TXT, DOCX · Múltiples archivos a la vez</div>
+    </div>
+  </div>
+  <input type="file" id="ap-file-in" multiple
+    accept=".pdf,.txt,.png,.jpg,.jpeg,.webp,.doc,.docx"
+    style="display:none"
+    onchange="apProcessFiles(this.files);this.value=''">
+
+  <!-- Stats -->
+  <div class="stats" id="ap-stats-row"></div>
+
+  <!-- Filters -->
+  <div id="ap-filters" class="ap-filters"></div>
+
+  <!-- Toolbar -->
+  <div class="ap-toolbar">
+    <input type="search" class="ap-search" id="ap-search"
+      placeholder="Buscar por nombre, tema o tag…"
+      oninput="apSetSearch(this.value)">
+    <button class="ap-view-btn active" id="ap-view-grid" onclick="apSetView('grid')">⊞ Cuadrícula</button>
+    <button class="ap-view-btn" id="ap-view-list" onclick="apSetView('list')">☰ Lista</button>
+  </div>
+
+  <!-- Main layout: grid + detail panel -->
+  <div class="ap-layout">
+    <div id="ap-grid"></div>
+    <div class="ap-detail-panel" id="ap-detail-panel">
+      <div class="ap-empty" style="margin-top:40px">
+        <div style="font-size:28px;margin-bottom:10px">✦</div>
+        <div style="font-size:13px;color:var(--t2)">Selecciona un archivo</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:5px">para ver el análisis detallado</div>
+      </div>
+    </div>
+  </div>
+</main>
+
 </body>
 </html>
