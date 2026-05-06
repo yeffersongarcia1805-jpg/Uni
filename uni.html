@@ -3,11 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uni — UCSM Ingeniería Civil</title>
+<title>Uni — Gestor Académico UCSM Ingeniería Civil</title>
+<meta name="description" content="App académica para estudiantes de Ingeniería Civil UCSM: notas, asistencia, horario, pomodoro y análisis con IA.">
+<meta name="theme-color" content="#0c1829">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uni UCSM">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- ── LAZY LOAD — Chart.js y PDF.js se cargan solo cuando se necesitan ── -->
+<script>
+// Loader de scripts bajo demanda — evita bloquear el hilo principal al inicio
+const _scriptCache = {};
+function _loadScript(src){
+  if(_scriptCache[src]) return _scriptCache[src];
+  _scriptCache[src] = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+  return _scriptCache[src];
+}
+// Preload Chart.js en background tan pronto el browser esté idle
+if('requestIdleCallback' in window){
+  requestIdleCallback(() => _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'));
+} else {
+  setTimeout(() => _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'), 2000);
+}
+// PDF.js se carga on-demand en handlePDF() — no al inicio
+</script>
 <!-- Firebase -->
 <script type="module">
 import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -3063,10 +3088,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
      JAVASCRIPT
 ════════════════════════════════════ -->
 <script>
-// ── PDF.js worker ──
-if(typeof pdfjsLib !== 'undefined'){
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
+// ── PDF.js worker — configurado on-demand en handlePDF() al hacer lazy load ──
 
 // ══════════════════════════════════════════════
 // PERSISTENCIA — localStorage engine
@@ -3077,7 +3099,7 @@ const STORAGE_KEY = 'uni_ucsm_v3';
 const _saveAllDebounced = (function(){
   let t; return (delay=300) => { clearTimeout(t); t=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({STUDENT,COURSES,TASKS,EXAMS,SEMESTERS,ATTENDANCE,STUDY_H,HABITS,ts:Date.now()})); }catch(e){} },delay); };
 })();
-// saveAll() original se preserva para acciones críticas; oninput usa _saveAllDebounced()
+// saveAll() se preserva para acciones críticas; oninput usa _saveAllDebounced()
 
 function saveAll(){
   try {
@@ -3958,7 +3980,7 @@ function recalc(ci){
   // Persist note values back to COURSES
   c.teoria = ts;
   c.practica = ps;
-  saveAll();
+  _saveAllDebounced(); // debounced: no escribe a localStorage en cada tecla
   const tsF = ts.filter(x => x !== null);
   const psF = ps.filter(x => x !== null);
   const avgT = tsF.length ? tsF.reduce((a,b)=>a+b,0)/tsF.length : null;
@@ -4746,8 +4768,30 @@ function saveTask(){
 // ══════════════════════════════════════════════
 // MASTER RENDER DISPATCHER
 // ══════════════════════════════════════════════
+// Páginas que usan Chart.js — se carga lazy si no está disponible aún
+const _CHART_PAGES = new Set(['rendimiento','estadisticas','historial']);
+
 function renderPage(id){
   if(window._skCleanup){ window._skCleanup(); window._skCleanup = null; }
+
+  // Para páginas con charts: garantizar Chart.js antes de renderizar
+  if(_CHART_PAGES.has(id) && typeof Chart === 'undefined'){
+    _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js')
+      .then(() => _doRenderPage(id))
+      .catch(() => _doRenderPage(id)); // renderiza de todos modos (sin gráfico)
+    return;
+  }
+
+  // Renders livianos — inmediatos. Renders pesados — next animation frame
+  const _heavy = new Set(['dashboard','cursos','rendimiento','estadisticas','historial','asistencia','metodos']);
+  if(_heavy.has(id)){
+    requestAnimationFrame(() => _doRenderPage(id));
+  } else {
+    _doRenderPage(id);
+  }
+}
+
+function _doRenderPage(id){
   switch(id){
     case 'dashboard':   renderDashboard(); renderGamificacion(); break;
     case 'tareas':      renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); }));
@@ -4787,6 +4831,12 @@ async function handlePDF(file){
   const bar = document.getElementById('pdf-prog-bar');
   const status = document.getElementById('pdf-status');
   try {
+    // ── LAZY LOAD PDF.js — solo se descarga cuando el usuario importa un PDF ──
+    if(typeof pdfjsLib === 'undefined'){
+      bar.style.width = '10%'; status.textContent = 'Cargando lector PDF...';
+      await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
     bar.style.width = '20%'; status.textContent = 'Leyendo PDF...';
     const ab = await file.arrayBuffer();
     bar.style.width = '40%'; status.textContent = 'Procesando páginas...';
