@@ -1,14 +1,13 @@
-const CACHE_NAME = 'uni-ucsm-v5';
+const CACHE_NAME = 'uni-ucsm-v6';
 const BASE = '/Uni/';
 
 // Archivos estáticos a cachear al instalar
+// NOTA: Chart.js y PDF.js son lazy-load — el SW los cachea dinámicamente
+// en el fetch handler la primera vez que se descargan, no al instalar.
 const STATIC_ASSETS = [
   BASE + 'uni.html',
   BASE + 'manifest.json',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap'
 ];
 
 // ── INSTALL: cachear archivos estáticos ──────────────────────────────────────
