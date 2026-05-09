@@ -3,36 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uni — Gestor Académico UCSM Ingeniería Civil</title>
-<meta name="description" content="App académica para estudiantes de Ingeniería Civil UCSM: notas, asistencia, horario, pomodoro y análisis con IA.">
-<meta name="theme-color" content="#0c1829">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Uni UCSM">
+<title>Uni — UCSM Ingeniería Civil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- ── LAZY LOAD — Chart.js y PDF.js se cargan solo cuando se necesitan ── -->
-<script>
-// Loader de scripts bajo demanda — evita bloquear el hilo principal al inicio
-const _scriptCache = {};
-function _loadScript(src){
-  if(_scriptCache[src]) return _scriptCache[src];
-  _scriptCache[src] = new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.async = true;
-    s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-  return _scriptCache[src];
-}
-// Preload Chart.js en background tan pronto el browser esté idle
-if('requestIdleCallback' in window){
-  requestIdleCallback(() => _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'));
-} else {
-  setTimeout(() => _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'), 2000);
-}
-// PDF.js se carga on-demand en handlePDF() — no al inicio
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <!-- Firebase -->
 <script type="module">
 import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1762,6 +1737,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
 </style>
 
 <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0c1829">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uni UCSM">
 </head>
 <body>
 
@@ -3084,7 +3063,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue);
      JAVASCRIPT
 ════════════════════════════════════ -->
 <script>
-// ── PDF.js worker — configurado on-demand en handlePDF() al hacer lazy load ──
+// ── PDF.js worker ──
+if(typeof pdfjsLib !== 'undefined'){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 
 // ══════════════════════════════════════════════
 // PERSISTENCIA — localStorage engine
@@ -3095,7 +3077,7 @@ const STORAGE_KEY = 'uni_ucsm_v3';
 const _saveAllDebounced = (function(){
   let t; return (delay=300) => { clearTimeout(t); t=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({STUDENT,COURSES,TASKS,EXAMS,SEMESTERS,ATTENDANCE,STUDY_H,HABITS,ts:Date.now()})); }catch(e){} },delay); };
 })();
-// saveAll() se preserva para acciones críticas; oninput usa _saveAllDebounced()
+// saveAll() original se preserva para acciones críticas; oninput usa _saveAllDebounced()
 
 function saveAll(){
   try {
@@ -3976,7 +3958,7 @@ function recalc(ci){
   // Persist note values back to COURSES
   c.teoria = ts;
   c.practica = ps;
-  _saveAllDebounced(); // debounced: no escribe a localStorage en cada tecla
+  saveAll();
   const tsF = ts.filter(x => x !== null);
   const psF = ps.filter(x => x !== null);
   const avgT = tsF.length ? tsF.reduce((a,b)=>a+b,0)/tsF.length : null;
@@ -4764,30 +4746,8 @@ function saveTask(){
 // ══════════════════════════════════════════════
 // MASTER RENDER DISPATCHER
 // ══════════════════════════════════════════════
-// Páginas que usan Chart.js — se carga lazy si no está disponible aún
-const _CHART_PAGES = new Set(['rendimiento','estadisticas','historial']);
-
 function renderPage(id){
   if(window._skCleanup){ window._skCleanup(); window._skCleanup = null; }
-
-  // Para páginas con charts: garantizar Chart.js antes de renderizar
-  if(_CHART_PAGES.has(id) && typeof Chart === 'undefined'){
-    _loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js')
-      .then(() => _doRenderPage(id))
-      .catch(() => _doRenderPage(id)); // renderiza de todos modos (sin gráfico)
-    return;
-  }
-
-  // Renders livianos — inmediatos. Renders pesados — next animation frame
-  const _heavy = new Set(['dashboard','cursos','rendimiento','estadisticas','historial','asistencia','metodos']);
-  if(_heavy.has(id)){
-    requestAnimationFrame(() => _doRenderPage(id));
-  } else {
-    _doRenderPage(id);
-  }
-}
-
-function _doRenderPage(id){
   switch(id){
     case 'dashboard':   renderDashboard(); renderGamificacion(); break;
     case 'tareas':      renderTasks(document.getElementById('task-full'), [...TASKS].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; return daysUntil(a.due)-daysUntil(b.due); }));
@@ -4827,12 +4787,6 @@ async function handlePDF(file){
   const bar = document.getElementById('pdf-prog-bar');
   const status = document.getElementById('pdf-status');
   try {
-    // ── LAZY LOAD PDF.js — solo se descarga cuando el usuario importa un PDF ──
-    if(typeof pdfjsLib === 'undefined'){
-      bar.style.width = '10%'; status.textContent = 'Cargando lector PDF...';
-      await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
     bar.style.width = '20%'; status.textContent = 'Leyendo PDF...';
     const ab = await file.arrayBuffer();
     bar.style.width = '40%'; status.textContent = 'Procesando páginas...';
@@ -6835,61 +6789,144 @@ function apHandleDrop(e) {
   if(files.length) apProcessFiles(files);
 }
 
+// ── BLOB STORE: imágenes en memoria (no en localStorage) ──────────────────
+// Clave: id → ObjectURL. Se recrea si la página se recarga (aceptable para uso personal).
+const _apImgBlobs = {};
+
 function apProcessFiles(files) {
-  const allowed = ['application/pdf','text/plain','image/png','image/jpeg','image/webp',
-    'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const allowed = [
+    'application/pdf','text/plain',
+    'image/png','image/jpeg','image/webp','image/gif',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  ];
   Array.from(files).forEach(file => {
     const type = file.type;
-    if(!allowed.some(a => type.startsWith(a.split('/')[0]) || type === a)) {
+    if(!allowed.some(a => type === a || type.startsWith(a.split('/')[0]+'/') )) {
       showToast(`Tipo no soportado: ${file.name}`, 'warn'); return;
     }
-    const apType = type === 'application/pdf' ? 'pdf'
-      : type.startsWith('image') ? 'img'
-      : type === 'text/plain' ? 'txt'
-      : type.includes('presentation') ? 'ppt' : 'doc';
+    const apType = type === 'application/pdf'            ? 'pdf'
+      : type.startsWith('image')                          ? 'img'
+      : type === 'text/plain'                             ? 'txt'
+      : type.includes('presentation')                     ? 'ppt'
+      : type.includes('word') || type.includes('document')? 'doc'
+      : 'doc';
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const id = 'ap_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const id = 'ap_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+
+    // ── Imágenes: ObjectURL en memoria, NO base64 en localStorage ────────────
+    if(apType === 'img') {
+      const objUrl = URL.createObjectURL(file);
+      _apImgBlobs[id] = { url: objUrl, file }; // guardamos referencia al File para OCR
       const apunte = {
         id, name: file.name.replace(/\.[^.]+$/, ''), type: apType,
         size: file.size, date: new Date().toISOString(),
         course: _guessCoursefromName(file.name),
-        tags: [], analysis: null,
-        // Solo guardamos texto plano para PDFs de texto / txt; base64 para imágenes
-        raw: apType === 'img' ? e.target.result : null,
-        text: apType === 'txt' ? e.target.result : '',
+        tags: [], analysis: null, text: '', raw: null // sin base64
       };
-      // Para PDFs extraemos texto con pdf.js si está disponible
-      if(apType === 'pdf' && typeof pdfjsLib !== 'undefined') {
-        _extractPDFText(e.target.result, id);
-      }
       APUNTES.unshift(apunte);
       _invalidateApuntesCache();
       saveApuntes();
-      _renderApuntesList();
-      _renderApuntesStats();
-      _updateApuntesBadge();
-      showToast(`Archivo subido: ${apunte.name}`, 'ok', 2000);
-      // Auto-sugerir análisis si es el primer archivo
+      _renderApuntesList(); _renderApuntesStats(); _updateApuntesBadge();
+      showToast(`Imagen lista: ${apunte.name}`, 'ok', 2000);
       if(APUNTES.length === 1) setTimeout(() => apAnalyze(id), 800);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const apunte = {
+        id, name: file.name.replace(/\.[^.]+$/, ''), type: apType,
+        size: file.size, date: new Date().toISOString(),
+        course: _guessCoursefromName(file.name),
+        tags: [], analysis: null, text: '', raw: null
+      };
+
+      if(apType === 'pdf') {
+        // PDF: extraer texto con pdf.js (lazy load)
+        if(typeof pdfjsLib === 'undefined') {
+          await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        APUNTES.unshift(apunte);
+        _invalidateApuntesCache(); saveApuntes();
+        _renderApuntesList(); _renderApuntesStats(); _updateApuntesBadge();
+        showToast(`PDF subido: ${apunte.name}`, 'ok', 2000);
+        await _extractPDFText(e.target.result, id);
+        if(APUNTES.length === 1) setTimeout(() => apAnalyze(id), 400);
+
+      } else if(apType === 'doc') {
+        // DOCX: extraer texto con mammoth.js (lazy load)
+        apunte.text = '';
+        APUNTES.unshift(apunte);
+        _invalidateApuntesCache(); saveApuntes();
+        _renderApuntesList(); _renderApuntesStats(); _updateApuntesBadge();
+        showToast(`Documento subido: ${apunte.name}`, 'ok', 2000);
+        await _extractDOCXText(e.target.result, id);
+        if(APUNTES.length === 1) setTimeout(() => apAnalyze(id), 400);
+
+      } else if(apType === 'txt') {
+        apunte.text = (e.target.result || '').slice(0, 20000);
+        APUNTES.unshift(apunte);
+        _invalidateApuntesCache(); saveApuntes();
+        _renderApuntesList(); _renderApuntesStats(); _updateApuntesBadge();
+        showToast(`Texto subido: ${apunte.name}`, 'ok', 2000);
+        if(APUNTES.length === 1) setTimeout(() => apAnalyze(id), 400);
+
+      } else {
+        // PPT u otro — sin extracción de texto cliente; la IA usará el nombre
+        APUNTES.unshift(apunte);
+        _invalidateApuntesCache(); saveApuntes();
+        _renderApuntesList(); _renderApuntesStats(); _updateApuntesBadge();
+        showToast(`Archivo subido: ${apunte.name}`, 'ok', 2000);
+      }
     };
-    if(apType === 'img') reader.readAsDataURL(file);
+
+    if(apType === 'txt') reader.readAsText(file, 'UTF-8');
     else reader.readAsArrayBuffer(file);
   });
+}
+
+// ── DOCX con mammoth.js (lazy load) ──────────────────────────────────────────
+async function _extractDOCXText(arrayBuffer, apunteId) {
+  try {
+    if(typeof mammoth === 'undefined') {
+      await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    }
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    const a = APUNTES.find(x=>x.id===apunteId);
+    if(a) { a.text = result.value.slice(0, 20000); saveApuntes(); }
+  } catch(e) { console.warn('DOCX extract error:', e); }
 }
 
 async function _extractPDFText(arrayBuffer, apunteId) {
   try {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let text = '';
-    for(let i=1; i<=Math.min(pdf.numPages, 20); i++) { // máx 20 pags para no saturar
+    const maxPages = Math.min(pdf.numPages, 40); // sube de 20 a 40 páginas
+    for(let i=1; i<=maxPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      text += content.items.map(it=>it.str).join(' ') + '\n';
+      // Reconstruir párrafos respetando saltos de línea naturales
+      let lastY = null, lineText = '';
+      content.items.forEach(item => {
+        if(lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+          text += lineText.trim() + '\n';
+          lineText = '';
+        }
+        lineText += item.str + ' ';
+        lastY = item.transform[5];
+      });
+      text += lineText.trim() + '\n';
     }
     const a = APUNTES.find(x=>x.id===apunteId);
-    if(a) { a.text = text.slice(0, 15000); saveApuntes(); } // límite 15K chars
+    if(a) {
+      a.text = text.slice(0, 20000); // sube de 15K a 20K
+      a.pageCount = pdf.numPages;
+      saveApuntes();
+    }
   } catch(e){ console.warn('PDF extract error:', e); }
 }
 
@@ -6907,36 +6944,43 @@ async function apAnalyze(id) {
   const apunte = APUNTES.find(a=>a.id===id);
   if(!apunte) return;
 
-  // UI feedback inmediato sin re-render completo (quirúrgico)
   const btn = document.querySelector(`#apc-${id} .ap-action-btn`);
   if(btn) { btn.textContent = '⏳ Analizando…'; btn.disabled = true; }
 
   const courseCtx = apunte.course
     ? `El archivo pertenece al curso de ${apunte.course} de Ingeniería Civil UCSM (escala 0-20).` : '';
 
-  const contentForAI = apunte.text
-    ? `CONTENIDO DEL DOCUMENTO (primeros 8000 chars):\n${apunte.text.slice(0,8000)}`
-    : `El archivo se llama "${apunte.name}" y es de tipo ${apunte.type}. Analiza basándote en el nombre.`;
+  // ── Construir el mensaje según tipo de archivo ─────────────────────────────
+  let userMessage;
 
-  const prompt = `Eres un asistente académico experto en Ingeniería Civil para un estudiante universitario peruano. ${courseCtx}
+  if(apunte.type === 'img') {
+    // ── OCR + análisis con Claude Vision ─────────────────────────────────────
+    const imgData = await _getImageBase64(id);
+    if(!imgData) {
+      showToast('No se pudo leer la imagen. Vuelve a subirla.', 'warn'); return;
+    }
+    userMessage = [
+      {
+        type: 'image',
+        source: { type: 'base64', media_type: imgData.mediaType, data: imgData.data }
+      },
+      {
+        type: 'text',
+        text: `${courseCtx}\n\nAnaliza este apunte/documento escaneado. Lee TODO el texto visible, identifica fórmulas, tablas, diagramas y conceptos clave.\n\nResponde SOLO con este JSON (sin markdown):\n${_apAnalysisSchema()}`
+      }
+    ];
+  } else {
+    // ── Texto extraído (PDF / DOCX / TXT) ────────────────────────────────────
+    const contentText = apunte.text
+      ? `CONTENIDO DEL DOCUMENTO:\n${apunte.text.slice(0, 12000)}` // sube de 8K a 12K
+      : `El archivo se llama "${apunte.name}" (${apunte.type}). Analiza por el nombre y tipo.`;
 
-${contentForAI}
+    userMessage = `${courseCtx}\n\n${contentText}\n\nResponde SOLO con este JSON (sin markdown, sin texto fuera del JSON):\n${_apAnalysisSchema()}`;
+  }
 
-Analiza el material y responde en JSON estricto (sin markdown, sin texto fuera del JSON):
-{
-  "summary": "Resumen del tema en 2 oraciones",
-  "topics": ["tema1", "tema2", "tema3"],
-  "keyFormulas": ["fórmula o concepto clave 1", "fórmula 2"],
-  "examLikely": ["pregunta probable de examen 1", "pregunta 2", "pregunta 3"],
-  "toImprove": [
-    {"area": "nombre del área débil", "suggestion": "qué estudiar exactamente", "priority": "alta|media|baja"},
-    {"area": "área 2", "suggestion": "sugerencia concreta", "priority": "media"}
-  ],
-  "studyTime": "tiempo estimado para dominar el tema en horas",
-  "difficulty": "fácil|medio|difícil",
-  "relatedTopics": ["tema relacionado 1", "tema relacionado 2"],
-  "tags": ["tag1", "tag2", "tag3"]
-}`;
+  const prompt = typeof userMessage === 'string'
+    ? [{ role:'user', content: userMessage }]
+    : [{ role:'user', content: userMessage }];
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -6945,37 +6989,74 @@ Analiza el material y responde en JSON estricto (sin markdown, sin texto fuera d
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        messages: [{ role:'user', content: prompt }]
+        messages: prompt
       })
     });
     const data = await res.json();
     let rawText = (data.content||[]).map(b=>b.text||'').join('');
-    // Strip markdown fences if present
     rawText = rawText.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-    const analysis = JSON.parse(rawText);
+    // Extraer solo el JSON si hay texto extra antes/después
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    const analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
     apunte.analysis = analysis;
     if(analysis.tags?.length) apunte.tags = [...new Set([...(apunte.tags||[]), ...analysis.tags])].slice(0,6);
+    // Si la IA detectó el curso y no teníamos, asignarlo
+    if(!apunte.course && analysis.detectedCourse) apunte.course = analysis.detectedCourse;
     _invalidateApuntesCache();
     saveApuntes();
     _renderApuntesList();
     _renderApuntesFilters();
     _renderApuntesStats();
-    // Si el detalle está abierto, actualizarlo quirúrgicamente
     if(_activeApunteId === id) apOpenDetail(id);
     showToast('Análisis completado ✓', 'ok');
   } catch(e) {
     const fallback = {
       summary: `Apuntes de ${apunte.name} — análisis no disponible sin conexión.`,
-      topics: ['Ver contenido manualmente'],
-      keyFormulas: [], examLikely: [],
+      topics: ['Ver contenido manualmente'], keyFormulas: [], examLikely: [],
       toImprove: [{ area: 'Revisar manualmente', suggestion: 'Lee el documento y extrae los puntos clave', priority: 'media' }],
-      studyTime: '—', difficulty: 'medio', relatedTopics: [], tags: []
+      studyTime: '—', difficulty: 'medio', relatedTopics: [], tags: [], ocrText: ''
     };
     apunte.analysis = fallback;
-    saveApuntes();
-    _renderApuntesList();
+    saveApuntes(); _renderApuntesList();
     showToast('Sin conexión — análisis básico generado', 'warn', 3000);
   }
+}
+
+// Schema JSON que la IA debe devolver — centralizado para fácil mantenimiento
+function _apAnalysisSchema() {
+  return `{
+  "summary": "Resumen del tema en 2-3 oraciones",
+  "ocrText": "Solo si es imagen: texto manuscrito o impreso extraído literalmente (vacío si no aplica)",
+  "topics": ["tema1", "tema2", "tema3"],
+  "keyFormulas": ["fórmula o concepto clave 1", "fórmula 2"],
+  "tables": ["descripción de tabla 1 si existe"],
+  "examLikely": ["pregunta probable de examen 1", "pregunta 2", "pregunta 3"],
+  "toImprove": [
+    {"area": "área débil", "suggestion": "qué estudiar exactamente", "priority": "alta|media|baja"}
+  ],
+  "studyTime": "horas estimadas para dominar",
+  "difficulty": "fácil|medio|difícil",
+  "relatedTopics": ["tema relacionado 1", "tema relacionado 2"],
+  "detectedCourse": "nombre del curso si se puede inferir del contenido, sino vacío",
+  "tags": ["tag1", "tag2", "tag3"]
+}`;
+}
+
+// Obtener base64 de una imagen desde el blob store o pedir que se vuelva a subir
+async function _getImageBase64(id) {
+  const entry = _apImgBlobs[id];
+  if(!entry) return null;
+  return new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result; // "data:image/png;base64,XXXX"
+      const [meta, data] = dataUrl.split(',');
+      const mediaType = meta.match(/:(.*?);/)[1];
+      res({ data, mediaType });
+    };
+    reader.onerror = () => res(null);
+    reader.readAsDataURL(entry.file);
+  });
 }
 
 async function apAnalyzeAll() {
@@ -7042,6 +7123,18 @@ function apOpenDetail(id) {
           ${(analysis.topics||[]).map(t=>`<span class="ap-topic-chip">${t}</span>`).join('')}
         </div>
       </div>
+
+      <!-- TABLAS DETECTADAS -->
+      ${analysis.tables?.length ? `<div class="ap-analysis-block">
+        <div class="ap-block-label">📊 Tablas detectadas</div>
+        ${analysis.tables.map(t=>`<div class="ap-table-item"><span class="ap-table-ico">▦</span><span>${t}</span></div>`).join('')}
+      </div>` : ''}
+
+      <!-- OCR — texto extraído de imagen -->
+      ${apunte.type==='img' && analysis.ocrText ? `<div class="ap-analysis-block">
+        <div class="ap-block-label">🔍 Texto extraído (OCR)</div>
+        <div class="ap-ocr-block">${analysis.ocrText}</div>
+      </div>` : ''}
 
       <!-- FÓRMULAS / CONCEPTOS CLAVE -->
       ${analysis.keyFormulas?.length ? `<div class="ap-analysis-block">
@@ -7121,16 +7214,31 @@ async function apAskMore(id) {
   const a = APUNTES.find(x=>x.id===id); if(!a?.analysis) return;
   const chatEl = document.getElementById(`ap-chat-${id}`); if(!chatEl) return;
 
-  // Mostrar input si no está
   if(!chatEl.querySelector('.ap-chat-input-row')) {
     chatEl.innerHTML = `
+      <div class="ap-chat-header">
+        <span class="ap-chat-label">Chat con el documento</span>
+        <button class="ap-chat-clear" onclick="apClearChat('${id}')">✕ Limpiar historial</button>
+      </div>
       <div class="ap-chat-msgs" id="ap-msgs-${id}"></div>
       <div class="ap-chat-input-row">
-        <input class="qa-in ap-chat-in" id="ap-chat-in-${id}" placeholder="Pregunta sobre este tema…" 
-          onkeydown="if(event.key==='Enter')apSendChat('${id}')">
+        <input class="qa-in ap-chat-in" id="ap-chat-in-${id}"
+          placeholder="Pregunta sobre este tema…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();apSendChat('${id}')}">
         <button class="qa-btn" onclick="apSendChat('${id}')">Enviar</button>
       </div>`;
   }
+  document.getElementById(`ap-chat-in-${id}`)?.focus();
+}
+
+// Historial de chat por documento: { [apunteId]: [{role, content}] }
+const _apChatHistory = {};
+
+function apClearChat(id) {
+  _apChatHistory[id] = [];
+  const msgs = document.getElementById(`ap-msgs-${id}`);
+  if(msgs) msgs.innerHTML = '';
+  showToast('Historial limpiado', 'info', 1500);
 }
 
 async function apSendChat(id) {
@@ -7138,33 +7246,103 @@ async function apSendChat(id) {
   const inp = document.getElementById(`ap-chat-in-${id}`); if(!inp) return;
   const q = inp.value.trim(); if(!q) return;
   const msgs = document.getElementById(`ap-msgs-${id}`);
-  inp.value = '';
+  inp.value = ''; inp.disabled = true;
 
-  // User bubble
+  // Inicializar historial si no existe
+  if(!_apChatHistory[id]) _apChatHistory[id] = [];
+
+  // Burbuja del usuario
   msgs.innerHTML += `<div class="ap-chat-bubble ap-chat-user">${q}</div>`;
 
-  // AI bubble placeholder
+  // Burbuja IA — streaming con cursor parpadeante
   const aiId = 'ap-ai-' + Date.now();
-  msgs.innerHTML += `<div class="ap-chat-bubble ap-chat-ai" id="${aiId}">⏳ Pensando…</div>`;
+  msgs.innerHTML += `<div class="ap-chat-bubble ap-chat-ai" id="${aiId}"><span class="ap-cursor">▋</span></div>`;
   msgs.scrollTop = msgs.scrollHeight;
 
-  const context = `Temas: ${(a.analysis?.topics||[]).join(', ')}. Resumen: ${a.analysis?.summary||''}. Contenido: ${(a.text||'').slice(0,4000)}`;
-  const prompt = `Eres un tutor de Ingeniería Civil. El estudiante estudia este material:\n${context}\n\nPregunta del estudiante: ${q}\n\nResponde en 2-4 oraciones, conciso y técnico.`;
+  // Contexto del documento (solo en el primer mensaje del historial)
+  const isFirst = _apChatHistory[id].length === 0;
+  const docCtx = isFirst
+    ? `Eres un tutor de Ingeniería Civil (UCSM, escala 0-20). Responde SOLO basándote en este material:\n\nCURSO: ${a.course||'General'}\nTEMAS: ${(a.analysis?.topics||[]).join(', ')}\nRESUMEN: ${a.analysis?.summary||''}\nCONTENIDO: ${(a.text||'').slice(0,6000)}\n\nSi la pregunta no tiene relación con el documento, indícalo brevemente.`
+    : null;
+
+  // Agregar mensaje del usuario al historial
+  _apChatHistory[id].push({ role:'user', content: q });
+
+  // Construir array de mensajes para la API
+  const apiMessages = isFirst
+    ? [{ role:'user', content: `${docCtx}\n\nPrimera pregunta: ${q}` }]
+    : _apChatHistory[id].slice(-10); // últimos 10 mensajes para no exceder tokens
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        stream: true,
+        messages: apiMessages
+      })
     });
-    const data = await res.json();
-    const text = (data.content||[]).map(b=>b.text||'').join('');
+
     const aiEl = document.getElementById(aiId);
-    if(aiEl) aiEl.textContent = text;
+    if(!res.ok || !res.body) throw new Error('stream error');
+
+    // ── Streaming con ReadableStream ──────────────────────────────────────
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+
+    while(true) {
+      const { done, value } = await reader.read();
+      if(done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      // Los eventos SSE de Anthropic tienen formato "data: {...}\n\n"
+      chunk.split('\n').forEach(line => {
+        if(!line.startsWith('data: ')) return;
+        try {
+          const json = JSON.parse(line.slice(6));
+          if(json.type === 'content_block_delta' && json.delta?.text) {
+            fullText += json.delta.text;
+            if(aiEl) aiEl.innerHTML = fullText.replace(/\n/g,'<br>') + '<span class="ap-cursor">▋</span>';
+            msgs.scrollTop = msgs.scrollHeight;
+          }
+        } catch(e) {}
+      });
+    }
+
+    // Quitar cursor al terminar
+    if(aiEl) aiEl.innerHTML = fullText.replace(/\n/g,'<br>');
+
+    // Guardar respuesta IA en historial
+    _apChatHistory[id].push({ role:'assistant', content: fullText });
+
   } catch(e) {
-    const aiEl = document.getElementById(aiId);
-    if(aiEl) aiEl.textContent = 'Sin conexión. Intenta de nuevo.';
+    // Fallback sin streaming (red lenta / error)
+    try {
+      const res2 = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: apiMessages
+        })
+      });
+      const data = await res2.json();
+      const text = (data.content||[]).map(b=>b.text||'').join('');
+      const aiEl = document.getElementById(aiId);
+      if(aiEl) aiEl.innerHTML = text.replace(/\n/g,'<br>');
+      _apChatHistory[id].push({ role:'assistant', content: text });
+    } catch(e2) {
+      const aiEl = document.getElementById(aiId);
+      if(aiEl) aiEl.textContent = 'Sin conexión. Intenta de nuevo.';
+      _apChatHistory[id].pop(); // revertir push del usuario
+    }
+  } finally {
+    inp.disabled = false; inp.focus();
+    msgs.scrollTop = msgs.scrollHeight;
   }
-  msgs.scrollTop = msgs.scrollHeight;
 }
 
 // ── CRUD ───────────────────────────────────────────────────────────
@@ -7295,6 +7473,28 @@ function apSetView(v) {
 .ap-chat-input-row { display:flex; gap:7px }
 .ap-chat-in { flex:1; background:var(--n3); border:1px solid var(--b0); border-radius:var(--rs); color:var(--t1); font-family:'Syne',sans-serif; font-size:12px; padding:7px 10px; outline:none }
 .ap-chat-in:focus { border-color:var(--b2) }
+.ap-chat-in:disabled { opacity:.45; cursor:not-allowed }
+
+/* Cursor de streaming parpadeante */
+@keyframes ap-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.ap-cursor { display:inline-block; color:var(--blue); animation:ap-blink .8s ease infinite; font-weight:700; margin-left:1px }
+
+/* Tablas detectadas por IA */
+.ap-table-item { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--b0); font-size:12px; color:var(--t2) }
+.ap-table-item:last-child { border-bottom:none }
+.ap-table-ico { color:var(--purple); flex-shrink:0; margin-top:1px }
+
+/* OCR text block — texto extraído de imagen */
+.ap-ocr-block { background:var(--n4); border:1px solid var(--b1); border-radius:var(--rs); padding:10px 12px; font-size:11.5px; color:var(--t2); line-height:1.65; font-family:'DM Mono',monospace; white-space:pre-wrap; max-height:180px; overflow-y:auto; margin-top:6px }
+
+/* Badge de páginas del PDF */
+.ap-pages-badge { font-size:9.5px; color:var(--t3); padding:2px 7px; border-radius:8px; background:var(--s1); border:1px solid var(--b0) }
+
+/* Botón limpiar historial de chat */
+.ap-chat-clear { background:none; border:none; color:var(--t3); font-size:10px; cursor:pointer; font-family:'Syne',sans-serif; transition:color .15s; padding:0 }
+.ap-chat-clear:hover { color:var(--danger) }
+.ap-chat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px }
+.ap-chat-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--t3) }
 `;
   document.head.appendChild(style);
 })();
