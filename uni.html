@@ -6685,6 +6685,29 @@ function renderApuntes() {
   _renderApuntesFilters();
   _renderApuntesList();
   _updateApuntesBadge();
+  _renderApuntesDropzone();
+}
+
+// Dropzone colapsable: grande si no hay archivos, compacta si hay
+function _renderApuntesDropzone() {
+  const zone = document.getElementById('ap-dropzone');
+  const zoneCollapsed = document.getElementById('ap-dropzone-collapsed');
+  if(!zone && !zoneCollapsed) return;
+
+  if(APUNTES.length === 0) {
+    if(zone) zone.style.display = '';
+    if(zoneCollapsed) zoneCollapsed.style.display = 'none';
+  } else {
+    if(zone) zone.style.display = 'none';
+    if(zoneCollapsed) {
+      zoneCollapsed.style.display = 'flex';
+      zoneCollapsed.innerHTML = `
+        <span style="font-size:16px">📂</span>
+        <span class="ap-dropzone-collapsed-lbl">Subir más archivos — arrastra o haz clic</span>
+        <span style="font-size:10px;color:var(--t3)">${APUNTES.length} archivo${APUNTES.length!==1?'s':''}</span>
+      `;
+    }
+  }
 }
 
 function _updateApuntesBadge() {
@@ -6789,7 +6812,311 @@ function apHandleDrop(e) {
   if(files.length) apProcessFiles(files);
 }
 
-// ── BLOB STORE: imágenes en memoria (no en localStorage) ──────────────────
+// ══════════════════════════════════════════════════════════════
+// MOTOR DE FLASHCARDS — Spaced Repetition básico
+// Genera desde el análisis existente sin llamadas extra a la API
+// ══════════════════════════════════════════════════════════════
+
+// Store: { [apunteId]: [{q, a, level:0-3, nextReview, id}] }
+let _apFlashcards = {};
+let _apFlashSession = null; // sesión de estudio activa
+
+function _loadFlashcards(){
+  try { _apFlashcards = JSON.parse(localStorage.getItem('uni_flashcards')||'{}'); } catch(e){ _apFlashcards={}; }
+}
+function _saveFlashcards(){
+  try { localStorage.setItem('uni_flashcards', JSON.stringify(_apFlashcards)); } catch(e){}
+}
+
+// Generar flashcards desde el análisis existente (0 llamadas a API)
+function apGenerateFlashcards(id) {
+  const a = APUNTES.find(x=>x.id===id);
+  if(!a?.analysis) { showToast('Analiza el archivo primero', 'warn'); return; }
+
+  const cards = [];
+  const now = Date.now();
+
+  // 1. Desde temas principales
+  (a.analysis.topics||[]).forEach((topic, i) => {
+    cards.push({
+      id: `fc_${id}_t${i}`, q: `¿Qué es / en qué consiste: "${topic}"?`,
+      a: `Tema del documento: ${a.name}. Revisa la sección correspondiente.`,
+      level: 0, nextReview: now, source: 'topic'
+    });
+  });
+
+  // 2. Desde fórmulas clave
+  (a.analysis.keyFormulas||[]).forEach((formula, i) => {
+    cards.push({
+      id: `fc_${id}_f${i}`, q: `Explica o escribe: ${formula}`,
+      a: formula, level: 0, nextReview: now, source: 'formula'
+    });
+  });
+
+  // 3. Desde preguntas de examen (estas ya son preguntas — perfectas como flashcards)
+  (a.analysis.examLikely||[]).forEach((q, i) => {
+    cards.push({
+      id: `fc_${id}_e${i}`, q,
+      a: `Pregunta probable de examen — ${a.course||a.name}. Practica la respuesta.`,
+      level: 0, nextReview: now, source: 'exam'
+    });
+  });
+
+  // 4. Desde áreas a mejorar
+  (a.analysis.toImprove||[]).forEach((item, i) => {
+    cards.push({
+      id: `fc_${id}_m${i}`, q: `¿Cómo mejorar en: ${item.area}?`,
+      a: item.suggestion, level: 0, nextReview: now, source: 'improve'
+    });
+  });
+
+  if(!cards.length) { showToast('No hay suficiente contenido para flashcards', 'warn'); return; }
+
+  _apFlashcards[id] = cards;
+  _saveFlashcards();
+  showToast(`${cards.length} flashcards generadas ✓`, 'ok');
+  apOpenFlashSession(id);
+}
+
+// Generar flashcards mejoradas con IA (llamada extra a API — bajo demanda)
+async function apGenerateFlashcardsAI(id) {
+  const a = APUNTES.find(x=>x.id===id);
+  if(!a?.analysis) { showToast('Analiza el archivo primero', 'warn'); return; }
+
+  showToast('Generando flashcards con IA…', 'info', 4000);
+  const prompt = `Eres un experto en pedagogía para Ingeniería Civil (UCSM, escala 0-20).
+Basándote en este material:
+CURSO: ${a.course||'General'}
+TEMAS: ${(a.analysis.topics||[]).join(', ')}
+RESUMEN: ${a.analysis.summary||''}
+CONTENIDO: ${(a.text||'').slice(0,8000)}
+
+Genera exactamente 10 flashcards de estudio de alta calidad. Responde SOLO con JSON sin markdown:
+{
+  "flashcards": [
+    {"q": "pregunta precisa y técnica", "a": "respuesta completa y útil", "type": "concepto|formula|aplicacion|definicion"}
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user', content:prompt}] })
+    });
+    const data = await res.json();
+    let raw = (data.content||[]).map(b=>b.text||'').join('').replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const json = JSON.parse(raw.match(/\{[\s\S]*\}/)[0]);
+    const now = Date.now();
+    const cards = (json.flashcards||[]).map((fc, i) => ({
+      id: `fc_${id}_ai${i}`, q: fc.q, a: fc.a,
+      level: 0, nextReview: now, source: fc.type||'ia'
+    }));
+    // Mezclar con las generadas localmente si existen
+    const existing = (_apFlashcards[id]||[]).filter(c=>c.source!=='ia');
+    _apFlashcards[id] = [...cards, ...existing];
+    _saveFlashcards();
+    showToast(`${cards.length} flashcards IA generadas ✓`, 'ok');
+    apOpenFlashSession(id);
+  } catch(e) {
+    showToast('Error generando flashcards IA — usando las locales', 'warn');
+    apGenerateFlashcards(id);
+  }
+}
+
+// Abrir sesión de estudio con las flashcards pendientes
+function apOpenFlashSession(id) {
+  _loadFlashcards();
+  const cards = _apFlashcards[id];
+  if(!cards?.length) { apGenerateFlashcards(id); return; }
+
+  // Spaced repetition: solo las que toca revisar hoy
+  const now = Date.now();
+  const due = cards.filter(c => c.nextReview <= now);
+  const studyCards = due.length > 0 ? due : cards.slice(0,5); // si no hay pendientes, repasa las primeras 5
+
+  _apFlashSession = { id, cards: studyCards, idx: 0, flipped: false, correct: 0, wrong: 0 };
+  apRenderFlashModal();
+}
+
+function apRenderFlashModal() {
+  const s = _apFlashSession; if(!s) return;
+  const card = s.cards[s.idx];
+  const total = s.cards.length;
+  const progress = Math.round((s.idx / total) * 100);
+
+  // Crear o reutilizar el modal
+  let modal = document.getElementById('ap-flash-modal');
+  if(!modal) {
+    modal = document.createElement('div');
+    modal.id = 'ap-flash-modal';
+    modal.className = 'ap-flash-overlay';
+    document.body.appendChild(modal);
+  }
+
+  const sourceLabel = {
+    topic:'Tema', formula:'Fórmula', exam:'Examen', improve:'Área a mejorar', ia:'IA', concepto:'Concepto', definicion:'Definición', aplicacion:'Aplicación'
+  }[card?.source] || 'General';
+
+  modal.innerHTML = `
+    <div class="ap-flash-box">
+      <div class="ap-flash-head">
+        <div class="ap-flash-progress-wrap">
+          <div class="ap-flash-progress-bar" style="width:${progress}%"></div>
+        </div>
+        <div class="ap-flash-meta">
+          <span class="ap-flash-counter">${s.idx+1} / ${total}</span>
+          <span class="ap-flash-source-badge">${sourceLabel}</span>
+          <span style="font-size:11px;color:var(--green)">✓ ${s.correct}</span>
+          <span style="font-size:11px;color:var(--danger)">✗ ${s.wrong}</span>
+        </div>
+        <button class="ap-flash-close" onclick="apCloseFlashModal()">✕</button>
+      </div>
+
+      <div class="ap-flash-card ${s.flipped?'flipped':''}" onclick="apFlipCard()">
+        <div class="ap-flash-front">
+          <div class="ap-flash-hint">Pregunta — toca para ver respuesta</div>
+          <div class="ap-flash-question">${card?.q||'—'}</div>
+        </div>
+        <div class="ap-flash-back">
+          <div class="ap-flash-hint">Respuesta</div>
+          <div class="ap-flash-answer">${card?.a||'—'}</div>
+        </div>
+      </div>
+
+      ${s.flipped ? `
+        <div class="ap-flash-actions">
+          <button class="ap-flash-btn ap-flash-wrong" onclick="apFlashAnswer(false)">
+            ✗ No sabía
+          </button>
+          <button class="ap-flash-btn ap-flash-hard" onclick="apFlashAnswer('hard')">
+            △ Difícil
+          </button>
+          <button class="ap-flash-btn ap-flash-correct" onclick="apFlashAnswer(true)">
+            ✓ Lo sabía
+          </button>
+        </div>
+      ` : `
+        <div style="text-align:center;padding:8px 0">
+          <span style="font-size:11px;color:var(--t3)">Toca la tarjeta para revelar la respuesta</span>
+        </div>
+      `}
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function apFlipCard() {
+  if(!_apFlashSession) return;
+  _apFlashSession.flipped = !_apFlashSession.flipped;
+  apRenderFlashModal();
+}
+
+// Spaced repetition: actualizar nivel según respuesta
+function apFlashAnswer(result) {
+  const s = _apFlashSession; if(!s) return;
+  const card = s.cards[s.idx];
+  const now = Date.now();
+
+  // Intervalos de repetición (ms): nivel 0→1h, 1→1d, 2→3d, 3→7d
+  const intervals = [3600000, 86400000, 259200000, 604800000];
+
+  if(result === true) {
+    card.level = Math.min(card.level + 1, 3);
+    card.nextReview = now + intervals[card.level];
+    s.correct++;
+  } else if(result === 'hard') {
+    card.nextReview = now + intervals[0]; // repasa en 1h
+    s.wrong++;
+  } else {
+    card.level = 0;
+    card.nextReview = now + 300000; // repasa en 5 min
+    s.wrong++;
+  }
+
+  // Actualizar en el store
+  const store = _apFlashcards[s.id];
+  const storeCard = store?.find(c=>c.id===card.id);
+  if(storeCard) { storeCard.level = card.level; storeCard.nextReview = card.nextReview; }
+  _saveFlashcards();
+
+  // Siguiente tarjeta o fin de sesión
+  s.idx++;
+  s.flipped = false;
+  if(s.idx >= s.cards.length) {
+    apFlashFinish();
+  } else {
+    apRenderFlashModal();
+  }
+}
+
+function apFlashFinish() {
+  const s = _apFlashSession;
+  const modal = document.getElementById('ap-flash-modal');
+  if(!modal || !s) return;
+  const pct = Math.round((s.correct / s.cards.length) * 100);
+  modal.innerHTML = `
+    <div class="ap-flash-box">
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:12px">${pct>=80?'🎉':pct>=50?'💪':'📚'}</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1);margin-bottom:6px">Sesión completada</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:20px">${s.cards.length} tarjetas · ${pct}% correcto</div>
+        <div style="display:flex;gap:16px;justify-content:center;margin-bottom:20px">
+          <div style="text-align:center"><div style="font-size:28px;color:var(--green);font-family:'DM Mono',monospace">${s.correct}</div><div style="font-size:10px;color:var(--t3)">Correctas</div></div>
+          <div style="text-align:center"><div style="font-size:28px;color:var(--danger);font-family:'DM Mono',monospace">${s.wrong}</div><div style="font-size:10px;color:var(--t3)">A repasar</div></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="met-start-btn" style="flex:none;padding:10px 20px" onclick="apOpenFlashSession('${s.id}')">Repetir sesión</button>
+          <button class="qa-btn" style="background:var(--s1);border:1px solid var(--b0);color:var(--t2)" onclick="apCloseFlashModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function apCloseFlashModal() {
+  const modal = document.getElementById('ap-flash-modal');
+  if(modal) modal.style.display = 'none';
+  _apFlashSession = null;
+}
+
+// Contar flashcards pendientes para un apunte
+function _apFlashDue(id) {
+  _loadFlashcards();
+  const cards = _apFlashcards[id] || [];
+  return cards.filter(c => c.nextReview <= Date.now()).length;
+}
+_loadFlashcards(); // cargar al inicio
+
+// ══════════════════════════════════════════════════════════════
+// CONTEXTO CRUZADO — relaciona apuntes del mismo curso
+// ══════════════════════════════════════════════════════════════
+function _apCourseContext(id) {
+  const a = APUNTES.find(x=>x.id===id);
+  if(!a?.course) return '';
+  const siblings = APUNTES.filter(x => x.id !== id && x.course === a.course && x.analysis);
+  if(!siblings.length) return '';
+  return `\n\nOTROS APUNTES DEL CURSO "${a.course}":\n` + siblings.slice(0,3).map(s =>
+    `- ${s.name}: ${(s.analysis?.summary||'').slice(0,120)} [temas: ${(s.analysis?.topics||[]).slice(0,3).join(', ')}]`
+  ).join('\n');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS DEL PANEL DE DETALLE
+// ══════════════════════════════════════════════════════════════
+let _apDetailTab = 'resumen';
+
+function apSetDetailTab(tab, id) {
+  _apDetailTab = tab;
+  document.querySelectorAll('.ap-detail-tab').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`ap-tab-${tab}`);
+  if(btn) btn.classList.add('active');
+  ['resumen','formulas','examen','flashcards','chat'].forEach(t => {
+    const el = document.getElementById(`ap-panel-${t}-${id}`);
+    if(el) el.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
 // Clave: id → ObjectURL. Se recrea si la página se recarga (aceptable para uso personal).
 const _apImgBlobs = {};
 
@@ -7078,112 +7405,173 @@ function apOpenDetail(id) {
   const panel = document.getElementById('ap-detail-panel');
   if(!panel) return;
 
-  const analysis = apunte.analysis;
+  const an = apunte.analysis;
   const typeIco = { pdf:'📄', img:'🖼️', txt:'📝', doc:'📘', ppt:'📊' }[apunte.type] || '📎';
+  const courseColor = (COURSES.find(c=>c.name===apunte.course)||{color:'var(--t3)'}).color;
+  const flashDue = _apFlashDue(id);
+  const hasFlash = (_apFlashcards[id]||[]).length > 0;
 
   panel.innerHTML = `
+    <!-- HEAD -->
     <div class="ap-detail-head">
-      <span style="font-size:28px">${typeIco}</span>
+      <span style="font-size:24px;flex-shrink:0">${typeIco}</span>
       <div style="flex:1;min-width:0">
-        <div class="ap-detail-title" id="ap-title-edit-${id}" contenteditable="true"
+        <div class="ap-detail-title" contenteditable="true"
           onblur="apRenameApunte('${id}',this.textContent)"
           style="outline:none;cursor:text">${apunte.name}</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
-          ${apunte.course?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${(COURSES.find(c=>c.name===apunte.course)||{color:'var(--t3)'}).color}22;color:${(COURSES.find(c=>c.name===apunte.course)||{color:'var(--t3)'}).color}">${apunte.course}</span>`:''}
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px">
+          ${apunte.course?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${courseColor}22;color:${courseColor}">${apunte.course}</span>`:''}
+          ${apunte.pageCount?`<span class="ap-pages-badge">📄 ${apunte.pageCount}p</span>`:''}
           ${(apunte.tags||[]).map(t=>`<span class="ap-tag">#${t}</span>`).join('')}
         </div>
       </div>
-      <button class="ap-action-btn" onclick="apAnalyze('${id}')" style="white-space:nowrap">
-        ${analysis ? '↺ Re-analizar' : '✦ Analizar con IA'}
+      <button class="ap-action-btn" onclick="apAnalyze('${id}')" title="Analizar con IA" style="white-space:nowrap">
+        ${an ? '↺ Re-analizar' : '✦ Analizar'}
       </button>
-      <button onclick="_activeApunteId=null;document.getElementById('ap-detail-panel').innerHTML='<div class=ap-empty style=margin-top:40px>Selecciona un archivo para ver el análisis</div>'"
+      <button onclick="_activeApunteId=null;document.getElementById('ap-detail-panel').innerHTML='<div class=ap-empty style=margin-top:40px>Selecciona un archivo</div>'"
         style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">✕</button>
     </div>
 
-    ${!analysis ? `
-      <div style="text-align:center;padding:40px 20px;color:var(--t3)">
-        <div style="font-size:32px;margin-bottom:10px">✦</div>
-        <div style="font-size:13px;color:var(--t2);margin-bottom:14px">Este archivo aún no ha sido analizado</div>
-        <button class="met-start-btn" style="max-width:200px;margin:0 auto" onclick="apAnalyze('${id}')">Analizar ahora</button>
-      </div>` : `
-      <!-- RESUMEN -->
+    <!-- TABS -->
+    <div class="ap-detail-tabs">
+      <button class="ap-detail-tab active" id="ap-tab-resumen"   onclick="apSetDetailTab('resumen','${id}')">Resumen</button>
+      <button class="ap-detail-tab"        id="ap-tab-formulas"  onclick="apSetDetailTab('formulas','${id}')">Fórmulas</button>
+      <button class="ap-detail-tab"        id="ap-tab-examen"    onclick="apSetDetailTab('examen','${id}')">Examen</button>
+      <button class="ap-detail-tab"        id="ap-tab-flashcards" onclick="apSetDetailTab('flashcards','${id}')">
+        Flashcards${flashDue>0?` <span class="ap-flash-due-badge">${flashDue}</span>`:''}
+      </button>
+      <button class="ap-detail-tab"        id="ap-tab-chat"      onclick="apSetDetailTab('chat','${id}');apAskMore('${id}')">Chat</button>
+    </div>
+
+    ${!an ? `
+    <!-- SIN ANÁLISIS -->
+    <div id="ap-panel-resumen-${id}" style="text-align:center;padding:32px 16px;color:var(--t3)">
+      <div style="font-size:32px;margin-bottom:10px">✦</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:14px">Este archivo aún no ha sido analizado</div>
+      <button class="met-start-btn" style="max-width:200px;margin:0 auto" onclick="apAnalyze('${id}')">Analizar ahora</button>
+    </div>
+    <div id="ap-panel-formulas-${id}"   style="display:none"></div>
+    <div id="ap-panel-examen-${id}"     style="display:none"></div>
+    <div id="ap-panel-flashcards-${id}" style="display:none"></div>
+    <div id="ap-panel-chat-${id}"       style="display:none"></div>
+    ` : `
+
+    <!-- TAB: RESUMEN -->
+    <div id="ap-panel-resumen-${id}">
       <div class="ap-analysis-block">
         <div class="ap-block-label">📋 Resumen</div>
-        <div class="ap-block-content">${analysis.summary||'—'}</div>
+        <div class="ap-block-content">${an.summary||'—'}</div>
         <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--t3)">⏱ ${analysis.studyTime||'—'}h est.</span>
-          <span class="ap-difficulty-badge ap-diff-${analysis.difficulty||'medio'}">${analysis.difficulty||'—'}</span>
+          <span style="font-size:11px;color:var(--t3)">⏱ ${an.studyTime||'—'}h</span>
+          <span class="ap-difficulty-badge ap-diff-${an.difficulty||'medio'}">${an.difficulty||'—'}</span>
         </div>
       </div>
-
-      <!-- TEMAS CLAVE -->
       <div class="ap-analysis-block">
         <div class="ap-block-label">🎯 Temas principales</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-          ${(analysis.topics||[]).map(t=>`<span class="ap-topic-chip">${t}</span>`).join('')}
+          ${(an.topics||[]).map(t=>`<span class="ap-topic-chip">${t}</span>`).join('')}
         </div>
       </div>
-
-      <!-- TABLAS DETECTADAS -->
-      ${analysis.tables?.length ? `<div class="ap-analysis-block">
+      ${an.tables?.length?`<div class="ap-analysis-block">
         <div class="ap-block-label">📊 Tablas detectadas</div>
-        ${analysis.tables.map(t=>`<div class="ap-table-item"><span class="ap-table-ico">▦</span><span>${t}</span></div>`).join('')}
-      </div>` : ''}
-
-      <!-- OCR — texto extraído de imagen -->
-      ${apunte.type==='img' && analysis.ocrText ? `<div class="ap-analysis-block">
+        ${an.tables.map(t=>`<div class="ap-table-item"><span class="ap-table-ico">▦</span><span>${t}</span></div>`).join('')}
+      </div>`:''}
+      ${apunte.type==='img'&&an.ocrText?`<div class="ap-analysis-block">
         <div class="ap-block-label">🔍 Texto extraído (OCR)</div>
-        <div class="ap-ocr-block">${analysis.ocrText}</div>
-      </div>` : ''}
-
-      <!-- FÓRMULAS / CONCEPTOS CLAVE -->
-      ${analysis.keyFormulas?.length ? `<div class="ap-analysis-block">
-        <div class="ap-block-label">📐 Fórmulas & conceptos clave</div>
-        ${analysis.keyFormulas.map(f=>`<div class="ap-formula-row"><span class="ap-formula-ico">⊞</span><span>${f}</span></div>`).join('')}
-      </div>` : ''}
-
-      <!-- PREGUNTAS PROBABLES DE EXAMEN -->
-      ${analysis.examLikely?.length ? `<div class="ap-analysis-block">
-        <div class="ap-block-label">📝 Preguntas probables de examen</div>
-        ${analysis.examLikely.map((q,i)=>`<div class="ap-exam-q"><span class="ap-q-num">${i+1}</span><span>${q}</span></div>`).join('')}
-      </div>` : ''}
-
-      <!-- QUÉ MEJORAR -->
-      ${analysis.toImprove?.length ? `<div class="ap-analysis-block ap-improve-block">
-        <div class="ap-block-label">🔧 Qué mejorar</div>
-        ${analysis.toImprove.map(t=>`
-          <div class="ap-improve-row">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-              <span class="ap-prio-badge ap-prio-${t.priority||'media'}">${t.priority||'media'}</span>
-              <span style="font-size:12.5px;font-weight:600;color:var(--t1)">${t.area}</span>
-            </div>
-            <div style="font-size:11.5px;color:var(--t2);padding-left:4px">${t.suggestion}</div>
-          </div>`).join('')}
-      </div>` : ''}
-
-      <!-- TEMAS RELACIONADOS -->
-      ${analysis.relatedTopics?.length ? `<div class="ap-analysis-block">
-        <div class="ap-block-label">🔗 Temas relacionados para estudiar</div>
+        <div class="ap-ocr-block">${an.ocrText}</div>
+      </div>`:''}
+      ${an.relatedTopics?.length?`<div class="ap-analysis-block">
+        <div class="ap-block-label">🔗 Temas relacionados</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-          ${analysis.relatedTopics.map(t=>`<span class="ap-related-chip">${t}</span>`).join('')}
+          ${an.relatedTopics.map(t=>`<span class="ap-related-chip">${t}</span>`).join('')}
         </div>
-      </div>` : ''}
+      </div>`:''}
+      ${an.toImprove?.length?`<div class="ap-analysis-block ap-improve-block">
+        <div class="ap-block-label">🔧 Qué mejorar</div>
+        ${an.toImprove.map(t=>`<div class="ap-improve-row">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <span class="ap-prio-badge ap-prio-${t.priority||'media'}">${t.priority||'media'}</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--t1)">${t.area}</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--t2);padding-left:4px">${t.suggestion}</div>
+        </div>`).join('')}
+      </div>`:''}
+      <button class="met-start-btn" style="font-size:11.5px;margin-top:4px" onclick="apCreateStudyTask('${id}')">
+        + Crear tarea de estudio
+      </button>
+    </div>
 
-      <!-- ACCIÓN RÁPIDA: Crear tarea de estudio -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-        <button class="met-start-btn" style="flex:1;font-size:11.5px" onclick="apCreateStudyTask('${id}')">
-          + Crear tarea de estudio
-        </button>
-        <button class="qa-btn" style="flex:1;font-size:11.5px;background:var(--s1);border:1px solid var(--b0);color:var(--t2)" onclick="apAskMore('${id}')">
-          ✦ Preguntar más
-        </button>
+    <!-- TAB: FÓRMULAS -->
+    <div id="ap-panel-formulas-${id}" style="display:none">
+      ${an.keyFormulas?.length ? `
+        <div class="ap-analysis-block">
+          <div class="ap-block-label">📐 Fórmulas & conceptos clave</div>
+          ${an.keyFormulas.map(f=>`<div class="ap-formula-row"><span class="ap-formula-ico">⊞</span><span>${f}</span></div>`).join('')}
+        </div>` :
+        `<div class="ap-empty" style="padding:24px">Sin fórmulas detectadas en este archivo.</div>`}
+    </div>
+
+    <!-- TAB: EXAMEN -->
+    <div id="ap-panel-examen-${id}" style="display:none">
+      ${an.examLikely?.length ? `
+        <div class="ap-analysis-block">
+          <div class="ap-block-label">📝 Preguntas probables de examen</div>
+          ${an.examLikely.map((q,i)=>`<div class="ap-exam-q"><span class="ap-q-num">${i+1}</span><span>${q}</span></div>`).join('')}
+        </div>` :
+        `<div class="ap-empty" style="padding:24px">Sin preguntas de examen detectadas.</div>`}
+    </div>
+
+    <!-- TAB: FLASHCARDS -->
+    <div id="ap-panel-flashcards-${id}" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
+        ${hasFlash ? `
+          <div class="ap-analysis-block">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="ap-block-label" style="margin-bottom:0">Estado del mazo</div>
+              <span style="font-size:11px;color:var(--t3)">${(_apFlashcards[id]||[]).length} tarjetas</span>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:12px">
+              <div style="text-align:center">
+                <div style="font-size:22px;color:var(--danger);font-family:'DM Mono',monospace">${flashDue}</div>
+                <div style="font-size:10px;color:var(--t3)">Para hoy</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:22px;color:var(--green);font-family:'DM Mono',monospace">${(_apFlashcards[id]||[]).filter(c=>c.level>=2).length}</div>
+                <div style="font-size:10px;color:var(--t3)">Dominadas</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:22px;color:var(--gold);font-family:'DM Mono',monospace">${(_apFlashcards[id]||[]).filter(c=>c.level===0).length}</div>
+                <div style="font-size:10px;color:var(--t3)">Nuevas</div>
+              </div>
+            </div>
+            <button class="met-start-btn" onclick="apOpenFlashSession('${id}')">
+              ${flashDue>0 ? `▶ Estudiar ${flashDue} tarjetas pendientes` : '▶ Repasar mazo completo'}
+            </button>
+          </div>` : ''}
+        <div style="display:flex;gap:8px">
+          <button class="ap-action-btn" style="flex:1" onclick="apGenerateFlashcards('${id}')">
+            ⚡ Generar rápido (sin IA)
+          </button>
+          <button class="ap-action-btn" style="flex:1" onclick="apGenerateFlashcardsAI('${id}')">
+            ✦ Generar con IA (10 tarjetas)
+          </button>
+        </div>
+        ${hasFlash?`<button class="qa-btn" style="background:var(--danger-dim);border:1px solid rgba(255,85,85,.2);color:var(--danger);font-size:11px" onclick="if(confirm('¿Borrar todas las flashcards de este archivo?')){delete _apFlashcards['${id}'];_saveFlashcards();apOpenDetail('${id}')}">Borrar mazo</button>`:''}
       </div>
+    </div>
 
-      <!-- CHAT ADICIONAL -->
+    <!-- TAB: CHAT -->
+    <div id="ap-panel-chat-${id}" style="display:none">
       <div id="ap-chat-${id}" class="ap-chat-area"></div>
+    </div>
     `}
   `;
-  // Highlight active card
+
+  // Restaurar tab activo si ya estaba en este apunte
+  if(_apDetailTab !== 'resumen' && _activeApunteId === id) {
+    apSetDetailTab(_apDetailTab, id);
+  }
+
   document.querySelectorAll('.ap-card').forEach(c => c.classList.remove('ap-card-active'));
   const activeCard = document.getElementById('apc-'+id);
   if(activeCard) activeCard.classList.add('ap-card-active');
@@ -7261,8 +7649,9 @@ async function apSendChat(id) {
 
   // Contexto del documento (solo en el primer mensaje del historial)
   const isFirst = _apChatHistory[id].length === 0;
+  const courseCtx = _apCourseContext(id); // contexto cruzado del mismo curso
   const docCtx = isFirst
-    ? `Eres un tutor de Ingeniería Civil (UCSM, escala 0-20). Responde SOLO basándote en este material:\n\nCURSO: ${a.course||'General'}\nTEMAS: ${(a.analysis?.topics||[]).join(', ')}\nRESUMEN: ${a.analysis?.summary||''}\nCONTENIDO: ${(a.text||'').slice(0,6000)}\n\nSi la pregunta no tiene relación con el documento, indícalo brevemente.`
+    ? `Eres un tutor de Ingeniería Civil (UCSM, escala 0-20). Responde SOLO basándote en este material:\n\nCURSO: ${a.course||'General'}\nTEMAS: ${(a.analysis?.topics||[]).join(', ')}\nRESUMEN: ${a.analysis?.summary||''}\nCONTENIDO: ${(a.text||'').slice(0,6000)}${courseCtx}\n\nSi la pregunta no tiene relación con el documento, indícalo brevemente.`
     : null;
 
   // Agregar mensaje del usuario al historial
@@ -7495,6 +7884,56 @@ function apSetView(v) {
 .ap-chat-clear:hover { color:var(--danger) }
 .ap-chat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px }
 .ap-chat-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--t3) }
+
+/* ── TABS del panel de detalle ── */
+.ap-detail-tabs { display:flex; gap:4px; margin:12px 0 10px; border-bottom:1px solid var(--b0); padding-bottom:8px; flex-wrap:wrap }
+.ap-detail-tab { background:none; border:none; color:var(--t3); font-family:'Syne',sans-serif; font-size:11.5px; font-weight:500; padding:5px 12px; cursor:pointer; border-radius:var(--rs) var(--rs) 0 0; transition:all .15s; position:relative; bottom:-1px; border-bottom:2px solid transparent }
+.ap-detail-tab:hover { color:var(--t1); background:var(--s1) }
+.ap-detail-tab.active { color:var(--gold); border-bottom-color:var(--gold); background:var(--gold-dim) }
+
+/* Badge de flashcards pendientes en el tab */
+.ap-flash-due-badge { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:var(--danger); color:#fff; font-size:8px; font-weight:700; margin-left:4px; vertical-align:middle }
+
+/* ── FLASHCARDS — Overlay modal ── */
+.ap-flash-overlay { display:none; position:fixed; inset:0; background:rgba(8,18,30,.92); z-index:1100; align-items:center; justify-content:center; padding:16px }
+.ap-flash-box { background:var(--n1); border:1px solid var(--b1); border-radius:var(--r); width:100%; max-width:480px; padding:20px; box-shadow:0 24px 64px rgba(0,0,0,.5) }
+
+/* Barra de progreso */
+.ap-flash-progress-wrap { height:3px; background:var(--s2); border-radius:2px; overflow:hidden; margin-bottom:10px }
+.ap-flash-progress-bar { height:100%; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:2px; transition:width .3s }
+
+/* Meta: contador + source + scores */
+.ap-flash-meta { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap }
+.ap-flash-counter { font-size:11px; color:var(--t3); font-family:'DM Mono',monospace }
+.ap-flash-source-badge { font-size:9px; font-weight:700; padding:2px 7px; border-radius:8px; background:var(--blue-dim); color:var(--blue); text-transform:uppercase; letter-spacing:.05em }
+.ap-flash-close { margin-left:auto; background:var(--s1); border:1px solid var(--b0); color:var(--t3); width:24px; height:24px; border-radius:50%; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; transition:all .15s; flex-shrink:0 }
+.ap-flash-close:hover { background:var(--danger-dim); color:var(--danger) }
+
+/* La tarjeta con efecto flip */
+.ap-flash-card { background:var(--n2); border:1px solid var(--b1); border-radius:var(--r); padding:24px 20px; min-height:160px; cursor:pointer; display:flex; flex-direction:column; justify-content:center; transition:all .2s; margin-bottom:14px; user-select:none; position:relative }
+.ap-flash-card:hover { border-color:var(--b2); background:var(--n3) }
+.ap-flash-card.flipped { border-color:var(--green-b); background:var(--green-dim) }
+.ap-flash-front, .ap-flash-back { display:none }
+.ap-flash-card:not(.flipped) .ap-flash-front { display:block }
+.ap-flash-card.flipped .ap-flash-back { display:block }
+.ap-flash-hint { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); margin-bottom:10px }
+.ap-flash-question { font-size:14px; color:var(--t1); line-height:1.55; font-weight:500 }
+.ap-flash-answer { font-size:13px; color:var(--t1); line-height:1.6 }
+
+/* Botones de respuesta */
+.ap-flash-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px }
+.ap-flash-btn { padding:10px 6px; border-radius:var(--rs); font-family:'Syne',sans-serif; font-size:12px; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all .15s }
+.ap-flash-wrong   { background:var(--danger-dim); color:var(--danger); border-color:rgba(255,85,85,.25) }
+.ap-flash-wrong:hover { background:var(--danger); color:#fff }
+.ap-flash-hard    { background:var(--amber-dim); color:var(--amber); border-color:rgba(240,168,64,.25) }
+.ap-flash-hard:hover  { background:var(--amber); color:var(--n0) }
+.ap-flash-correct { background:var(--green-dim); color:var(--green); border-color:var(--green-b) }
+.ap-flash-correct:hover { background:var(--green); color:var(--n0) }
+
+/* Dropzone colapsable cuando hay archivos */
+.ap-dropzone-collapsed { border:1px dashed var(--b1); border-radius:var(--rs); padding:8px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:all .18s; background:var(--s0); margin-bottom:12px }
+.ap-dropzone-collapsed:hover { border-color:var(--gold-b); background:var(--gold-dim) }
+.ap-dropzone-collapsed-lbl { font-size:11.5px; color:var(--t3); flex:1 }
 `;
   document.head.appendChild(style);
 })();
@@ -7525,11 +7964,20 @@ function apSetView(v) {
     <div class="ap-dropzone-inner">
       <div class="ap-dz-ico">📂</div>
       <div class="ap-dz-title">Arrastra tus apuntes aquí o haz clic para seleccionar</div>
-      <div class="ap-dz-sub">PDF, imágenes (fotos de apuntes), TXT, DOCX · Múltiples archivos a la vez</div>
+      <div class="ap-dz-sub">PDF, imágenes (fotos de apuntes), TXT, DOCX, PPT · Múltiples archivos a la vez</div>
     </div>
   </div>
+
+  <!-- Dropzone colapsada (se muestra cuando ya hay archivos) -->
+  <div id="ap-dropzone-collapsed" class="ap-dropzone-collapsed" style="display:none"
+    onclick="document.getElementById('ap-file-in').click()"
+    ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+    ondragleave="this.style.borderColor=''"
+    ondrop="apHandleDrop(event)">
+  </div>
+
   <input type="file" id="ap-file-in" multiple
-    accept=".pdf,.txt,.png,.jpg,.jpeg,.webp,.doc,.docx"
+    accept=".pdf,.txt,.png,.jpg,.jpeg,.webp,.doc,.docx,.ppt,.pptx"
     style="display:none"
     onchange="apProcessFiles(this.files);this.value=''">
 
